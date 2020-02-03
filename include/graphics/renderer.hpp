@@ -6,7 +6,7 @@
 #include "graphics/descriptors.h"
 #include "graphics/images.h"
 
-namespace graphics
+namespace gfx
 {
 
 struct Rect;

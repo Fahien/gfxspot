@@ -3,7 +3,7 @@
 #include "graphics/graphics.hpp"
 
 
-namespace graphics
+namespace gfx
 {
 
 
@@ -206,4 +206,4 @@ void Renderer::add( const Mesh& mesh )
 }
 
 
-} // namespace graphics
+} // namespace gfx

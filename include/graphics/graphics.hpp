@@ -15,7 +15,7 @@
 #include "math/math.h"
 
 
-namespace graphics
+namespace gfx
 {
 
 using Index = uint16_t;
@@ -426,4 +426,4 @@ class Graphics
 };
 
 
-} // namespace graphics
+} // namespace gfx

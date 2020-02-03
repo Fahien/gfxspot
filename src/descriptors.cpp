@@ -4,7 +4,7 @@
 
 #include "graphics/graphics.hpp"
 
-namespace graphics
+namespace gfx
 {
 
 
@@ -106,4 +106,4 @@ DescriptorPool& DescriptorPool::operator=( DescriptorPool&& o )
 
 
 
-} // namespace graphics
+} // namespace gfx

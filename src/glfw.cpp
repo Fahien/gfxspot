@@ -6,7 +6,7 @@
 
 #include "graphics/graphics.hpp"
 
-namespace graphics
+namespace gfx
 {
 
 

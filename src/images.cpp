@@ -5,7 +5,7 @@
 #include "graphics/png.h"
 #include "graphics/graphics.hpp"
 
-namespace graphics
+namespace gfx
 {
 
 VkFormat get_format( Png& png )
@@ -302,4 +302,4 @@ VkImageView Images::load( const char* path )
 }
 
 
-} // namespace graphics
+} // namespace gfx

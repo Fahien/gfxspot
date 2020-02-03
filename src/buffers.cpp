@@ -5,7 +5,7 @@
 
 #include "graphics/graphics.hpp"
 
-namespace graphics
+namespace gfx
 {
 
 
@@ -222,4 +222,4 @@ void DynamicBuffer::upload( const uint8_t* data )
 }
 
 
-} // namespace graphics
+} // namespace gfx

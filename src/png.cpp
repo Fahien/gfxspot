@@ -7,7 +7,7 @@
 
 #include "graphics/graphics.hpp"
 
-namespace graphics
+namespace gfx
 {
 
 
@@ -119,4 +119,4 @@ Png::~Png()
 	std::fclose( file );
 }
 
-} // namespace graphics
+} // namespace gfx

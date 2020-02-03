@@ -4,7 +4,7 @@
 #include <vector>
 #include <png.h>
 
-namespace graphics
+namespace gfx
 {
 
 class Device;
@@ -41,4 +41,4 @@ class Png
 	std::vector<png_byte*> rows;
 };
 
-} // namespace graphics
+} // namespace gfx

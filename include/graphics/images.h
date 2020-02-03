@@ -7,7 +7,7 @@
 #include "graphics/commands.h"
 
 
-namespace graphics
+namespace gfx
 {
 
 class Device;
@@ -85,4 +85,4 @@ class Images
 };
 
 
-} // namespace graphics
+} // namespace gfx

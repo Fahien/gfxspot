@@ -8,7 +8,7 @@
 #include <cstring>
 #include <cmath>
 
-namespace graphics
+namespace gfx
 {
 
 
@@ -284,7 +284,7 @@ Queue& Device::find_graphics_queue()
 Queue& Device::find_present_queue( VkSurfaceKHR surface )
 {
 	auto it = std::find_if( std::begin( queues ), std::end( queues ),
-		[surface]( graphics::Queue& queue ) { return queue.supports_present( surface ); });
+		[surface]( gfx::Queue& queue ) { return queue.supports_present( surface ); });
 	assert( it != std::end( queues ) && "Cannot find graphics queue" );
 	return *it;
 }
@@ -1294,4 +1294,4 @@ void Graphics::draw( Mesh& mesh )
 }
 
 
-} // namespace graphics
+} // namespace gfx

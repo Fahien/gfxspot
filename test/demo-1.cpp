@@ -6,32 +6,22 @@
 #include "graphics/png.h"
 #include "graphics/images.h"
 
-void update( const double dt, graphics::Triangle& r )
+
+void update( const double dt, gfx::Triangle& r )
 {
 	r.ubo.model.rotateY( math::radians( dt * 16.0 ) );
 }
 
-void update( const double dt, graphics::UniformBufferObject& ubo )
+
+void update( const double dt, gfx::UniformBufferObject& ubo )
 {
 	ubo.model.rotateZ( -math::radians( dt * 16.0 ) );
 }
 
-void run();
 
-int main()
+gfx::Mesh create_quad()
 {
-	using namespace graphics;
-
-	//auto image = Png( "img/lena.png" );
-
-	run();
-
-	return EXIT_SUCCESS;
-}
-
-graphics::Mesh create_quad()
-{
-	using namespace graphics;
+	using namespace gfx;
 
 	Mesh quad;
 
@@ -64,9 +54,10 @@ graphics::Mesh create_quad()
 	return quad;
 }
 
-void run()
+
+int main()
 {
-	using namespace graphics;
+	using namespace gfx;
 
 	auto graphics = Graphics();
 
@@ -74,11 +65,15 @@ void run()
 	auto quad = create_quad();
 	quad.image_view = view;
 
-	auto square = Rect( Dot( Point( -0.5f, -0.5f ) ), Dot( Point( 0.5f, 0.5f ) ) );
+	auto square = Rect(
+		Dot( Point( -0.5f, -0.5f ) ),
+		Dot( Point( 0.5f, 0.5f ) ) );
+	
 	auto triangle = Triangle(
 		Dot( Point( 0.5f, 0.0f, -1.0f ) ),
 		Dot( Point( -0.5f, 0.0f, -1.0f ) ),
 		Dot( Point( 0.0f, 0.0f, 0.0f ) ) );
+
 	graphics.renderer.add( square );
 	graphics.renderer.add( triangle );
 	graphics.renderer.add( quad );
@@ -102,5 +97,5 @@ void run()
 	}
 
 	graphics.device.wait_idle();
+	return EXIT_SUCCESS;
 }
-

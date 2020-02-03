@@ -6,7 +6,7 @@
 #include "graphics/images.h"
 
 
-namespace graphics
+namespace gfx
 {
 
 
@@ -258,4 +258,4 @@ std::vector<CommandBuffer> CommandPool::allocate_command_buffers( const uint32_t
 }
 
 
-} // namespace graphics
+} // namespace gfx

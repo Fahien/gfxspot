@@ -4,7 +4,7 @@
 
 #include <vulkan/vulkan_core.h>
 
-namespace graphics
+namespace gfx
 {
 
 class Device;
@@ -45,4 +45,4 @@ class DescriptorPool
 };
 
 
-} // namespace graphics
+} // namespace gfx

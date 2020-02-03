@@ -30,9 +30,9 @@ target_link_libraries( ${PROJECT_NAME} ${Vulkan_LIBRARIES} ${GLFW_LIBRARY} PNG::
 target_compile_features( ${PROJECT_NAME} PUBLIC cxx_std_17 )
 
 # Test
-set( TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/test/main.cpp )
-add_executable( ${PROJECT_NAME}-test ${TEST_SOURCES} )
-target_link_libraries( ${PROJECT_NAME}-test ${PROJECT_NAME} )
-target_compile_features( ${PROJECT_NAME}-test PUBLIC cxx_std_17 )
+set( TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/test/demo-1.cpp )
+add_executable( ${PROJECT_NAME}-demo-1 ${TEST_SOURCES} )
+target_link_libraries( ${PROJECT_NAME}-demo-1 ${PROJECT_NAME} )
+target_compile_features( ${PROJECT_NAME}-demo-1 PUBLIC cxx_std_17 )
 
 include( shaders )
