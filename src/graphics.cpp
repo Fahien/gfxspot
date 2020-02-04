@@ -990,9 +990,9 @@ std::vector<VkDescriptorSetLayoutBinding> get_mesh_bindings()
 }
 
 
-math::Mat4 perspective( const float a, const float y, const float f, const float n )
+mth::Mat4 perspective( const float a, const float y, const float f, const float n )
 {
-	math::Mat4 proj = {};
+	mth::Mat4 proj = {};
 
 	// Calculate projection matrix
 	float cotfov = 1.0f / std::tan( 0.5f * y );
@@ -1006,31 +1006,31 @@ math::Mat4 perspective( const float a, const float y, const float f, const float
 }
 
 
-math::Mat4 look_at( const math::Vec3& eye, const math::Vec3& center, math::Vec3 up )
+mth::Mat4 look_at( const mth::Vec3& eye, const mth::Vec3& center, mth::Vec3 up )
 {
-	math::Vec3 forward = eye - center;
+	mth::Vec3 forward = eye - center;
 	forward.normalize();
 
-	math::Vec3 right = math::Vec3::cross( up, forward );
+	mth::Vec3 right = mth::Vec3::cross( up, forward );
 	right.normalize();
 
-	up = math::Vec3::cross( forward, right );
+	up = mth::Vec3::cross( forward, right );
 	up.normalize();
 
-	math::Mat4 matrix = {};
+	mth::Mat4 matrix = {};
 
 	matrix[0] = right.x;
 	matrix[4] = right.y;
 	matrix[8] = right.z;
-	matrix[12] = -math::Vec3::dot( right, eye );
+	matrix[12] = -mth::Vec3::dot( right, eye );
 	matrix[1] = up.x;
 	matrix[5] = up.y;
 	matrix[9] = up.z;
-	matrix[13] = -math::Vec3::dot( up, eye );
+	matrix[13] = -mth::Vec3::dot( up, eye );
 	matrix[2] = forward.x;
 	matrix[6] = forward.y;
 	matrix[10] = forward.z;
-	matrix[14] = -math::Vec3::dot( forward, eye );
+	matrix[14] = -mth::Vec3::dot( forward, eye );
 	matrix[3] = 0;
 	matrix[7] = 0;
 	matrix[11] = 0;
@@ -1039,19 +1039,19 @@ math::Mat4 look_at( const math::Vec3& eye, const math::Vec3& center, math::Vec3 
 	return matrix;
 }
 
-math::Mat4 ortho( float left, float right, float bottom, float top, float near, float far )
+mth::Mat4 ortho( float left, float right, float bottom, float top, float near, float far )
 {
-	math::Vec3 mid;
+	mth::Vec3 mid;
 	mid.x = ( left + right ) / ( right - left );
 	mid.y = ( bottom + top ) / ( bottom - top );
 	mid.z = near / ( near - far );
 
-	math::Vec3 scale;
+	mth::Vec3 scale;
 	scale.x = 2.0f / ( right - left );
 	scale.y = 2.0f / ( bottom - top );
 	scale.z = 1.0f / ( near - far );
 
-	math::Mat4 mat = math::Mat4::identity;
+	mth::Mat4 mat = mth::Mat4::identity;
 
 	mat[12] = -mid.x;
 	mat[13] = -mid.y;
@@ -1116,9 +1116,9 @@ Graphics::Graphics()
 , present_queue { device.find_present_queue( surface.handle ) }
 , images { device }
 , view { look_at(
-	math::Vec3( 0.0f, 5.0f, -3.0f ),
-	math::Vec3( 0.0f, -1.0f, 0.0f ),
-	math::Vec3( 0.0f, 1.0f, 0.0f ) ) }
+	mth::Vec3( 0.0f, 5.0f, -3.0f ),
+	mth::Vec3( 0.0f, -1.0f, 0.0f ),
+	mth::Vec3( 0.0f, 1.0f, 0.0f ) ) }
 , proj { ortho( -1.0f, 1.0f, -1.0f, 1.0f, 0.125f, 8.0f ) }
 {
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )

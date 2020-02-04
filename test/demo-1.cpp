@@ -9,13 +9,13 @@
 
 void update( const double dt, gfx::Triangle& r )
 {
-	r.ubo.model.rotateY( math::radians( dt * 16.0 ) );
+	r.ubo.model.rotateY( mth::radians( dt * 16.0 ) );
 }
 
 
 void update( const double dt, gfx::UniformBufferObject& ubo )
 {
-	ubo.model.rotateZ( -math::radians( dt * 16.0 ) );
+	ubo.model.rotateZ( -mth::radians( dt * 16.0 ) );
 }
 
 

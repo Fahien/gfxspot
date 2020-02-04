@@ -12,8 +12,9 @@
 #include "graphics/descriptors.h"
 #include "graphics/commands.h"
 #include "graphics/images.h"
-#include "math/math.h"
+#include <spot/math/math.h>
 
+namespace mth = spot::math;
 
 namespace gfx
 {
@@ -73,9 +74,9 @@ struct alignas(16) Vertex
 
 struct alignas(16) UniformBufferObject
 {
-	math::Mat4 model = math::Mat4::identity;
-	math::Mat4 view  = math::Mat4::identity;
-	math::Mat4 proj  = math::Mat4::identity;
+	mth::Mat4 model = mth::Mat4::identity;
+	mth::Mat4 view  = mth::Mat4::identity;
+	mth::Mat4 proj  = mth::Mat4::identity;
 };
 
 
@@ -421,8 +422,8 @@ class Graphics
 
 	Images images;
 
-	math::Mat4 view = math::Mat4::identity;
-	math::Mat4 proj = math::Mat4::identity;
+	mth::Mat4 view = mth::Mat4::identity;
+	mth::Mat4 proj = mth::Mat4::identity;
 };
 
 
