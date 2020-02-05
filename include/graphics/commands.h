@@ -32,9 +32,10 @@ class CommandBuffer
 
 	void begin_render_pass( RenderPass& rp, Framebuffer& fb );
 
-	void bind_vertex_buffer( Buffer& b );
+	void bind_vertex_buffer( Buffer& b, VkDeviceSize offset = 0 );
 	void bind_vertex_buffers( DynamicBuffer& db );
 
+	void bind_index_buffer( Buffer& b, VkDeviceSize offset = 0 );
 	void bind_index_buffer( DynamicBuffer& b );
 
 	void bind( GraphicsPipeline& p );

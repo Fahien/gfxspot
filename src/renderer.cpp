@@ -1,5 +1,7 @@
 #include "graphics/renderer.hpp"
 
+#include <cassert>
+
 #include "graphics/graphics.hpp"
 
 
@@ -7,12 +9,8 @@ namespace gfx
 {
 
 
-Renderer::Renderer( Device& d, Swapchain& s, PipelineLayout& ll, PipelineLayout& ml, PipelineLayout& mnil )
-: device { d }
-, swapchain { s }
-, line_layout { ll }
-, mesh_layout { ml }
-, mesh_no_image_layout { mnil }
+Renderer::Renderer( Graphics& g )
+: graphics { g }
 {}
 
 
@@ -75,9 +73,8 @@ std::vector<VkDescriptorPoolSize> get_mesh_pool_size( const uint32_t count )
 }
 
 
-MeshResources::MeshResources( Device& d, Swapchain& s, PipelineLayout& l, VkImageView image_view )
-: vertex_buffer { d, sizeof( Vertex ), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT }
-, index_buffer { d, sizeof( Index ), VK_BUFFER_USAGE_INDEX_BUFFER_BIT }
+MeshResources::MeshResources( Device& d, Swapchain& s, PipelineLayout& l, VkImageView image_view, GraphicsPipeline& p )
+: pipeline { p }
 , uniform_buffers {}
 , material_ubos {}
 , sampler { d }
@@ -161,7 +158,7 @@ void Renderer::add( const Triangle& rect )
 	{
 		auto[new_it, ok] = triangle_resources.emplace(
 			&rect,
-			Resources( device, swapchain, line_layout )
+			Resources( graphics.device, graphics.swapchain, graphics.line_layout )
 		);
 		if (ok)
 		{
@@ -189,7 +186,7 @@ void Renderer::add( const Rect& rect )
 	{
 		auto[new_it, ok] = rect_resources.emplace(
 			&rect,
-			Resources( device, swapchain, line_layout )
+			Resources( graphics.device, graphics.swapchain, graphics.line_layout )
 		);
 		if (ok)
 		{
@@ -209,6 +206,43 @@ void Renderer::add( const Rect& rect )
 }
 
 
+VkVertexInputBindingDescription get_bindings( const Primitive& p )
+{
+	VkVertexInputBindingDescription bindings = {};
+	bindings.binding = 0;
+	bindings.stride = p.stride;
+	bindings.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	return bindings;
+}
+
+std::vector<VkVertexInputAttributeDescription> get_attributes( const Primitive& primitive )
+{
+	std::vector<VkVertexInputAttributeDescription> attributes( 4 );
+
+	attributes[0].binding = 0;
+	attributes[0].location = 0;
+	attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributes[0].offset = offsetof( Vertex, p );
+
+	attributes[1].binding = 0;
+	attributes[1].location = 1;
+	attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributes[1].offset = offsetof( Vertex, n );
+
+	attributes[2].binding = 0;
+	attributes[2].location = 2;
+	attributes[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	attributes[2].offset = offsetof( Vertex, c );
+
+	attributes[3].binding = 0;
+	attributes[3].location = 3;
+	attributes[3].format = VK_FORMAT_R32G32_SFLOAT;
+	attributes[3].offset = offsetof( Vertex, t );
+
+	return attributes;
+}
+
+
 void Renderer::add( const Mesh& mesh )
 {
 	for( auto& primitive : mesh.primitives )
@@ -219,29 +253,29 @@ void Renderer::add( const Mesh& mesh )
 		// If not found, create new resources
 		if ( it == std::end( mesh_resources ) )
 		{
-			auto& layout = primitive.material->texture != VK_NULL_HANDLE ? mesh_layout : mesh_no_image_layout;
+			auto& layout = primitive.material->texture != VK_NULL_HANDLE ? graphics.mesh_layout : graphics.mesh_no_image_layout;
+			auto& vert = primitive.material->texture != VK_NULL_HANDLE ? graphics.mesh_vert : graphics.mesh_no_image_vert;
+			auto& frag = primitive.material->texture != VK_NULL_HANDLE ? graphics.mesh_frag : graphics.mesh_no_image_frag;
 
-			auto [new_it, ok] = mesh_resources.emplace(
-				&primitive,
-				MeshResources( device, swapchain, layout, primitive.material->texture )
+			/// @todo Creating a pipeline just for this primitive is overkill
+			/// Must opt for a caching methodology
+			auto pipeline = GraphicsPipeline(
+				get_bindings( primitive ),
+				get_attributes( primitive ),
+				layout,
+				vert,
+				frag,
+				graphics.render_pass,
+				graphics.viewport,
+				graphics.scissor
 			);
-			if (ok)
-			{
-				it = new_it;
-			}
-		}
 
-		// Vertices
-		auto& vertex_buffer = it->second.vertex_buffer;
-		vertex_buffer.set_count( primitive.vertices.size() );
-		vertex_buffer.upload( reinterpret_cast<const uint8_t*>( primitive.vertices.data() ) );
+			auto [pipe_it, pipe_ok] = pipelines.emplace( &primitive, std::move( pipeline ) );
+			assert( pipe_ok && "Cannot emplace pipeline" );
 
-		if ( !primitive.indices.empty() )
-		{
-			// Indices
-			auto& index_buffer = it->second.index_buffer;
-			index_buffer.set_count( primitive.indices.size() );
-			index_buffer.upload( reinterpret_cast<const uint8_t*>( primitive.indices.data() ) );
+			auto resource = MeshResources( graphics.device, graphics.swapchain, layout, primitive.material->texture, pipe_it->second );
+			auto [it, ok] = mesh_resources.emplace( &primitive, std::move( resource ) );
+			assert( ok && "Cannot emplace mesh resource" );
 		}
 	}
 }

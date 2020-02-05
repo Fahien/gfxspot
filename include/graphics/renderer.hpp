@@ -5,6 +5,7 @@
 #include "graphics/buffers.h"
 #include "graphics/descriptors.h"
 #include "graphics/images.h"
+#include "graphics/pipelines.h"
 
 namespace gfx
 {
@@ -16,11 +17,11 @@ struct Primitive;
 
 class Device;
 class Swapchain;
-class PipelineLayout;
+class Graphics;
 
 struct Resources
 {
-	Resources( Device& device, Swapchain& swapchain, PipelineLayout& l );
+	Resources( Device& d, Swapchain& s, PipelineLayout& l );
 
 	// Vertices and indices do not change, hence one is enough
 	DynamicBuffer vertex_buffer;
@@ -38,11 +39,9 @@ struct Resources
 
 struct MeshResources
 {
-	MeshResources( Device& device, Swapchain& swapchain, PipelineLayout& l, VkImageView image_view );
+	MeshResources( Device& d, Swapchain& s, PipelineLayout& l, VkImageView iv, GraphicsPipeline& p );
 
-	// Vertices and indices do not change, hence one is enough
-	DynamicBuffer vertex_buffer;
-	DynamicBuffer index_buffer;
+	GraphicsPipeline& pipeline;
 
 	// Uniform buffer for each swapchain image
 	std::vector<Buffer> uniform_buffers;
@@ -60,17 +59,13 @@ struct MeshResources
 class Renderer
 {
   public:
-	Renderer( Device& d, Swapchain& s, PipelineLayout& line_layout, PipelineLayout& mesh_layout, PipelineLayout& mesh_no_image_layout );
+	Renderer( Graphics& g );
 
 	void add( const Triangle& t );
 	void add( const Rect& r );
 	void add( const Mesh& m );
 
-	Device& device;
-	Swapchain& swapchain;
-	PipelineLayout& line_layout;
-	PipelineLayout& mesh_layout;
-	PipelineLayout& mesh_no_image_layout;
+	Graphics& graphics;
 
 	/// @brief Each model will have
 	/// - vertex buffer containing constant data about its vertices
@@ -79,6 +74,7 @@ class Renderer
 	std::unordered_map<const Rect*, Resources> rect_resources;
 	std::unordered_map<const Triangle*, Resources> triangle_resources;
 	std::unordered_map<const Primitive*, MeshResources> mesh_resources;
+	std::unordered_map<const Primitive*, GraphicsPipeline> pipelines;
 };
 
 }

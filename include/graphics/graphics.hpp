@@ -12,6 +12,7 @@
 #include "graphics/descriptors.h"
 #include "graphics/commands.h"
 #include "graphics/images.h"
+#include "graphics/pipelines.h"
 #include <spot/math/math.h>
 
 namespace mth = spot::math;
@@ -130,7 +131,15 @@ struct Primitive
 {
 	std::vector<Vertex> vertices = {};
 
+	gfx::Buffer* vertex_buffer = nullptr;
+	VkDeviceSize vertex_buffer_offset = 0;
+	uint32_t stride = 0;
+
 	std::vector<Index> indices = {};
+	uint32_t indices_count = 0;
+
+	gfx::Buffer* index_buffer = nullptr;
+	VkDeviceSize index_buffer_offset = 0;
 
 	Material* material = nullptr;
 
@@ -347,40 +356,6 @@ class ShaderModule
 	VkShaderModule handle = VK_NULL_HANDLE;
 };
 
-
-class PipelineLayout
-{
-  public:
-	PipelineLayout( Device& d, const std::vector<VkDescriptorSetLayoutBinding>& bindings );
-	~PipelineLayout();
-
-	Device& device;
-	DescriptorSetLayout descriptor_set_layout;
-
-	VkPipelineLayout handle = VK_NULL_HANDLE;
-};
-
-
-class GraphicsPipeline
-{
-  public:
-	GraphicsPipeline(
-		VkVertexInputBindingDescription bindings,
-		const std::vector<VkVertexInputAttributeDescription>& attributes,
-		PipelineLayout& layout,
-		ShaderModule& vert,
-		ShaderModule& frag,
-		RenderPass& render_pass,
-		const VkViewport& viewport,
-		const VkRect2D& scissor,
-		VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST );
-	~GraphicsPipeline();
-
-	GraphicsPipeline& operator=( GraphicsPipeline&& o );
-
-	Device& device;
-	VkPipeline handle = VK_NULL_HANDLE;
-};
 
 
 class Graphics

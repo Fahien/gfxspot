@@ -19,6 +19,7 @@ set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/descriptors.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/images.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/renderer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/pipelines.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/graphics.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw.cpp
 )

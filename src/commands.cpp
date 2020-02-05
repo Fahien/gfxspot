@@ -146,9 +146,9 @@ void CommandBuffer::set_scissor( const VkRect2D& scissor )
 }
 
 
-void CommandBuffer::bind_vertex_buffer( Buffer& buffer )
+void CommandBuffer::bind_vertex_buffer( Buffer& buffer, VkDeviceSize offset )
 {
-	VkDeviceSize offsets[] = { 0 };
+	VkDeviceSize offsets[] = { offset };
 	vkCmdBindVertexBuffers( handle, 0, 1, &buffer.handle, offsets );
 }
 
@@ -156,6 +156,12 @@ void CommandBuffer::bind_vertex_buffer( Buffer& buffer )
 void CommandBuffer::bind_vertex_buffers( DynamicBuffer& buffers )
 {
 	vkCmdBindVertexBuffers( handle, 0, 1, &buffers.handle, &buffers.offset );
+}
+
+
+void CommandBuffer::bind_index_buffer( Buffer& buffer, VkDeviceSize offset )
+{
+	vkCmdBindIndexBuffer( handle, buffer.handle, offset, VK_INDEX_TYPE_UINT16 );
 }
 
 
