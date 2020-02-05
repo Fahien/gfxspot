@@ -10,15 +10,25 @@ namespace gfx
 
 VkFormat get_format( Png& png )
 {
-	if ( png.color_type == PNG_COLOR_TYPE_RGB )
+	switch ( png.color_type )
+	{
+	case PNG_COLOR_TYPE_RGB:
 	{
 		if ( png.bit_depth == 8 && png.channels == 3 )
 		{
 			return VK_FORMAT_R8G8B8_UNORM;
 		}
 	}
-
-	assert( false && "Vulkan format not supported" );
+	case PNG_COLOR_TYPE_RGB_ALPHA:
+	{
+		if ( png.bit_depth == 8 && png.channels == 4 )
+		{
+			return VK_FORMAT_R8G8B8A8_UNORM;
+		}
+	}
+	default:
+		assert( false && "Vulkan format not supported" );
+	}
 
 	return VK_FORMAT_UNDEFINED;
 }

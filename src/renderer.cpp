@@ -73,17 +73,32 @@ std::vector<VkDescriptorPoolSize> get_mesh_pool_size( const uint32_t count )
 }
 
 
-MeshResources::MeshResources( Device& d, Swapchain& s, PipelineLayout& l, VkImageView image_view, GraphicsPipeline& p )
-: pipeline { p }
+MeshResources::MeshResources( Device& d, Swapchain& swapchain, PipelineLayout& l, const Primitive& primitive )
+: vertex_buffer { d, primitive.vertices.size() * sizeof( Vertex ), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT }
+, index_buffer { d, primitive.indices.size() * sizeof( Index ), VK_BUFFER_USAGE_INDEX_BUFFER_BIT }
 , uniform_buffers {}
 , material_ubos {}
 , sampler { d }
 , descriptor_pool { d,
-	get_mesh_pool_size( s.images.size() * 2 ),
-	uint32_t( s.images.size() * 2 ) }
-, descriptor_sets { descriptor_pool.allocate( l.descriptor_set_layout, s.images.size() ) }
+	get_mesh_pool_size( swapchain.images.size() * 2 ),
+	uint32_t( swapchain.images.size() * 2 ) }
+, descriptor_sets { descriptor_pool.allocate( l.descriptor_set_layout, swapchain.images.size() ) }
 {
-	for ( size_t i = 0; i < s.images.size(); ++i )
+	// Upload vertices
+	{
+		auto data = reinterpret_cast<const uint8_t*>( primitive.vertices.data() );
+		auto size = primitive.vertices.size() * sizeof( Vertex );
+		vertex_buffer.upload( data, size );
+	}
+
+	// Upload indices
+	{
+		auto data = reinterpret_cast<const uint8_t*>( primitive.indices.data() );
+		auto size = primitive.indices.size() * sizeof( Index );
+		index_buffer.upload( data, size );
+	}
+
+	for ( size_t i = 0; i < swapchain.images.size(); ++i )
 	{
 		uniform_buffers.emplace_back(
 			Buffer( d, sizeof( UniformBufferObject ), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT )
@@ -128,11 +143,12 @@ MeshResources::MeshResources( Device& d, Swapchain& s, PipelineLayout& l, VkImag
 		writes.emplace_back( mat_write );
 
 		VkDescriptorImageInfo image_info = {};
-		image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		image_info.imageView = image_view;
-		image_info.sampler = sampler.handle;
-		if ( image_view != VK_NULL_HANDLE )
+		if ( primitive.material->texture != VK_NULL_HANDLE )
 		{
+			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			image_info.imageView = primitive.material->texture;
+			image_info.sampler = sampler.handle;
+
 			VkWriteDescriptorSet write = {};
 			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			write.dstSet = descriptor_sets[i];
@@ -206,46 +222,9 @@ void Renderer::add( const Rect& rect )
 }
 
 
-VkVertexInputBindingDescription get_bindings( const Primitive& p )
-{
-	VkVertexInputBindingDescription bindings = {};
-	bindings.binding = 0;
-	bindings.stride = p.stride;
-	bindings.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-	return bindings;
-}
-
-std::vector<VkVertexInputAttributeDescription> get_attributes( const Primitive& primitive )
-{
-	std::vector<VkVertexInputAttributeDescription> attributes( 4 );
-
-	attributes[0].binding = 0;
-	attributes[0].location = 0;
-	attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-	attributes[0].offset = offsetof( Vertex, p );
-
-	attributes[1].binding = 0;
-	attributes[1].location = 1;
-	attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-	attributes[1].offset = offsetof( Vertex, n );
-
-	attributes[2].binding = 0;
-	attributes[2].location = 2;
-	attributes[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributes[2].offset = offsetof( Vertex, c );
-
-	attributes[3].binding = 0;
-	attributes[3].location = 3;
-	attributes[3].format = VK_FORMAT_R32G32_SFLOAT;
-	attributes[3].offset = offsetof( Vertex, t );
-
-	return attributes;
-}
-
-
 void Renderer::add( const Mesh& mesh )
 {
-	for( auto& primitive : mesh.primitives )
+	for ( auto& primitive : mesh.primitives )
 	{
 		// Find Vulkan resources associated to this mesh
 		auto it = mesh_resources.find( &primitive );
@@ -254,29 +233,12 @@ void Renderer::add( const Mesh& mesh )
 		if ( it == std::end( mesh_resources ) )
 		{
 			auto& layout = primitive.material->texture != VK_NULL_HANDLE ? graphics.mesh_layout : graphics.mesh_no_image_layout;
-			auto& vert = primitive.material->texture != VK_NULL_HANDLE ? graphics.mesh_vert : graphics.mesh_no_image_vert;
-			auto& frag = primitive.material->texture != VK_NULL_HANDLE ? graphics.mesh_frag : graphics.mesh_no_image_frag;
 
-			/// @todo Creating a pipeline just for this primitive is overkill
-			/// Must opt for a caching methodology
-			auto pipeline = GraphicsPipeline(
-				get_bindings( primitive ),
-				get_attributes( primitive ),
-				layout,
-				vert,
-				frag,
-				graphics.render_pass,
-				graphics.viewport,
-				graphics.scissor
-			);
-
-			auto [pipe_it, pipe_ok] = pipelines.emplace( &primitive, std::move( pipeline ) );
-			assert( pipe_ok && "Cannot emplace pipeline" );
-
-			auto resource = MeshResources( graphics.device, graphics.swapchain, layout, primitive.material->texture, pipe_it->second );
+			auto resource = MeshResources( graphics.device, graphics.swapchain, layout, primitive );
 			auto [it, ok] = mesh_resources.emplace( &primitive, std::move( resource ) );
 			assert( ok && "Cannot emplace mesh resource" );
 		}
+
 	}
 }
 

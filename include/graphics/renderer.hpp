@@ -39,9 +39,10 @@ struct Resources
 
 struct MeshResources
 {
-	MeshResources( Device& d, Swapchain& s, PipelineLayout& l, VkImageView iv, GraphicsPipeline& p );
+	MeshResources( Device& dv, Swapchain& sc, PipelineLayout& pl, const Primitive& prim );
 
-	GraphicsPipeline& pipeline;
+	Buffer vertex_buffer;
+	Buffer index_buffer;
 
 	// Uniform buffer for each swapchain image
 	std::vector<Buffer> uniform_buffers;

@@ -813,13 +813,19 @@ std::vector<VkDescriptorSetLayoutBinding> get_mesh_bindings()
 	ubo_binding.descriptorCount = 1;
 	ubo_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+	VkDescriptorSetLayoutBinding material_binding = {};
+	material_binding.binding = 1;
+	material_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	material_binding.descriptorCount = 1;
+	material_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
 	VkDescriptorSetLayoutBinding sampler_binding = {};
-	sampler_binding.binding = 1;
+	sampler_binding.binding = 2;
 	sampler_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	sampler_binding.descriptorCount = 1;
 	sampler_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	return { ubo_binding, sampler_binding };
+	return { ubo_binding, material_binding, sampler_binding };
 }
 
 
@@ -981,11 +987,12 @@ Graphics::Graphics()
 , graphics_queue { device.find_graphics_queue() }
 , present_queue { device.find_present_queue( surface.handle ) }
 , images { device }
+, models { *this }
 , view { look_at(
 	mth::Vec3( 2.0f, 2.0f, -2.0f ),
 	mth::Vec3( 0.0f, 0.0f, 0.0f ),
 	mth::Vec3( 0.0f, 1.0f, 0.0f ) ) }
-, proj { perspective( mth::radians( 60.0f ), swapchain.extent.width / float(swapchain.extent.height), 64.0f, 0.125f ) }
+, proj { perspective(  swapchain.extent.width / float(swapchain.extent.height), mth::radians( 60.0f ), 64.0f, 0.125f ) }
 {
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )
 	{
@@ -1064,10 +1071,11 @@ bool Graphics::render_begin()
 		framebuffers = frames.create_framebuffers( render_pass );
 
 		proj = perspective(
+			viewport.width / viewport.height,
 			mth::radians( 60.0f ),
-			viewport.width / float(viewport.height),
 			64.0f,
 			0.125f );
+		std::printf("New size [%f, %f]\n", viewport.width, viewport.height );
 
 		for ( auto& fence : frames_in_flight )
 		{
@@ -1171,14 +1179,15 @@ void Graphics::draw( Mesh& mesh )
 		auto& material_ubo = resources.material_ubos[current_frame_index];
 		material_ubo.upload( material_data, sizeof( Material::Ubo ) );
 
-		current_command_buffer->bind( resources.pipeline );
-		current_command_buffer->bind_vertex_buffer( *primitive.vertex_buffer, primitive.vertex_buffer_offset );
-		current_command_buffer->bind_index_buffer( *primitive.index_buffer, primitive.index_buffer_offset );
+		auto& pipeline = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_pipeline : mesh_pipeline;
+		current_command_buffer->bind( pipeline );
+		current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
+		current_command_buffer->bind_index_buffer( resources.index_buffer );
 
 		auto& layout = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_layout : mesh_layout;
 		auto& descriptor_set = resources.descriptor_sets[current_frame_index];
 		current_command_buffer->bind_descriptor_sets( layout, descriptor_set );
-		current_command_buffer->draw_indexed( primitive.indices_count );
+		current_command_buffer->draw_indexed( primitive.indices.size() );
 	}
 }
 

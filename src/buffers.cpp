@@ -12,6 +12,8 @@ namespace gfx
 Buffer::Buffer( Device& d, const VkDeviceSize size, const VkBufferUsageFlags usage )
 : device { d }
 {
+	assert( size > 0 && "Cannot create buffer of size 0" );
+
 	VkBufferCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	info.size = size;
