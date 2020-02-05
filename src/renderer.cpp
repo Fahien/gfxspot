@@ -7,11 +7,12 @@ namespace gfx
 {
 
 
-Renderer::Renderer( Device& d, Swapchain& s, PipelineLayout& ll, PipelineLayout& ml )
+Renderer::Renderer( Device& d, Swapchain& s, PipelineLayout& ll, PipelineLayout& ml, PipelineLayout& mnil )
 : device { d }
 , swapchain { s }
 , line_layout { ll }
 , mesh_layout { ml }
+, mesh_no_image_layout { mnil }
 {}
 
 
@@ -78,10 +79,11 @@ MeshResources::MeshResources( Device& d, Swapchain& s, PipelineLayout& l, VkImag
 : vertex_buffer { d, sizeof( Vertex ), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT }
 , index_buffer { d, sizeof( Index ), VK_BUFFER_USAGE_INDEX_BUFFER_BIT }
 , uniform_buffers {}
+, material_ubos {}
 , sampler { d }
 , descriptor_pool { d,
-	get_mesh_pool_size( s.images.size() ),
-	uint32_t( s.images.size() ) }
+	get_mesh_pool_size( s.images.size() * 2 ),
+	uint32_t( s.images.size() * 2 ) }
 , descriptor_sets { descriptor_pool.allocate( l.descriptor_set_layout, s.images.size() ) }
 {
 	for ( size_t i = 0; i < s.images.size(); ++i )
@@ -90,32 +92,61 @@ MeshResources::MeshResources( Device& d, Swapchain& s, PipelineLayout& l, VkImag
 			Buffer( d, sizeof( UniformBufferObject ), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT )
 		);
 
+		material_ubos.emplace_back(
+			Buffer( d, sizeof( Material::Ubo ), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT )
+		);
+
+		std::vector<VkWriteDescriptorSet> writes = {};
+
 		VkDescriptorBufferInfo buffer_info = {};
 		buffer_info.buffer = uniform_buffers[i].handle;
 		buffer_info.offset = 0;
 		buffer_info.range = sizeof( UniformBufferObject );
+	
+		VkWriteDescriptorSet write = {};
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.dstSet = descriptor_sets[i];
+		write.dstBinding = 0;
+		write.dstArrayElement = 0;
+		write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		write.descriptorCount = 1;
+		write.pBufferInfo = &buffer_info;
+
+		writes.emplace_back( write );
+
+		VkDescriptorBufferInfo mat_info = {};
+		mat_info.buffer = material_ubos[i].handle;
+		mat_info.offset = 0;
+		mat_info.range = sizeof( Material::Ubo );
+	
+		VkWriteDescriptorSet mat_write = {};
+		mat_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		mat_write.dstSet = descriptor_sets[i];
+		mat_write.dstBinding = 1;
+		mat_write.dstArrayElement = 0;
+		mat_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		mat_write.descriptorCount = 1;
+		mat_write.pBufferInfo = &mat_info;
+
+		writes.emplace_back( mat_write );
 
 		VkDescriptorImageInfo image_info = {};
 		image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		image_info.imageView = image_view;
 		image_info.sampler = sampler.handle;
+		if ( image_view != VK_NULL_HANDLE )
+		{
+			VkWriteDescriptorSet write = {};
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = descriptor_sets[i];
+			write.dstBinding = 2;
+			write.dstArrayElement = 0;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			write.descriptorCount = 1;
+			write.pImageInfo = &image_info;
 
-		std::array<VkWriteDescriptorSet, 2> writes = {};
-		writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writes[0].dstSet = descriptor_sets[i];
-		writes[0].dstBinding = 0;
-		writes[0].dstArrayElement = 0;
-		writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		writes[0].descriptorCount = 1;
-		writes[0].pBufferInfo = &buffer_info;
-
-		writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writes[1].dstSet = descriptor_sets[i];
-		writes[1].dstBinding = 1;
-		writes[1].dstArrayElement = 0;
-		writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		writes[1].descriptorCount = 1;
-		writes[1].pImageInfo = &image_info;
+			writes.emplace_back( write );
+		}
 
 		vkUpdateDescriptorSets( d.handle, writes.size(), writes.data(), 0, nullptr );
 	}
@@ -180,29 +211,39 @@ void Renderer::add( const Rect& rect )
 
 void Renderer::add( const Mesh& mesh )
 {
-	// Find Vulkan resources associated to this mesh
-	auto it = mesh_resources.find( &mesh );
-	if ( it == std::end( mesh_resources ) )
+	for( auto& primitive : mesh.primitives )
 	{
-		auto[new_it, ok] = mesh_resources.emplace(
-			&mesh,
-			MeshResources( device, swapchain, mesh_layout, mesh.image_view )
-		);
-		if (ok)
+		// Find Vulkan resources associated to this mesh
+		auto it = mesh_resources.find( &primitive );
+
+		// If not found, create new resources
+		if ( it == std::end( mesh_resources ) )
 		{
-			it = new_it;
+			auto& layout = primitive.material->texture != VK_NULL_HANDLE ? mesh_layout : mesh_no_image_layout;
+
+			auto [new_it, ok] = mesh_resources.emplace(
+				&primitive,
+				MeshResources( device, swapchain, layout, primitive.material->texture )
+			);
+			if (ok)
+			{
+				it = new_it;
+			}
+		}
+
+		// Vertices
+		auto& vertex_buffer = it->second.vertex_buffer;
+		vertex_buffer.set_count( primitive.vertices.size() );
+		vertex_buffer.upload( reinterpret_cast<const uint8_t*>( primitive.vertices.data() ) );
+
+		if ( !primitive.indices.empty() )
+		{
+			// Indices
+			auto& index_buffer = it->second.index_buffer;
+			index_buffer.set_count( primitive.indices.size() );
+			index_buffer.upload( reinterpret_cast<const uint8_t*>( primitive.indices.data() ) );
 		}
 	}
-
-	// Vertices
-	auto& vertex_buffer = it->second.vertex_buffer;
-	vertex_buffer.set_count( mesh.vertices.size() );
-	vertex_buffer.upload( reinterpret_cast<const uint8_t*>( mesh.vertices.data() ) );
-
-	// Indices
-	auto& index_buffer = it->second.index_buffer;
-	index_buffer.set_count( mesh.indices.size() );
-	index_buffer.upload( reinterpret_cast<const uint8_t*>( mesh.indices.data() ) );
 }
 
 

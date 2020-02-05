@@ -24,6 +24,8 @@ set( SHADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/line.frag
 	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/mesh.vert
 	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/mesh.frag
+	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/mesh-no-image.vert
+	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/mesh-no-image.frag
 )
 
 # Compile each shader

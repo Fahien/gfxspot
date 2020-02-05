@@ -119,7 +119,7 @@ void CommandBuffer::begin_render_pass( RenderPass& render_pass, Framebuffer& fra
 	info.renderArea.extent = framebuffer.extent;
 
 	std::array<VkClearValue, 2> clears;
-	clears[0].color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	clears[0].color = { .2f, .2f, .2f, 1.0f };
 	clears[1].depthStencil = { 1.0f, 0 };
 	info.clearValueCount = clears.size();
 	info.pClearValues = clears.data();

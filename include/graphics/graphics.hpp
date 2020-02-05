@@ -34,9 +34,10 @@ struct alignas(16) Color
 };
 
 
-struct alignas(16) Point
+struct alignas(16) Vec3
 {
-	Point( float xx = 0.0f, float yy = 0.0f, float zz = 0.0f );
+	Vec3( float xx = 0.0f, float yy = 0.0f, float zz = 0.0f )
+	: x { xx }, y { yy }, z { zz } {}
 
 	float x = 0.0f;
 	float y = 0.0f;
@@ -46,16 +47,16 @@ struct alignas(16) Point
 
 struct alignas(16) Dot
 {
-	Dot( Point pp = {}, Color cc = { 1.0f } ) : p { pp }, c { cc } {}
+	Dot( Vec3 pp = {}, Color cc = { 1.0f } ) : p { pp }, c { cc } {}
 
-	Point p = {};
+	Vec3  p = {};
 	Color c = {};
 };
 
 
-struct alignas(16) Coord
+struct alignas(16) Vec2
 {
-	Coord( float xx = 0.0f, float yy = 0.0f ) : x { xx }, y { yy } {}
+	Vec2( float xx = 0.0f, float yy = 0.0f ) : x { xx }, y { yy } {}
 
 	float x = 0.0f;
 	float y = 0.0f;
@@ -64,11 +65,12 @@ struct alignas(16) Coord
 
 struct alignas(16) Vertex
 {
-	Vertex( Point pp = {}, Color cc = { 1.0f, 1.0f, 1.0f, 1.0f }, Coord tc = {} ) : p { pp }, c { cc }, t { tc } {}
+	Vertex( Vec3 pp = {}, Color cc = { 1.0f, 1.0f, 1.0f, 1.0f }, Vec2 tc = {} ) : p { pp }, c { cc }, t { tc } {}
 
-	Point p = {};
+	Vec3  p = {};
+	Vec3  n = { 1.0f, 1.0f, 1.0f };
 	Color c = {};
-	Coord t = {};
+	Vec2  t = {};
 };
 
 
@@ -77,6 +79,20 @@ struct alignas(16) UniformBufferObject
 	mth::Mat4 model = mth::Mat4::identity;
 	mth::Mat4 view  = mth::Mat4::identity;
 	mth::Mat4 proj  = mth::Mat4::identity;
+};
+
+
+struct Material
+{
+	struct alignas(16) Ubo
+	{
+		Color color;
+		float metallic;
+		float roughness;
+		float ambient_occlusion;
+	} ubo;
+
+	VkImageView texture = VK_NULL_HANDLE;
 };
 
 
@@ -110,15 +126,22 @@ struct Rect
 };
 
 
-struct Mesh
+struct Primitive
 {
 	std::vector<Vertex> vertices = {};
 
 	std::vector<Index> indices = {};
 
-	UniformBufferObject ubo = {};
+	Material* material = nullptr;
 
-	VkImageView image_view = VK_NULL_HANDLE;
+	/// @todo move this somewhere else
+	UniformBufferObject ubo = {};
+};
+
+
+struct Mesh
+{
+	std::vector<Primitive> primitives;
 };
 
 
@@ -390,7 +413,11 @@ class Graphics
 
 	ShaderModule mesh_vert;
 	ShaderModule mesh_frag;
+	ShaderModule mesh_no_image_vert;
+	ShaderModule mesh_no_image_frag;
+
 	PipelineLayout mesh_layout;
+	PipelineLayout mesh_no_image_layout;
 
 	VkViewport viewport = {};
 	VkRect2D   scissor  = {};
@@ -398,6 +425,7 @@ class Graphics
 	GraphicsPipeline line_pipeline;
 	GraphicsPipeline dot_pipeline;
 	GraphicsPipeline mesh_pipeline;
+	GraphicsPipeline mesh_no_image_pipeline;
 
 	Renderer renderer;
 

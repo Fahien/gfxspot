@@ -12,6 +12,7 @@ namespace gfx
 struct Rect;
 struct Triangle;
 struct Mesh;
+struct Primitive;
 
 class Device;
 class Swapchain;
@@ -45,6 +46,7 @@ struct MeshResources
 
 	// Uniform buffer for each swapchain image
 	std::vector<Buffer> uniform_buffers;
+	std::vector<Buffer> material_ubos;
 
 	//ImageView image_view;
 	Sampler sampler;
@@ -58,7 +60,7 @@ struct MeshResources
 class Renderer
 {
   public:
-	Renderer( Device& d, Swapchain& s, PipelineLayout& line_layout, PipelineLayout& mesh_layout );
+	Renderer( Device& d, Swapchain& s, PipelineLayout& line_layout, PipelineLayout& mesh_layout, PipelineLayout& mesh_no_image_layout );
 
 	void add( const Triangle& t );
 	void add( const Rect& r );
@@ -68,6 +70,7 @@ class Renderer
 	Swapchain& swapchain;
 	PipelineLayout& line_layout;
 	PipelineLayout& mesh_layout;
+	PipelineLayout& mesh_no_image_layout;
 
 	/// @brief Each model will have
 	/// - vertex buffer containing constant data about its vertices
@@ -75,7 +78,7 @@ class Renderer
 	/// - DescriptorPool and DescriptorSet per swapchain image
 	std::unordered_map<const Rect*, Resources> rect_resources;
 	std::unordered_map<const Triangle*, Resources> triangle_resources;
-	std::unordered_map<const Mesh*, MeshResources> mesh_resources;
+	std::unordered_map<const Primitive*, MeshResources> mesh_resources;
 };
 
 }

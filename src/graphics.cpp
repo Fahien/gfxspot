@@ -12,9 +12,6 @@ namespace gfx
 {
 
 
-Point::Point( float xx, float yy, float zz ) : x { xx }, y { yy }, z { zz } {}
-
-
 Rect::Rect( Dot bottom_left, Dot top_right )
 : dots {
 		bottom_left,
@@ -58,7 +55,7 @@ std::vector<VkVertexInputAttributeDescription> get_attributes<Dot>()
 template <>
 std::vector<VkVertexInputAttributeDescription> get_attributes<Vertex>()
 {
-	std::vector<VkVertexInputAttributeDescription> attributes( 3 );
+	std::vector<VkVertexInputAttributeDescription> attributes( 4 );
 
 	attributes[0].binding = 0;
 	attributes[0].location = 0;
@@ -67,13 +64,18 @@ std::vector<VkVertexInputAttributeDescription> get_attributes<Vertex>()
 
 	attributes[1].binding = 0;
 	attributes[1].location = 1;
-	attributes[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributes[1].offset = offsetof( Vertex, c );
+	attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributes[1].offset = offsetof( Vertex, n );
 
 	attributes[2].binding = 0;
 	attributes[2].location = 2;
-	attributes[2].format = VK_FORMAT_R32G32_SFLOAT;
-	attributes[2].offset = offsetof( Vertex, t );
+	attributes[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	attributes[2].offset = offsetof( Vertex, c );
+
+	attributes[3].binding = 0;
+	attributes[3].location = 3;
+	attributes[3].format = VK_FORMAT_R32G32_SFLOAT;
+	attributes[3].offset = offsetof( Vertex, t );
 
 	return attributes;
 }
@@ -828,7 +830,7 @@ GraphicsPipeline::GraphicsPipeline(
 	rasterizer_info.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizer_info.lineWidth = 1.0f;
 	rasterizer_info.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizer_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizer_info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer_info.depthBiasEnable = VK_FALSE;
 	rasterizer_info.depthBiasConstantFactor = 0.0f;
 	rasterizer_info.depthBiasClamp = 0.0f;
@@ -990,14 +992,34 @@ std::vector<VkDescriptorSetLayoutBinding> get_mesh_bindings()
 }
 
 
+std::vector<VkDescriptorSetLayoutBinding> get_mesh_no_image_bindings()
+{
+	VkDescriptorSetLayoutBinding ubo_binding = {};
+	ubo_binding.binding = 0;
+	ubo_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	ubo_binding.descriptorCount = 1;
+	ubo_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayoutBinding material_binding = {};
+	material_binding.binding = 1;
+	material_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	material_binding.descriptorCount = 1;
+	material_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	return { ubo_binding, material_binding };
+}
+
+
 mth::Mat4 perspective( const float a, const float y, const float f, const float n )
 {
+	assert( f > n && "Far should be greater than near" );
+
 	mth::Mat4 proj = {};
 
 	// Calculate projection matrix
 	float cotfov = 1.0f / std::tan( 0.5f * y );
 	proj[0] = cotfov / a;
-	proj[5] = cotfov;
+	proj[5] = -cotfov;
 	proj[10] = -( n + f ) / ( f - n );
 	proj[14] = -2.0f * n * f / ( f - n );
 	proj[11] = -1.0f;
@@ -1077,7 +1099,10 @@ Graphics::Graphics()
 , line_layout { device, get_line_bindings() }
 , mesh_vert { device, "test/shader/mesh.vert.spv" }
 , mesh_frag { device, "test/shader/mesh.frag.spv" }
+, mesh_no_image_vert { device, "test/shader/mesh-no-image.vert.spv" }
+, mesh_no_image_frag { device, "test/shader/mesh-no-image.frag.spv" }
 , mesh_layout { device, get_mesh_bindings() }
+, mesh_no_image_layout { device, get_mesh_no_image_bindings() }
 , viewport { create_viewport( window ) }
 , scissor { create_scissor( window ) }
 , line_pipeline {
@@ -1107,8 +1132,18 @@ Graphics::Graphics()
 	mesh_vert,
 	mesh_frag,
 	render_pass,
-	viewport, scissor }
-, renderer { device, swapchain, line_layout, mesh_layout }
+	viewport,
+	scissor }
+, mesh_no_image_pipeline {
+	get_bindings<Vertex>(),
+	get_attributes<Vertex>(),
+	mesh_no_image_layout,
+	mesh_no_image_vert,
+	mesh_no_image_frag,
+	render_pass,
+	viewport,
+	scissor }
+, renderer { device, swapchain, line_layout, mesh_layout, mesh_no_image_layout }
 , command_pool { device }
 , command_buffers { command_pool.allocate_command_buffers( swapchain.images.size() ) }
 , framebuffers { frames.create_framebuffers( render_pass ) }
@@ -1116,10 +1151,10 @@ Graphics::Graphics()
 , present_queue { device.find_present_queue( surface.handle ) }
 , images { device }
 , view { look_at(
-	mth::Vec3( 0.0f, 5.0f, -3.0f ),
-	mth::Vec3( 0.0f, -1.0f, 0.0f ),
+	mth::Vec3( 2.0f, 2.0f, -2.0f ),
+	mth::Vec3( 0.0f, 0.0f, 0.0f ),
 	mth::Vec3( 0.0f, 1.0f, 0.0f ) ) }
-, proj { ortho( -1.0f, 1.0f, -1.0f, 1.0f, 0.125f, 8.0f ) }
+, proj { perspective( mth::radians( 60.0f ), swapchain.extent.width / float(swapchain.extent.height), 64.0f, 0.125f ) }
 {
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )
 	{
@@ -1184,9 +1219,24 @@ bool Graphics::render_begin()
 			render_pass,
 			viewport,
 			scissor );
+		mesh_no_image_pipeline = GraphicsPipeline(
+			get_bindings<Vertex>(),
+			get_attributes<Vertex>(),
+			mesh_no_image_layout,
+			mesh_no_image_vert,
+			mesh_no_image_frag,
+			render_pass,
+			viewport,
+			scissor );
 
 		frames = Frames( swapchain );
 		framebuffers = frames.create_framebuffers( render_pass );
+
+		proj = perspective(
+			mth::radians( 60.0f ),
+			viewport.width / float(viewport.height),
+			64.0f,
+			0.125f );
 
 		for ( auto& fence : frames_in_flight )
 		{
@@ -1272,25 +1322,34 @@ void Graphics::draw( Rect& rect )
 
 void Graphics::draw( Mesh& mesh )
 {
-	auto pair = renderer.mesh_resources.find( &mesh );
-	assert( pair != std::end( renderer.mesh_resources ) && "Cannot find resources for a mesh" );
+	for( auto& primitive : mesh.primitives )
+	{
+		auto pair = renderer.mesh_resources.find( &primitive );
+		assert( pair != std::end( renderer.mesh_resources ) && "Cannot find resources for a mesh" );
 
-	auto& resources = pair->second;
+		auto& resources = pair->second;
 
-	mesh.ubo.view = view;
-	mesh.ubo.proj = proj;
+		primitive.ubo.view = view;
+		primitive.ubo.proj = proj;
 
-	auto data = reinterpret_cast<const uint8_t*>( &mesh.ubo );
-	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
-	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
+		auto data = reinterpret_cast<const uint8_t*>( &primitive.ubo );
+		auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
+		uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
-	current_command_buffer->bind( mesh_pipeline );
-	current_command_buffer->bind_vertex_buffers( resources.vertex_buffer );
-	current_command_buffer->bind_index_buffer( resources.index_buffer );
+		auto material_data = reinterpret_cast<const uint8_t*>( &primitive.material->ubo );
+		auto& material_ubo = resources.material_ubos[current_frame_index];
+		material_ubo.upload( material_data, sizeof( Material::Ubo ) );
 
-	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
-	current_command_buffer->bind_descriptor_sets( mesh_layout, descriptor_set );
-	current_command_buffer->draw_indexed( resources.index_buffer.count() );
+		auto& pipeline = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_pipeline : mesh_pipeline;
+		current_command_buffer->bind( pipeline );
+		current_command_buffer->bind_vertex_buffers( resources.vertex_buffer );
+		current_command_buffer->bind_index_buffer( resources.index_buffer );
+
+		auto& layout = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_layout : mesh_layout;
+		auto& descriptor_set = resources.descriptor_sets[current_frame_index];
+		current_command_buffer->bind_descriptor_sets( layout, descriptor_set );
+		current_command_buffer->draw_indexed( resources.index_buffer.count() );
+	}
 }
 
 

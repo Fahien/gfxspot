@@ -25,31 +25,35 @@ gfx::Mesh create_quad()
 
 	Mesh quad;
 
-	quad.vertices = {
+	Primitive primitive;
+
+	primitive.vertices = {
 		Vertex(
-			Point( -0.5f, -0.5f, 0.0f ),
+			Vec3( -0.5f, -0.5f, 0.0f ),
 			Color( 0.3f, 0.0f, 0.0f, 0.5f ),
-			Coord( 0.0f, 0.0 ) // a
+			Vec2( 0.0f, 0.0 ) // a
 		),
 		Vertex(
-			Point( 0.5f, -0.5f, 0.0f ),
+			Vec3( 0.5f, -0.5f, 0.0f ),
 			Color( 0.0f, 0.3f, 0.0f, 0.5f ),
-			Coord( 1.0f, 0.0 ) // b
+			Vec2( 1.0f, 0.0 ) // b
 		),
 		Vertex(
-			Point( -0.5f, 0.5f, 0.0f ),
+			Vec3( -0.5f, 0.5f, 0.0f ),
 			Color( 0.3f, 0.0f, 0.3f, 0.5f ),
-			Coord( 0.0f, 1.0 ) // d
+			Vec2( 0.0f, 1.0 ) // d
 		),
 		Vertex(
-			Point( 0.5f, 0.5f, 0.0f ),
+			Vec3( 0.5f, 0.5f, 0.0f ),
 			Color( 0.0f, 0.0f, 0.3f, 0.5f ),
-			Coord( 1.0f, 1.0 ) // c
+			Vec2( 1.0f, 1.0 ) // c
 		),
 	};
 
 	// Currently, counterclockwise?
-	quad.indices = { 0, 2, 1, 1, 2, 3 };
+	primitive.indices = { 0, 2, 1, 1, 2, 3 };
+
+	quad.primitives.emplace_back( std::move( primitive ) );
 
 	return quad;
 }
@@ -63,16 +67,19 @@ int main()
 
 	auto view = graphics.images.load( "img/lena.png" );
 	auto quad = create_quad();
-	quad.image_view = view;
+
+	Material material;
+	material.texture = view;
+	quad.primitives[0].material = &material;
 
 	auto square = Rect(
-		Dot( Point( -0.5f, -0.5f ) ),
-		Dot( Point( 0.5f, 0.5f ) ) );
+		Dot( Vec3( -0.5f, -0.5f ) ),
+		Dot( Vec3( 0.5f, 0.5f ) ) );
 	
 	auto triangle = Triangle(
-		Dot( Point( 0.5f, 0.0f, -1.0f ) ),
-		Dot( Point( -0.5f, 0.0f, -1.0f ) ),
-		Dot( Point( 0.0f, 0.0f, 0.0f ) ) );
+		Dot( Vec3( 0.5f, 0.0f, -1.0f ) ),
+		Dot( Vec3( -0.5f, 0.0f, -1.0f ) ),
+		Dot( Vec3( 0.0f, 0.0f, 0.0f ) ) );
 
 	graphics.renderer.add( square );
 	graphics.renderer.add( triangle );
@@ -85,7 +92,7 @@ int main()
 
 		update(dt, triangle.ubo);
 		update(dt, square.ubo);
-		update(dt, quad.ubo);
+		update(dt, quad.primitives[0].ubo);
 
 		if ( graphics.render_begin() )
 		{

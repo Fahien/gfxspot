@@ -197,8 +197,11 @@ DynamicBuffer& DynamicBuffer::operator=( DynamicBuffer&& other )
 
 void DynamicBuffer::set_count( const uint32_t count )
 {
-	create_buffers( count );
-	element_count = count;
+	if ( count > 0 )
+	{
+		create_buffers( count );
+		element_count = count;
+	}
 }
 
 
