@@ -1075,7 +1075,6 @@ bool Graphics::render_begin()
 			mth::radians( 60.0f ),
 			64.0f,
 			0.125f );
-		std::printf("New size [%f, %f]\n", viewport.width, viewport.height );
 
 		for ( auto& fence : frames_in_flight )
 		{

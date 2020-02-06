@@ -18,7 +18,7 @@ class Graphics;
 class Buffer;
 
 
-struct alignas(16) Color
+struct Color
 {
 	Color( float rr = 0.0f, float gg = 0.0f, float bb = 0.0f, float aa = 1.0f )
 	: r { rr }, g { gg }, b { bb }, a { aa } {}
@@ -44,7 +44,7 @@ struct Material
 };
 
 
-struct alignas(16) Vec2
+struct Vec2
 {
 	Vec2( float xx = 0.0f, float yy = 0.0f ) : x { xx }, y { yy } {}
 
@@ -52,7 +52,7 @@ struct alignas(16) Vec2
 	float y = 0.0f;
 };
 
-struct alignas(16) Vec3
+struct Vec3
 {
 	Vec3( float xx = 0.0f, float yy = 0.0f, float zz = 0.0f )
 	: x { xx }, y { yy }, z { zz } {}
@@ -61,7 +61,6 @@ struct alignas(16) Vec3
 	float y = 0.0f;
 	float z = 0.0f;
 };
-
 
 
 struct alignas(16) Vertex
@@ -83,22 +82,20 @@ struct alignas(16) UniformBufferObject
 };
 
 
+/// @todo Change this, as indices can be of different sizes
 using Index = uint16_t;
 
+
+/// @brief A primitives has a central role in rendering
+/// as it stores vertices, indices, and the material
 struct Primitive
 {
+	/// Vertices and indices do not change
 	std::vector<Vertex> vertices = {};
-
-	gfx::Buffer* vertex_buffer = nullptr;
-	VkDeviceSize vertex_buffer_offset = 0;
-	uint32_t stride = 0;
-
 	std::vector<Index> indices = {};
-	uint32_t indices_count = 0;
 
-	gfx::Buffer* index_buffer = nullptr;
-	VkDeviceSize index_buffer_offset = 0;
-
+	/// A material use to draw the primitive
+	/// It can change at runtime
 	Material* material = nullptr;
 
 	/// @todo move this somewhere else
@@ -106,29 +103,30 @@ struct Primitive
 };
 
 
+/// @brief A mesh is just a collection of primitives
 struct Mesh
 {
 	std::vector<Primitive> primitives;
 };
 
 
-
+/// @brief Models stores everything needed by a scene loaded into the engine
+/// Images, materials, meshes, etcetera
 class Models
 {
   public:
 	Models( Graphics& g );
 
-	spot::gltf::Gltf& load( const std::string& path );
+	void load( const std::string& path );
 
 	Graphics& graphics;
 
 	Images images;
 
+	/// Materials can be referred by multiple primitives
 	std::vector<gfx::Material> materials;
 
 	std::vector<gfx::Mesh> meshes;
-
-	std::vector<spot::gltf::Gltf> models;
 };
 
 

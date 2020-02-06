@@ -15,7 +15,7 @@ Models::Models( Graphics& g )
 {}
 
 
-spot::gltf::Gltf& Models::load( const std::string& path )
+void Models::load( const std::string& path )
 {
 	auto model = spot::gltf::Gltf::load( path );
 
@@ -70,8 +70,8 @@ spot::gltf::Gltf& Models::load( const std::string& path )
 			for ( auto [semantic, accessor] : attributes )
 			{
 				auto data = accessor->get_data();
-				auto stride = accessor->get_stride();
 				auto elem_size = accessor->get_size() / accessor->count;
+				auto stride = accessor->get_stride();
 
 				if ( primitive.vertices.empty() )
 				{
@@ -82,6 +82,11 @@ spot::gltf::Gltf& Models::load( const std::string& path )
 				{
 				case spot::gltf::Mesh::Primitive::Semantic::POSITION:
 				{
+					if ( stride == 0 )
+					{
+						stride = sizeof( Vec3 );
+					}
+				
 					for ( size_t i = 0; i < accessor->count; ++i )
 					{
 						auto& vert = primitive.vertices[i];
@@ -95,6 +100,11 @@ spot::gltf::Gltf& Models::load( const std::string& path )
 				}
 				case spot::gltf::Mesh::Primitive::Semantic::NORMAL:
 				{
+					if ( stride == 0 )
+					{
+						stride = sizeof( Vec3 );
+					}
+
 					for ( size_t i = 0; i < accessor->count; ++i )
 					{
 						auto& vert = primitive.vertices[i];
@@ -108,6 +118,11 @@ spot::gltf::Gltf& Models::load( const std::string& path )
 				}
 				case spot::gltf::Mesh::Primitive::Semantic::TEXCOORD_0:
 				{
+					if ( stride == 0 )
+					{
+						stride = sizeof( Vec2 );
+					}
+
 					for ( size_t i = 0; i < accessor->count; ++i )
 					{
 						auto& vert = primitive.vertices[i];
@@ -121,6 +136,11 @@ spot::gltf::Gltf& Models::load( const std::string& path )
 				}
 				case spot::gltf::Mesh::Primitive::Semantic::COLOR_0:
 				{
+					if ( stride == 0 )
+					{
+						stride = sizeof( Color );
+					}
+
 					for ( size_t i = 0; i < accessor->count; ++i )
 					{
 						auto& vert = primitive.vertices[i];
