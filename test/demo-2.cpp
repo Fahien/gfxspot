@@ -21,11 +21,11 @@ void update( const double dt, gfx::UniformBufferObject& ubo )
 }
 
 
-gfx::Mesh create_quad()
+gfx::Mesh create_bugart()
 {
 	using namespace spot::gfx;
 
-	Mesh quad;
+	Mesh bugart;
 
 	Primitive primitive;
 
@@ -113,9 +113,9 @@ gfx::Mesh create_quad()
 	primitive.vertices[i++].c = { 0.99983,  0.00069,  0.02421,  0.00086 };
 	primitive.vertices[i++].c = { 0.01746,  0.99574,  0.36206,  0.02171 };
 
-	quad.primitives.emplace_back( std::move( primitive ) );
+	bugart.primitives.emplace_back( std::move( primitive ) );
 
-	return quad;
+	return bugart;
 }
 
 
@@ -125,27 +125,24 @@ int main()
 
 	auto graphics = Graphics();
 
-	auto quad = create_quad();
+	auto bugart = create_bugart();
 
 	Material material;
 	material.ubo.color = { 0.8f, 0.8f, 0.8f, 1.0f };
+	bugart.primitives[0].material = &material;
 
-	std::for_each( std::begin( quad.primitives ), std::end( quad.primitives ), [&material]( auto& p ) {
-		p.material = &material;
-	});
-
-	graphics.renderer.add( quad );
+	graphics.renderer.add( bugart );
 
 	while ( graphics.window.is_alive() )
 	{
 		graphics.glfw.poll();
 		auto dt = graphics.glfw.get_delta();
 
-		update(dt, quad.primitives[0].ubo);
+		update( dt, bugart.primitives[0].ubo );
 
 		if ( graphics.render_begin() )
 		{
-			graphics.draw( quad );
+			graphics.draw( bugart );
 			graphics.render_end();
 		}
 	}
