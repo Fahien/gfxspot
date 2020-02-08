@@ -1073,7 +1073,7 @@ bool Graphics::render_begin()
 		proj = perspective(
 			viewport.width / viewport.height,
 			mth::radians( 60.0f ),
-			64.0f,
+			128.0f,
 			0.125f );
 
 		for ( auto& fence : frames_in_flight )

@@ -5,6 +5,9 @@
 #include <string>
 
 #include <vulkan/vulkan_core.h>
+#include <spot/math/math.h>
+
+namespace mth = spot::math;
 
 struct GLFWwindow;
 
@@ -43,6 +46,8 @@ class Glfw
 		GLFWwindow* handle = nullptr;
 
 		VkExtent2D extent = { 600, 600 };
+
+		mth::Vec2 scroll = {};
 
 		class Surface
 		{

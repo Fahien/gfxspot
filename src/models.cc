@@ -84,7 +84,7 @@ void Models::load( const std::string& path )
 				{
 					if ( stride == 0 )
 					{
-						stride = 16;//sizeof( Vec3 );
+						stride = sizeof( Vec3 );
 					}
 				
 					for ( size_t i = 0; i < accessor->count; ++i )
@@ -102,7 +102,7 @@ void Models::load( const std::string& path )
 				{
 					if ( stride == 0 )
 					{
-						stride = 16;// sizeof( Vec3 );
+						stride = sizeof( Vec3 );
 					}
 
 					for ( size_t i = 0; i < accessor->count; ++i )
@@ -120,7 +120,7 @@ void Models::load( const std::string& path )
 				{
 					if ( stride == 0 )
 					{
-						stride = 16;//sizeof( Vec2 );
+						stride = sizeof( Vec2 );
 					}
 
 					for ( size_t i = 0; i < accessor->count; ++i )

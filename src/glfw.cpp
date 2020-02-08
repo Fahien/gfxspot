@@ -1,7 +1,6 @@
 #include <graphics/glfw.hpp>
 
 #include <cassert>
-
 #include <GLFW/glfw3.h>
 
 #include "graphics/graphics.hpp"
@@ -50,6 +49,13 @@ void set_window_size( GLFWwindow* handle, const int width, const int height )
 	window->extent.height = height;
 }
 
+void scroll_callback( GLFWwindow* handle, double xoffset, double yoffset )
+{
+	auto window = reinterpret_cast<Glfw::Window*>( glfwGetWindowUserPointer( handle ) );
+	window->scroll.x = xoffset;
+	window->scroll.y = yoffset;
+}
+
 
 Glfw::Window::Window()
 {
@@ -59,6 +65,7 @@ Glfw::Window::Window()
 	// Resize callback
 	glfwSetWindowUserPointer( handle, this );
 	glfwSetWindowSizeCallback( handle, set_window_size );
+	glfwSetScrollCallback( handle, scroll_callback );
 }
 
 
@@ -70,6 +77,8 @@ Glfw::Window::~Window()
 
 bool Glfw::Window::is_alive()
 {
+	// Reset internal state
+	scroll = {};
 	return !glfwWindowShouldClose( handle );
 }
 
