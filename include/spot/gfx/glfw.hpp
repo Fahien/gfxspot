@@ -11,7 +11,7 @@ namespace mth = spot::math;
 
 struct GLFWwindow;
 
-namespace gfx
+namespace spot::gfx
 {
 
 

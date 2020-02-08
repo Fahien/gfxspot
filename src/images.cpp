@@ -1,11 +1,11 @@
-#include "graphics/images.h"
+#include "spot/gfx/images.h"
 
 #include <cassert>
 
-#include "graphics/png.h"
-#include "graphics/graphics.hpp"
+#include "spot/gfx/png.h"
+#include "spot/gfx/graphics.hpp"
 
-namespace gfx
+namespace spot::gfx
 {
 
 VkFormat get_format( Png& png )
@@ -312,4 +312,4 @@ VkImageView Images::load( const char* path )
 }
 
 
-} // namespace gfx
+} // namespace spot::gfx

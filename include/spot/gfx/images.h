@@ -4,10 +4,10 @@
 
 #include <vulkan/vulkan_core.h>
 
-#include "graphics/commands.h"
+#include "spot/gfx/commands.h"
 
 
-namespace gfx
+namespace spot::gfx
 {
 
 class Device;
@@ -85,4 +85,4 @@ class Images
 };
 
 
-} // namespace gfx
+} // namespace spot::gfx

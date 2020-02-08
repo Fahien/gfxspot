@@ -2,9 +2,11 @@
 #include <filesystem>
 #include <cmath>
 
-#include "graphics/graphics.hpp"
-#include "graphics/png.h"
-#include "graphics/images.h"
+#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/png.h"
+#include "spot/gfx/images.h"
+
+namespace gfx = spot::gfx;
 
 
 void update( const double dt, gfx::Triangle& r )
@@ -21,7 +23,7 @@ void update( const double dt, gfx::UniformBufferObject& ubo )
 
 gfx::Mesh create_quad()
 {
-	using namespace gfx;
+	using namespace spot::gfx;
 
 	Mesh quad;
 
@@ -61,7 +63,7 @@ gfx::Mesh create_quad()
 
 int main()
 {
-	using namespace gfx;
+	using namespace spot::gfx;
 
 	auto graphics = Graphics();
 

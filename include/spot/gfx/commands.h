@@ -5,7 +5,7 @@
 #include <vulkan/vulkan_core.h>
 
 
-namespace gfx
+namespace spot::gfx
 {
 
 class Device;
@@ -69,4 +69,4 @@ class CommandPool
 };
 
 
-} // namespace gfx
+} // namespace spot::gfx

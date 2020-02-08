@@ -1,13 +1,13 @@
-#include "graphics/png.h"
+#include "spot/gfx/png.h"
 
 #include <cassert>
 #include <png.h>
 #include <cstdio>
 #include <cstdlib>
 
-#include "graphics/graphics.hpp"
+#include "spot/gfx/graphics.hpp"
 
-namespace gfx
+namespace spot::gfx
 {
 
 
@@ -119,4 +119,4 @@ Png::~Png()
 	std::fclose( file );
 }
 
-} // namespace gfx
+} // namespace spot::gfx

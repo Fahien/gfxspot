@@ -7,15 +7,15 @@
 
 #include <vulkan/vulkan_core.h>
 
-#include "graphics/glfw.hpp"
-#include "graphics/renderer.hpp"
-#include "graphics/descriptors.h"
-#include "graphics/commands.h"
-#include "graphics/images.h"
-#include "graphics/models.h"
-#include "graphics/pipelines.h"
+#include "spot/gfx/glfw.hpp"
+#include "spot/gfx/renderer.hpp"
+#include "spot/gfx/descriptors.h"
+#include "spot/gfx/commands.h"
+#include "spot/gfx/images.h"
+#include "spot/gfx/models.h"
+#include "spot/gfx/pipelines.h"
 
-namespace gfx
+namespace spot::gfx
 {
 
 struct alignas(16) Dot
@@ -334,4 +334,4 @@ class Graphics
 };
 
 
-} // namespace gfx
+} // namespace spot::gfx

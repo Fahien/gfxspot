@@ -1,11 +1,11 @@
-#include <graphics/glfw.hpp>
+#include "spot/gfx/glfw.hpp"
 
 #include <cassert>
 #include <GLFW/glfw3.h>
 
-#include "graphics/graphics.hpp"
+#include "spot/gfx/graphics.hpp"
 
-namespace gfx
+namespace spot::gfx
 {
 
 

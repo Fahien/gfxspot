@@ -1,4 +1,4 @@
-#include "graphics/graphics.hpp"
+#include "spot/gfx/graphics.hpp"
 
 #include <array>
 #include <filesystem>
@@ -8,7 +8,7 @@
 #include <cstring>
 #include <cmath>
 
-namespace gfx
+namespace spot::gfx
 {
 
 
@@ -1191,4 +1191,4 @@ void Graphics::draw( Mesh& mesh )
 }
 
 
-} // namespace gfx
+} // namespace spot::gfx

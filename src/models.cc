@@ -1,12 +1,12 @@
-#include "graphics/models.h"
+#include "spot/gfx/models.h"
 
 #include <cassert>
 #include <spot/gltf/gltf.h>
 
-#include "graphics/graphics.hpp"
+#include "spot/gfx/graphics.hpp"
 
 
-namespace gfx
+namespace spot::gfx
 {
 
 Models::Models( Graphics& g )
@@ -167,4 +167,4 @@ void Models::load( const std::string& path )
 }
 
 
-} // namespace gfx
+} // namespace spot::gfx

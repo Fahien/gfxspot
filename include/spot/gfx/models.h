@@ -6,12 +6,12 @@
 #include <spot/gltf/gltf.h>
 #include <spot/math/math.h>
 
-#include "graphics/images.h"
+#include "spot/gfx/images.h"
 
 
 namespace mth = spot::math;
 
-namespace gfx
+namespace spot::gfx
 {
 
 class Graphics;
@@ -130,4 +130,4 @@ class Models
 };
 
 
-} // namespace gfx
+} // namespace spot::gfx

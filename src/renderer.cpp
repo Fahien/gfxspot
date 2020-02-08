@@ -1,11 +1,11 @@
-#include "graphics/renderer.hpp"
+#include "spot/gfx/renderer.hpp"
 
 #include <cassert>
 
-#include "graphics/graphics.hpp"
+#include "spot/gfx/graphics.hpp"
 
 
-namespace gfx
+namespace spot::gfx
 {
 
 
@@ -243,4 +243,4 @@ void Renderer::add( const Mesh& mesh )
 }
 
 
-} // namespace gfx
+} // namespace spot::gfx

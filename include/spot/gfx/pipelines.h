@@ -1,8 +1,8 @@
 #pragma once
 
-#include "graphics/descriptors.h"
+#include "spot/gfx/descriptors.h"
 
-namespace gfx
+namespace spot::gfx
 {
 
 class ShaderModule;

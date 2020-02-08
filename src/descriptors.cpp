@@ -1,10 +1,10 @@
-#include "graphics/descriptors.h"
+#include "spot/gfx/descriptors.h"
 
 #include <cassert>
 
-#include "graphics/graphics.hpp"
+#include "spot/gfx/graphics.hpp"
 
-namespace gfx
+namespace spot::gfx
 {
 
 
@@ -106,4 +106,4 @@ DescriptorPool& DescriptorPool::operator=( DescriptorPool&& o )
 
 
 
-} // namespace gfx
+} // namespace spot::gfx

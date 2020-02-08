@@ -1,11 +1,11 @@
-#include "graphics/buffers.h"
+#include "spot/gfx/buffers.h"
 
 #include <cassert>
 #include <cstring>
 
-#include "graphics/graphics.hpp"
+#include "spot/gfx/graphics.hpp"
 
-namespace gfx
+namespace spot::gfx
 {
 
 
@@ -227,4 +227,4 @@ void DynamicBuffer::upload( const uint8_t* data )
 }
 
 
-} // namespace gfx
+} // namespace spot::gfx

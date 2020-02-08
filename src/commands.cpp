@@ -1,12 +1,12 @@
-#include "graphics/commands.h"
+#include "spot/gfx/commands.h"
 
 #include <cassert>
 
-#include "graphics/graphics.hpp"
-#include "graphics/images.h"
+#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/images.h"
 
 
-namespace gfx
+namespace spot::gfx
 {
 
 
@@ -264,4 +264,4 @@ std::vector<CommandBuffer> CommandPool::allocate_command_buffers( const uint32_t
 }
 
 
-} // namespace gfx
+} // namespace spot::gfx

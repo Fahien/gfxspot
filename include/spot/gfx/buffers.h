@@ -4,7 +4,7 @@
 
 #include <vulkan/vulkan_core.h>
 
-namespace gfx
+namespace spot::gfx
 {
 
 class Device;

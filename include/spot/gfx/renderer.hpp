@@ -2,12 +2,12 @@
 
 #include <unordered_map>
 
-#include "graphics/buffers.h"
-#include "graphics/descriptors.h"
-#include "graphics/images.h"
-#include "graphics/pipelines.h"
+#include "spot/gfx/buffers.h"
+#include "spot/gfx/descriptors.h"
+#include "spot/gfx/images.h"
+#include "spot/gfx/pipelines.h"
 
-namespace gfx
+namespace spot::gfx
 {
 
 struct Rect;

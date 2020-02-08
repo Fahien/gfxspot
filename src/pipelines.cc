@@ -1,11 +1,11 @@
-#include "graphics/pipelines.h"
+#include "spot/gfx/pipelines.h"
 
 #include <cassert>
 
-#include "graphics/graphics.hpp"
+#include "spot/gfx/graphics.hpp"
 
 
-namespace gfx
+namespace spot::gfx
 {
 
 
@@ -185,4 +185,4 @@ GraphicsPipeline& GraphicsPipeline::operator=( GraphicsPipeline&& other )
 }
 
 
-} // namespace gfx
+} // namespace spot::gfx
