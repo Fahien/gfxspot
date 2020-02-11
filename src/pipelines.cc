@@ -18,7 +18,8 @@ PipelineLayout::PipelineLayout( Device& d, const std::vector<VkDescriptorSetLayo
 	info.setLayoutCount = 1;
 	info.pSetLayouts = &descriptor_set_layout.handle;
 
-	vkCreatePipelineLayout( device.handle, &info, nullptr, &handle );
+	const auto res = vkCreatePipelineLayout( device.handle, &info, nullptr, &handle );
+	assert( res == VK_SUCCESS && "Cannot create pipeline layout" );
 }
 
 PipelineLayout::~PipelineLayout()

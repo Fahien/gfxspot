@@ -39,12 +39,12 @@ const char* color_type_to_string( int color_type )
 {
 	switch ( color_type )
 	{
-		case PNG_COLOR_TYPE_GA: return "Gray Alpha";
-		case PNG_COLOR_TYPE_GRAY: return "Gray";
-		case PNG_COLOR_TYPE_PALETTE: return "Palette";
-		case PNG_COLOR_TYPE_RGB: return "RGB";
-		case PNG_COLOR_TYPE_RGBA: return "RGBA";
-		default: return "UNKNOWN";
+	case PNG_COLOR_TYPE_GA: return "Gray Alpha";
+	case PNG_COLOR_TYPE_GRAY: return "Gray";
+	case PNG_COLOR_TYPE_PALETTE: return "Palette";
+	case PNG_COLOR_TYPE_RGB: return "RGB";
+	case PNG_COLOR_TYPE_RGBA: return "RGBA";
+	default: return "UNKNOWN";
 	}
 }
 
@@ -82,6 +82,14 @@ Png::Png( const std::string& path )
 	png_read_info( png, info );
 
 	png_get_IHDR( png, info, &width, &height, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method );
+
+	if ( color_type == PNG_COLOR_TYPE_PALETTE )
+	{
+		png_set_palette_to_rgb( png );
+		png_read_update_info( png, info );
+		color_type = png_get_color_type( png, info );
+	}
+
 	assert( bit_depth == 8 && "PNG bit depth not supported" );
 	channels = png_get_channels( png, info );
 	print_info();
@@ -96,8 +104,7 @@ size_t Png::get_size() const
 
 void Png::load( png_byte* bytes )
 {
-	// Allocate memory to store bytes of the image
-	size_t byte_count = get_size();
+	assert( bytes && "Cannot load png data into a nullptr" );
 
 	// Allocate memory to store pointers to rows
 	rows.resize( height );
@@ -110,7 +117,6 @@ void Png::load( png_byte* bytes )
 	png_read_image( png, rows.data() );
 	png_read_end( png, info );
 	std::printf("\n");
-
 }
 
 Png::~Png()

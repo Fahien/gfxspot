@@ -14,17 +14,13 @@ VkFormat get_format( Png& png )
 	{
 	case PNG_COLOR_TYPE_RGB:
 	{
-		if ( png.bit_depth == 8 && png.channels == 3 )
-		{
-			return VK_FORMAT_R8G8B8_UNORM;
-		}
+		assert( png.bit_depth == 8 && png.channels == 3 );
+		return VK_FORMAT_R8G8B8_UNORM;
 	}
 	case PNG_COLOR_TYPE_RGB_ALPHA:
 	{
-		if ( png.bit_depth == 8 && png.channels == 4 )
-		{
-			return VK_FORMAT_R8G8B8A8_UNORM;
-		}
+		assert( png.bit_depth == 8 && png.channels == 4 );
+		return VK_FORMAT_R8G8B8A8_UNORM;
 	}
 	default:
 		assert( false && "Vulkan format not supported" );
@@ -82,7 +78,8 @@ Image::Image( Device& d, const VkExtent2D ext, const VkFormat fmt )
 		auto res = vkAllocateMemory( device.handle, &info, nullptr, &memory );
 		assert( res == VK_SUCCESS && "Cannot allocate memory for image" );
 
-		vkBindImageMemory( device.handle, handle, memory, 0 );
+		res = vkBindImageMemory( device.handle, handle, memory, 0 );
+		assert( res == VK_SUCCESS && "Cannot bind image memory" );
 	}
 }
 

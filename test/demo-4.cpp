@@ -80,14 +80,14 @@ int main()
 
 	auto graphics = Graphics();
 
-	auto& scene = graphics.models.load( "img/milktruck/CesiumMilkTruck.gltf" );
+	auto& scene = graphics.models.load( "img/duck/Duck.gltf" );
 
 	for ( auto& node : graphics.models.nodes )
 	{
 		graphics.renderer.add( node );
 	}
 
-	mth::Vec3 eye = { 4.0f, 4.0, -4.0f };
+	mth::Vec3 eye = { 400.0f, 400.0, -400.0f };
 	mth::Vec3 origin = {};
 	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
 	graphics.view = look_at(
@@ -103,18 +103,18 @@ int main()
 
 		if ( graphics.window.scroll.y > 0 )
 		{
-			eye.x -= dt * 40.0f;
-			eye.y -= dt * 40.0f;
-			eye.z += dt * 40.0f;
+			eye.x -= dt * 400.0f;
+			eye.y -= dt * 400.0f;
+			eye.z += dt * 400.0f;
 			graphics.view = look_at(
 				eye, origin, up
 			);
 		}
 		else if ( graphics.window.scroll.y < 0 )
 		{
-			eye.x += dt * 40.0f;
-			eye.y += dt * 40.0f;
-			eye.z -= dt * 40.0f;
+			eye.x += dt * 400.0f;
+			eye.y += dt * 400.0f;
+			eye.z -= dt * 400.0f;
 			graphics.view = look_at(
 				eye, origin, up
 			);

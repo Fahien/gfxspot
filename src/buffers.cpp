@@ -80,7 +80,8 @@ Buffer& Buffer::operator=( Buffer&& o )
 void* Buffer::map( const VkDeviceSize size )
 {
 	void* mem;
-	vkMapMemory( device.handle, memory, 0, size, 0, &mem);
+	auto res = vkMapMemory( device.handle, memory, 0, size, 0, &mem);
+	assert( res == VK_SUCCESS && "Cannot map buffer memory" );
 	return mem;
 }
 

@@ -194,8 +194,8 @@ void Queue::submit( CommandBuffer& command_buffer, const std::vector<VkSemaphore
 
 	auto fence_handle = fence ? fence->handle : VK_NULL_HANDLE;
 
-	auto ret = vkQueueSubmit( handle, 1, &info, fence_handle );
-	assert( ret == VK_SUCCESS && "Cannot submit to queue" );
+	const auto res = vkQueueSubmit( handle, 1, &info, fence_handle );
+	assert( res == VK_SUCCESS && "Cannot submit to queue" );
 
 	fence->can_wait = true;
 }
@@ -614,7 +614,8 @@ ShaderModule::ShaderModule( Device& d, const std::filesystem::path& path )
 	std::ifstream( path ).read( code.data(), info.codeSize );
 	info.pCode = reinterpret_cast<uint32_t*>( code.data() );
 
-	vkCreateShaderModule(device.handle, &info, nullptr, &handle);
+	const auto res = vkCreateShaderModule(device.handle, &info, nullptr, &handle);
+	assert( res == VK_SUCCESS && "Cannot create shader" );
 }
 
 
@@ -997,7 +998,7 @@ Graphics::Graphics()
 	mth::Vec3( 0.0f, 0.0f, -2.0f ),
 	mth::Vec3( 0.0f, 0.0f, 0.0f ),
 	mth::Vec3( 0.0f, 1.0f, 0.0f ) ) }
-, proj { perspective( swapchain.extent.width / float(swapchain.extent.height), mth::radians( 60.0f ), 512.0f, 0.125f ) }
+, proj { perspective( swapchain.extent.width / float(swapchain.extent.height), mth::radians( 60.0f ), 10000.0f, 0.125f ) }
 {
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )
 	{
@@ -1078,7 +1079,7 @@ bool Graphics::render_begin()
 		proj = perspective(
 			viewport.width / viewport.height,
 			mth::radians( 60.0f ),
-			512.0f,
+			10000.0f,
 			0.125f );
 
 		for ( auto& fence : frames_in_flight )
