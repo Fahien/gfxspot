@@ -995,7 +995,7 @@ Graphics::Graphics()
 , images { device }
 , models { *this }
 , view { look_at(
-	mth::Vec3( 0.0f, 0.0f, -2.0f ),
+	mth::Vec3( 0.0f, 0.0f, 0.0f ),
 	mth::Vec3( 0.0f, 0.0f, 0.0f ),
 	mth::Vec3( 0.0f, 1.0f, 0.0f ) ) }
 , proj { perspective( swapchain.extent.width / float(swapchain.extent.height), mth::radians( 60.0f ), 10000.0f, 0.125f ) }
@@ -1120,6 +1120,28 @@ void Graphics::render_end()
 
 	present_queue.present( { swapchain.handle }, { current_frame_index }, { image_drawn.handle } );
 }
+
+
+void Graphics::draw( Line& line )
+{
+	auto& resources = renderer.line_resources.find( &line )->second;
+
+	line.ubo.view = view;
+	line.ubo.proj = proj;
+
+	auto data = reinterpret_cast<const uint8_t*>( &line.ubo );
+	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
+	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
+
+	current_command_buffer->bind( line_pipeline );
+	current_command_buffer->bind_vertex_buffers( resources.vertex_buffer );
+	current_command_buffer->bind_index_buffer( resources.index_buffer );
+
+	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
+	current_command_buffer->bind_descriptor_sets( line_layout, descriptor_set );
+	current_command_buffer->draw_indexed( resources.index_buffer.count() );
+}
+
 
 
 void Graphics::draw( Triangle& tri )

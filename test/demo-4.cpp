@@ -80,21 +80,16 @@ int main()
 
 	auto graphics = Graphics();
 
-	auto& scene = graphics.models.load( "img/duck/Duck.gltf" );
+	auto& scene = graphics.models.load( "img/milktruck/CesiumMilkTruck.gltf" );
 
 	for ( auto& node : graphics.models.nodes )
 	{
 		graphics.renderer.add( node );
 	}
 
-	mth::Vec3 eye = { 400.0f, 400.0, -400.0f };
+	mth::Vec3 eye = {};
 	mth::Vec3 origin = {};
 	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
-	graphics.view = look_at(
-		eye,
-		origin,
-		up
-	);
 
 	while ( graphics.window.is_alive() )
 	{

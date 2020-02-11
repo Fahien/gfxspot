@@ -82,6 +82,12 @@ int main()
 
 	auto& card = create_card( graphics );
 
+	graphics.view = look_at(
+		{ 0.0f, 0.0f, -2.0f },
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 1.0f, 0.0f }
+	);
+
 	while ( graphics.window.is_alive() )
 	{
 		graphics.glfw.poll();

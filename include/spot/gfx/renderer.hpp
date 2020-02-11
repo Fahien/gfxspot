@@ -14,6 +14,7 @@
 namespace spot::gfx
 {
 
+struct Line;
 struct Rect;
 struct Triangle;
 struct Mesh;
@@ -68,6 +69,7 @@ class Renderer
   public:
 	Renderer( Graphics& g );
 
+	void add( const Line& t );
 	void add( const Triangle& t );
 	void add( const Rect& r );
 	void add( const gltf::Node& n );
@@ -78,6 +80,7 @@ class Renderer
 	/// - vertex buffer containing constant data about its vertices
 	/// - uniform buffers that can change per swapchain image
 	/// - DescriptorPool and DescriptorSet per swapchain image
+	std::unordered_map<const Line*, Resources> line_resources;
 	std::unordered_map<const Rect*, Resources> rect_resources;
 	std::unordered_map<const Triangle*, Resources> triangle_resources;
 	/// @brief The key of this map is a hash value of a Node and a Primitive

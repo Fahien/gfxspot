@@ -168,6 +168,34 @@ MeshResources::MeshResources( Device& d, Swapchain& swapchain, PipelineLayout& l
 }
 
 
+void Renderer::add( const Line& line )
+{
+	// Find Vulkan resources associated to this rect
+	auto it = line_resources.find( &line );
+	if ( it == std::end( line_resources ) )
+	{
+		auto[new_it, ok] = line_resources.emplace(
+			&line,
+			Resources( graphics.device, graphics.swapchain, graphics.line_layout )
+		);
+		if (ok)
+		{
+			it = new_it;
+		}
+	}
+
+	// Vertices
+	auto& vertex_buffer = it->second.vertex_buffer;
+	vertex_buffer.set_count( line.dots.size() );
+	vertex_buffer.upload( reinterpret_cast<const uint8_t*>( line.dots.data() ) );
+
+	// Indices
+	auto& index_buffer = it->second.index_buffer;
+	index_buffer.set_count( line.indices.size() );
+	index_buffer.upload( reinterpret_cast<const uint8_t*>( line.indices.data() ) );
+}
+
+
 void Renderer::add( const Triangle& rect )
 {
 	// Find Vulkan resources associated to this rect

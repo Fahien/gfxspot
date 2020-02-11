@@ -7,17 +7,20 @@
 #include "spot/gfx/images.h"
 
 namespace gfx = spot::gfx;
-
-
-void update( const double dt, gfx::Triangle& r )
-{
-	r.ubo.model.rotateY( mth::radians( dt * 16.0 ) );
-}
+namespace gtf = spot::gltf;
 
 
 void update( const double dt, gfx::UniformBufferObject& ubo )
 {
 	ubo.model.rotateZ( -mth::radians( dt * 16.0 ) );
+}
+
+
+void update( const double dt, gtf::Node& node )
+{
+	static mth::Mat4 model = mth::Mat4::identity;
+	model.rotateZ( -mth::radians( dt * 16.0 ) );
+	node.rotation = model;
 }
 
 
@@ -78,19 +81,18 @@ int main()
 
 	auto graphics = Graphics();
 
-	auto& quad = create_quad( graphics );
-
 	auto square = Rect(
 		Dot( Vec3( -0.5f, -0.5f ) ),
 		Dot( Vec3( 0.5f, 0.5f ) ) );
+	graphics.renderer.add( square );
 	
 	auto triangle = Triangle(
 		Dot( Vec3( 0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( -0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ) ) );
-
-	graphics.renderer.add( square );
 	graphics.renderer.add( triangle );
+
+	auto& quad = create_quad( graphics );
 	graphics.renderer.add( quad );
 
 	while ( graphics.window.is_alive() )
@@ -98,8 +100,9 @@ int main()
 		graphics.glfw.poll();
 		auto dt = graphics.glfw.get_delta();
 
-		update(dt, triangle.ubo);
-		update(dt, square.ubo);
+		update( dt, triangle.ubo );
+		update( dt, square.ubo );
+		update( dt, quad );
 
 		if ( graphics.render_begin() )
 		{

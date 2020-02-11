@@ -34,6 +34,18 @@ struct alignas(16) Dot
 };
 
 
+struct Line
+{
+	Line( Dot a = {}, Dot b = {} ) : dots { a, b } {}
+
+	std::array<Dot, 2> dots = {};
+
+	const std::array<Index, 2> indices = { 0, 1 };
+
+	UniformBufferObject ubo = {};
+};
+
+
 struct Triangle
 {
 	Triangle( Dot a, Dot b, Dot c )
@@ -277,6 +289,7 @@ class Graphics
 	bool render_begin();
 	void render_end();
 
+	void draw( Line& line );
 	void draw( Triangle& tri );
 	void draw( Rect& rect );
 	void draw( const gltf::Node& node, Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
