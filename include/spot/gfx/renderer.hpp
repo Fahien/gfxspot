@@ -2,10 +2,13 @@
 
 #include <unordered_map>
 
+#include <spot/math/math.h>
+
 #include "spot/gfx/buffers.h"
 #include "spot/gfx/descriptors.h"
 #include "spot/gfx/images.h"
 #include "spot/gfx/pipelines.h"
+
 
 namespace spot::gfx
 {

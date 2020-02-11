@@ -12,6 +12,7 @@ namespace spot::gfx
 Glfw::Glfw()
 {
 	glfwInit();
+	glfwSwapInterval( 0 );
 
 	required_extensions.names = glfwGetRequiredInstanceExtensions( &required_extensions.count );
 

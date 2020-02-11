@@ -8,6 +8,11 @@
 #include <cstring>
 #include <cmath>
 
+#include <spot/gltf/node.h>
+
+namespace gtf = spot::gltf;
+
+
 namespace spot::gfx
 {
 
@@ -855,11 +860,11 @@ mth::Mat4 perspective( const float a, const float y, const float f, const float 
 
 	// Calculate projection matrix
 	float cotfov = 1.0f / std::tan( 0.5f * y );
-	proj[0] = cotfov / a;
-	proj[5] = -cotfov;
-	proj[10] = -( n + f ) / ( f - n );
-	proj[14] = -2.0f * n * f / ( f - n );
-	proj[11] = -1.0f;
+	proj[0][0] = cotfov / a;
+	proj[1][1] = -cotfov;
+	proj[2][2] = -( n + f ) / ( f - n );
+	proj[2][3] = -2.0f * n * f / ( f - n );
+	proj[3][3] = -1.0f;
 
 	return proj;
 }
@@ -878,22 +883,22 @@ mth::Mat4 look_at( const mth::Vec3& eye, const mth::Vec3& center, mth::Vec3 up )
 
 	mth::Mat4 matrix = {};
 
-	matrix[0] = right.x;
-	matrix[4] = right.y;
-	matrix[8] = right.z;
-	matrix[12] = -mth::Vec3::dot( right, eye );
-	matrix[1] = up.x;
-	matrix[5] = up.y;
-	matrix[9] = up.z;
-	matrix[13] = -mth::Vec3::dot( up, eye );
-	matrix[2] = forward.x;
-	matrix[6] = forward.y;
-	matrix[10] = forward.z;
-	matrix[14] = -mth::Vec3::dot( forward, eye );
-	matrix[3] = 0;
-	matrix[7] = 0;
-	matrix[11] = 0;
-	matrix[15] = 1.0f;
+	matrix[0][0] = right.x;
+	matrix[0][1] = right.y;
+	matrix[0][2] = right.z;
+	matrix[0][3] = -mth::Vec3::dot( right, eye );
+	matrix[1][0] = up.x;
+	matrix[1][1] = up.y;
+	matrix[1][2] = up.z;
+	matrix[1][3] = -mth::Vec3::dot( up, eye );
+	matrix[2][0] = forward.x;
+	matrix[2][1] = forward.y;
+	matrix[2][2] = forward.z;
+	matrix[2][3] = -mth::Vec3::dot( forward, eye );
+	matrix[3][0] = 0;
+	matrix[3][1] = 0;
+	matrix[3][2] = 0;
+	matrix[3][3] = 1.0f;
 
 	return matrix;
 }
@@ -912,13 +917,13 @@ mth::Mat4 ortho( float left, float right, float bottom, float top, float near, f
 
 	mth::Mat4 mat = mth::Mat4::identity;
 
-	mat[12] = -mid.x;
-	mat[13] = -mid.y;
-	mat[14] = mid.z;
+	mat[0][3] = -mid.x;
+	mat[1][3] = -mid.y;
+	mat[2][3] = mid.z;
 
-	mat[0] = scale.x;
-	mat[5] = -scale.y;
-	mat[10] = scale.z;
+	mat[0][0] = scale.x;
+	mat[1][1] = -scale.y;
+	mat[2][2] = scale.z;
 
 	return mat;
 }
@@ -989,7 +994,7 @@ Graphics::Graphics()
 , images { device }
 , models { *this }
 , view { look_at(
-	mth::Vec3( 2.0f, 2.0f, -2.0f ),
+	mth::Vec3( .0f, .0f, -2.0f ),
 	mth::Vec3( 0.0f, 0.0f, 0.0f ),
 	mth::Vec3( 0.0f, 1.0f, 0.0f ) ) }
 , proj { perspective(  swapchain.extent.width / float(swapchain.extent.height), mth::radians( 60.0f ), 64.0f, 0.125f ) }
@@ -1158,7 +1163,7 @@ void Graphics::draw( Rect& rect )
 }
 
 
-void Graphics::draw( Mesh& mesh )
+void Graphics::draw( Mesh& mesh, const mth::Mat4& transform )
 {
 	for( auto& primitive : mesh.primitives )
 	{
@@ -1167,10 +1172,12 @@ void Graphics::draw( Mesh& mesh )
 
 		auto& resources = pair->second;
 
-		primitive.ubo.view = view;
-		primitive.ubo.proj = proj;
+		UniformBufferObject ubo;
+		ubo.model = transform;
+		ubo.view  = view;
+		ubo.proj  = proj;
 
-		auto data = reinterpret_cast<const uint8_t*>( &primitive.ubo );
+		auto data = reinterpret_cast<const uint8_t*>( &ubo );
 		auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
 		uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
@@ -1189,6 +1196,39 @@ void Graphics::draw( Mesh& mesh )
 		current_command_buffer->draw_indexed( primitive.indices.size() );
 	}
 }
+
+
+void Graphics::draw( const gtf::Node& node, const mth::Mat4& transform )
+{
+	// Current transform
+	auto temp_transform = node.matrix;
+	temp_transform.scale( node.scale );
+	temp_transform.rotate( node.rotation );
+	temp_transform.translate( node.translation );
+	temp_transform = transform * temp_transform;
+
+	// Render its children
+	for ( auto child : node.children )
+	{
+		draw( *child, temp_transform );
+	}
+
+	// Render the node
+	if ( node.mesh_index >= 0 )
+	{
+		auto& mesh = models.meshes[node.mesh_index];
+		draw( mesh, temp_transform );
+	}
+}
+
+
+void Graphics::draw( const gtf::Scene& scene )
+{
+	std::for_each( std::begin( scene.nodes ), std::end( scene.nodes ), [this]( auto n ) {
+		draw( models.nodes[n] );
+	});
+}
+
 
 
 } // namespace spot::gfx

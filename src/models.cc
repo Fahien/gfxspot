@@ -6,6 +6,10 @@
 #include "spot/gfx/graphics.hpp"
 
 
+namespace mth = spot::math;
+namespace gtf = spot::gltf;
+
+
 namespace spot::gfx
 {
 
@@ -15,7 +19,7 @@ Models::Models( Graphics& g )
 {}
 
 
-void Models::load( const std::string& path )
+gtf::Scene& Models::load( const std::string& path )
 {
 	auto model = spot::gltf::Gltf::load( path );
 
@@ -164,6 +168,11 @@ void Models::load( const std::string& path )
 
 		meshes.emplace_back( std::move( mesh ) );
 	}
+
+	nodes = std::move( model.nodes );
+	scene = *model.scene;
+
+	return scene;
 }
 
 

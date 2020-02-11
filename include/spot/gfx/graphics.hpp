@@ -15,6 +15,13 @@
 #include "spot/gfx/models.h"
 #include "spot/gfx/pipelines.h"
 
+
+namespace spot::gltf
+{
+class Node;
+class Scene;
+}
+
 namespace spot::gfx
 {
 
@@ -271,7 +278,10 @@ class Graphics
 
 	void draw( Triangle& tri );
 	void draw( Rect& rect );
-	void draw( Mesh& mesh );
+	void draw( Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
+	void draw( const gltf::Node& node, const math::Mat4& transform = math::Mat4::identity );
+	void draw( const gltf::Scene& scene );
+
 
 	Glfw glfw;
 	Instance instance;

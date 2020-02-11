@@ -9,8 +9,6 @@
 #include "spot/gfx/images.h"
 
 
-namespace mth = spot::math;
-
 namespace spot::gfx
 {
 
@@ -76,9 +74,9 @@ struct alignas(16) Vertex
 
 struct alignas(16) UniformBufferObject
 {
-	mth::Mat4 model = mth::Mat4::identity;
-	mth::Mat4 view  = mth::Mat4::identity;
-	mth::Mat4 proj  = mth::Mat4::identity;
+	math::Mat4 model = math::Mat4::identity;
+	math::Mat4 view  = math::Mat4::identity;
+	math::Mat4 proj  = math::Mat4::identity;
 };
 
 
@@ -117,11 +115,14 @@ class Models
   public:
 	Models( Graphics& g );
 
-	void load( const std::string& path );
+	gltf::Scene& load( const std::string& path );
 
 	Graphics& graphics;
 
 	Images images;
+
+	std::vector<gltf::Node> nodes;
+	gltf::Scene scene;
 
 	/// Materials can be referred by multiple primitives
 	std::vector<gfx::Material> materials;
