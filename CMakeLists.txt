@@ -42,5 +42,6 @@ endfunction()
 add_demo( 1 )
 add_demo( 2 )
 add_demo( 3 )
+add_demo( 4 )
 
 include( shaders )

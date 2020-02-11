@@ -131,18 +131,21 @@ int main()
 	material.ubo.color = { 0.8f, 0.8f, 0.8f, 1.0f };
 	bugart.primitives[0].material = &material;
 
-	graphics.renderer.add( bugart );
+	graphics.models.meshes.emplace_back( std::move( bugart ) );
+
+	auto& node = graphics.models.nodes.emplace_back();
+	node.mesh_index = 0;
+
+	graphics.renderer.add( node );
 
 	while ( graphics.window.is_alive() )
 	{
 		graphics.glfw.poll();
 		auto dt = graphics.glfw.get_delta();
 
-		update( dt, bugart.primitives[0].ubo );
-
 		if ( graphics.render_begin() )
 		{
-			graphics.draw( bugart );
+			graphics.draw( node );
 			graphics.render_end();
 		}
 	}

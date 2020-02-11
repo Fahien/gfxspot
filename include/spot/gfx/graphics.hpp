@@ -267,6 +267,7 @@ class ShaderModule
 };
 
 
+mth::Mat4 look_at( const mth::Vec3& eye, const mth::Vec3& center, mth::Vec3 up );
 
 class Graphics
 {
@@ -278,7 +279,7 @@ class Graphics
 
 	void draw( Triangle& tri );
 	void draw( Rect& rect );
-	void draw( Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
+	void draw( const gltf::Node& node, Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const gltf::Node& node, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const gltf::Scene& scene );
 

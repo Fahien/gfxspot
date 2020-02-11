@@ -80,18 +80,49 @@ int main()
 
 	auto graphics = Graphics();
 
-	auto& card = create_card( graphics );
+	auto& scene = graphics.models.load( "img/milktruck/CesiumMilkTruck.gltf" );
+
+	for ( auto& node : graphics.models.nodes )
+	{
+		graphics.renderer.add( node );
+	}
+
+	mth::Vec3 eye = { 4.0f, 4.0, -4.0f };
+	mth::Vec3 origin = {};
+	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	graphics.view = look_at(
+		eye,
+		origin,
+		up
+	);
 
 	while ( graphics.window.is_alive() )
 	{
 		graphics.glfw.poll();
 		auto dt = graphics.glfw.get_delta();
 
-		update( dt, card );
+		if ( graphics.window.scroll.y > 0 )
+		{
+			eye.x -= dt * 40.0f;
+			eye.y -= dt * 40.0f;
+			eye.z += dt * 40.0f;
+			graphics.view = look_at(
+				eye, origin, up
+			);
+		}
+		else if ( graphics.window.scroll.y < 0 )
+		{
+			eye.x += dt * 40.0f;
+			eye.y += dt * 40.0f;
+			eye.z -= dt * 40.0f;
+			graphics.view = look_at(
+				eye, origin, up
+			);
+		}
 
 		if ( graphics.render_begin() )
 		{
-			graphics.draw( card );
+			graphics.draw( scene );
 			graphics.render_end();
 		}
 	}

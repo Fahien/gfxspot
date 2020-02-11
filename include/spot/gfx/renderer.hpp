@@ -9,6 +9,7 @@
 #include "spot/gfx/images.h"
 #include "spot/gfx/pipelines.h"
 
+#include "spot/gltf/node.h"
 
 namespace spot::gfx
 {
@@ -60,6 +61,8 @@ struct MeshResources
 	std::vector<VkDescriptorSet> descriptor_sets;
 };
 
+size_t hash( const gltf::Node& node, const Primitive& primitive );
+
 class Renderer
 {
   public:
@@ -67,7 +70,7 @@ class Renderer
 
 	void add( const Triangle& t );
 	void add( const Rect& r );
-	void add( const Mesh& m );
+	void add( const gltf::Node& n );
 
 	Graphics& graphics;
 
@@ -77,8 +80,10 @@ class Renderer
 	/// - DescriptorPool and DescriptorSet per swapchain image
 	std::unordered_map<const Rect*, Resources> rect_resources;
 	std::unordered_map<const Triangle*, Resources> triangle_resources;
-	std::unordered_map<const Primitive*, MeshResources> mesh_resources;
-	std::unordered_map<const Primitive*, GraphicsPipeline> pipelines;
+	/// @brief The key of this map is a hash value of a Node and a Primitive
+	/// The rationale is that a node may refer to multiple primitives
+	/// And each primitives may need a different PipelineLayout
+	std::unordered_map<size_t, MeshResources> mesh_resources;
 };
 
 }

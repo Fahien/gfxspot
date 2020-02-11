@@ -21,7 +21,7 @@ void update( const double dt, gfx::UniformBufferObject& ubo )
 }
 
 
-gfx::Mesh create_quad()
+spot::gltf::Node& create_quad( gfx::Graphics& graphics )
 {
 	using namespace spot::gfx;
 
@@ -57,7 +57,18 @@ gfx::Mesh create_quad()
 
 	quad.primitives.emplace_back( std::move( primitive ) );
 
-	return quad;
+	auto view = graphics.images.load( "img/lena.png" );
+
+	auto& material = graphics.models.materials.emplace_back();
+	material.texture = view;
+	quad.primitives[0].material = &material;
+
+	graphics.models.meshes.emplace_back( std::move( quad ) );
+
+	auto& node = graphics.models.nodes.emplace_back();
+	node.mesh_index = 0;
+	node.index = 0;
+	return node;
 }
 
 
@@ -67,12 +78,7 @@ int main()
 
 	auto graphics = Graphics();
 
-	auto view = graphics.images.load( "img/lena.png" );
-	auto quad = create_quad();
-
-	Material material;
-	material.texture = view;
-	quad.primitives[0].material = &material;
+	auto& quad = create_quad( graphics );
 
 	auto square = Rect(
 		Dot( Vec3( -0.5f, -0.5f ) ),
@@ -94,7 +100,6 @@ int main()
 
 		update(dt, triangle.ubo);
 		update(dt, square.ubo);
-		update(dt, quad.primitives[0].ubo);
 
 		if ( graphics.render_begin() )
 		{

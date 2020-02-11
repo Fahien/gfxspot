@@ -860,11 +860,11 @@ mth::Mat4 perspective( const float a, const float y, const float f, const float 
 
 	// Calculate projection matrix
 	float cotfov = 1.0f / std::tan( 0.5f * y );
-	proj[0][0] = cotfov / a;
-	proj[1][1] = -cotfov;
-	proj[2][2] = -( n + f ) / ( f - n );
-	proj[2][3] = -2.0f * n * f / ( f - n );
-	proj[3][3] = -1.0f;
+	proj.matrix[0] = cotfov / a;
+	proj.matrix[5] = -cotfov;
+	proj.matrix[10] = -( n + f ) / ( f - n );
+	proj.matrix[14] = -2.0f * n * f / ( f - n );
+	proj.matrix[11] = -1.0f;
 
 	return proj;
 }
@@ -884,20 +884,20 @@ mth::Mat4 look_at( const mth::Vec3& eye, const mth::Vec3& center, mth::Vec3 up )
 	mth::Mat4 matrix = {};
 
 	matrix[0][0] = right.x;
-	matrix[0][1] = right.y;
-	matrix[0][2] = right.z;
-	matrix[0][3] = -mth::Vec3::dot( right, eye );
-	matrix[1][0] = up.x;
+	matrix[1][0] = right.y;
+	matrix[2][0] = right.z;
+	matrix[3][0] = -mth::Vec3::dot( right, eye );
+	matrix[0][1] = up.x;
 	matrix[1][1] = up.y;
-	matrix[1][2] = up.z;
-	matrix[1][3] = -mth::Vec3::dot( up, eye );
-	matrix[2][0] = forward.x;
-	matrix[2][1] = forward.y;
+	matrix[2][1] = up.z;
+	matrix[3][1] = -mth::Vec3::dot( up, eye );
+	matrix[0][2] = forward.x;
+	matrix[1][2] = forward.y;
 	matrix[2][2] = forward.z;
-	matrix[2][3] = -mth::Vec3::dot( forward, eye );
-	matrix[3][0] = 0;
-	matrix[3][1] = 0;
-	matrix[3][2] = 0;
+	matrix[3][2] = -mth::Vec3::dot( forward, eye );
+	matrix[0][3] = 0;
+	matrix[1][3] = 0;
+	matrix[2][3] = 0;
 	matrix[3][3] = 1.0f;
 
 	return matrix;
@@ -917,13 +917,13 @@ mth::Mat4 ortho( float left, float right, float bottom, float top, float near, f
 
 	mth::Mat4 mat = mth::Mat4::identity;
 
-	mat[0][3] = -mid.x;
-	mat[1][3] = -mid.y;
-	mat[2][3] = mid.z;
+	mat.matrix[12] = -mid.x;
+	mat.matrix[13] = -mid.y;
+	mat.matrix[14] = mid.z;
 
-	mat[0][0] = scale.x;
-	mat[1][1] = -scale.y;
-	mat[2][2] = scale.z;
+	mat.matrix[0] = scale.x;
+	mat.matrix[5] = -scale.y;
+	mat.matrix[10] = scale.z;
 
 	return mat;
 }
@@ -994,10 +994,10 @@ Graphics::Graphics()
 , images { device }
 , models { *this }
 , view { look_at(
-	mth::Vec3( .0f, .0f, -2.0f ),
+	mth::Vec3( 0.0f, 0.0f, -2.0f ),
 	mth::Vec3( 0.0f, 0.0f, 0.0f ),
 	mth::Vec3( 0.0f, 1.0f, 0.0f ) ) }
-, proj { perspective(  swapchain.extent.width / float(swapchain.extent.height), mth::radians( 60.0f ), 64.0f, 0.125f ) }
+, proj { perspective( swapchain.extent.width / float(swapchain.extent.height), mth::radians( 60.0f ), 512.0f, 0.125f ) }
 {
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )
 	{
@@ -1078,7 +1078,7 @@ bool Graphics::render_begin()
 		proj = perspective(
 			viewport.width / viewport.height,
 			mth::radians( 60.0f ),
-			128.0f,
+			512.0f,
 			0.125f );
 
 		for ( auto& fence : frames_in_flight )
@@ -1163,13 +1163,14 @@ void Graphics::draw( Rect& rect )
 }
 
 
-void Graphics::draw( Mesh& mesh, const mth::Mat4& transform )
+void Graphics::draw( const gtf::Node& node, Mesh& mesh, const mth::Mat4& transform )
 {
 	for( auto& primitive : mesh.primitives )
 	{
-		auto pair = renderer.mesh_resources.find( &primitive );
-		assert( pair != std::end( renderer.mesh_resources ) && "Cannot find resources for a mesh" );
+		auto& layout = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_layout : mesh_layout;
 
+		auto pair = renderer.mesh_resources.find( hash( node, primitive ) );
+		assert( pair != std::end( renderer.mesh_resources ) && "Cannot find resources for a mesh" );
 		auto& resources = pair->second;
 
 		UniformBufferObject ubo;
@@ -1190,7 +1191,6 @@ void Graphics::draw( Mesh& mesh, const mth::Mat4& transform )
 		current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
 		current_command_buffer->bind_index_buffer( resources.index_buffer );
 
-		auto& layout = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_layout : mesh_layout;
 		auto& descriptor_set = resources.descriptor_sets[current_frame_index];
 		current_command_buffer->bind_descriptor_sets( layout, descriptor_set );
 		current_command_buffer->draw_indexed( primitive.indices.size() );
@@ -1217,7 +1217,7 @@ void Graphics::draw( const gtf::Node& node, const mth::Mat4& transform )
 	if ( node.mesh_index >= 0 )
 	{
 		auto& mesh = models.meshes[node.mesh_index];
-		draw( mesh, temp_transform );
+		draw( node, mesh, temp_transform );
 	}
 }
 

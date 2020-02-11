@@ -1,9 +1,11 @@
 #include "spot/gfx/renderer.hpp"
 
 #include <cassert>
+#include <spot/gltf/mesh.h>
 
 #include "spot/gfx/graphics.hpp"
 
+namespace gtf = spot::gltf;
 
 namespace spot::gfx
 {
@@ -222,20 +224,30 @@ void Renderer::add( const Rect& rect )
 }
 
 
-void Renderer::add( const Mesh& mesh )
+size_t hash( const gtf::Node& node, const Primitive& primitive )
 {
+	size_t hash = reinterpret_cast<size_t>( &node );
+	hash += reinterpret_cast<size_t>( &primitive );
+	return hash;
+}
+
+
+void Renderer::add( const gtf::Node& node )
+{
+	auto& mesh = graphics.models.meshes[node.mesh_index];
+
 	for ( auto& primitive : mesh.primitives )
 	{
+		auto key = hash( node, primitive );
 		// Find Vulkan resources associated to this mesh
-		auto it = mesh_resources.find( &primitive );
+		auto it = mesh_resources.find( key );
 
 		// If not found, create new resources
 		if ( it == std::end( mesh_resources ) )
 		{
 			auto& layout = primitive.material->texture != VK_NULL_HANDLE ? graphics.mesh_layout : graphics.mesh_no_image_layout;
-
 			auto resource = MeshResources( graphics.device, graphics.swapchain, layout, primitive );
-			auto [it, ok] = mesh_resources.emplace( &primitive, std::move( resource ) );
+			auto [it, ok] = mesh_resources.emplace( key, std::move( resource ) );
 			assert( ok && "Cannot emplace mesh resource" );
 		}
 
@@ -244,3 +256,4 @@ void Renderer::add( const Mesh& mesh )
 
 
 } // namespace spot::gfx
+ 
