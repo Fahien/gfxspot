@@ -44,7 +44,7 @@ int main()
 	graphics.renderer.add( triangle );
 
 	graphics.view = look_at(
-		{ 0.0f, 2.0f, 2.0f },
+		{ 1.5f, 1.5f, 1.5f },
 		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 1.0f, 0.0f }
 	);
@@ -53,12 +53,15 @@ int main()
 	{
 		graphics.glfw.poll();
 		auto dt = graphics.glfw.get_delta();
-
-		update( dt, triangle.ubo );
+		graphics.window.update( dt );
 
 		if ( graphics.window.swipe.x != 0 )
 		{
-			
+			auto angle = mth::radians( graphics.window.swipe.x );
+			x.ubo.model.rotateY( angle );
+			y.ubo.model.rotateY( angle );
+			z.ubo.model.rotateY( angle );
+			triangle.ubo.model.rotateY( angle );
 		}
 
 		if ( graphics.render_begin() )

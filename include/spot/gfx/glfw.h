@@ -42,6 +42,9 @@ class Glfw
 		~Window();
 
 		bool is_alive();
+		void update( float dt );
+
+		mth::Vec2 get_cursor_position() const;
 
 		GLFWwindow* handle = nullptr;
 
@@ -50,6 +53,9 @@ class Glfw
 		mth::Vec2 scroll = {};
 
 		mth::Vec2 swipe = {};
+
+		mth::Vec2 cursor = {};
+		bool pressed = false;
 
 		class Surface
 		{
@@ -66,6 +72,7 @@ class Glfw
 	double time = 0;
 
 };
+
 
 
 }
