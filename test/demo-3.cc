@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <cmath>
 
-#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/graphics.h"
 #include "spot/gfx/png.h"
 #include "spot/gfx/images.h"
 
@@ -80,44 +80,24 @@ int main()
 
 	auto graphics = Graphics();
 
-	auto& scene = graphics.models.load( "img/milktruck/CesiumMilkTruck.gltf" );
+	auto& card = create_card( graphics );
 
-	for ( auto& node : graphics.models.nodes )
-	{
-		graphics.renderer.add( node );
-	}
-
-	mth::Vec3 eye = {};
-	mth::Vec3 origin = {};
-	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	graphics.view = look_at(
+		{ 0.0f, 0.0f, -2.0f },
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 1.0f, 0.0f }
+	);
 
 	while ( graphics.window.is_alive() )
 	{
 		graphics.glfw.poll();
 		auto dt = graphics.glfw.get_delta();
 
-		if ( graphics.window.scroll.y > 0 )
-		{
-			eye.x -= dt * 400.0f;
-			eye.y -= dt * 400.0f;
-			eye.z += dt * 400.0f;
-			graphics.view = look_at(
-				eye, origin, up
-			);
-		}
-		else if ( graphics.window.scroll.y < 0 )
-		{
-			eye.x += dt * 400.0f;
-			eye.y += dt * 400.0f;
-			eye.z -= dt * 400.0f;
-			graphics.view = look_at(
-				eye, origin, up
-			);
-		}
+		update( dt, card );
 
 		if ( graphics.render_begin() )
 		{
-			graphics.draw( scene );
+			graphics.draw( card );
 			graphics.render_end();
 		}
 	}

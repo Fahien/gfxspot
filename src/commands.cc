@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/graphics.h"
 #include "spot/gfx/images.h"
 
 

@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <cmath>
 
-#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/graphics.h"
 #include "spot/gfx/png.h"
 #include "spot/gfx/images.h"
 
@@ -55,6 +55,11 @@ int main()
 		auto dt = graphics.glfw.get_delta();
 
 		update( dt, triangle.ubo );
+
+		if ( graphics.window.swipe.x != 0 )
+		{
+			
+		}
 
 		if ( graphics.render_begin() )
 		{

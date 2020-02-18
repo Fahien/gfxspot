@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <cmath>
 
-#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/graphics.h"
 #include "spot/gfx/png.h"
 #include "spot/gfx/images.h"
 

@@ -1,9 +1,9 @@
-#include "spot/gfx/renderer.hpp"
+#include "spot/gfx/renderer.h"
 
 #include <cassert>
 #include <spot/gltf/mesh.h>
 
-#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/graphics.h"
 
 namespace gtf = spot::gltf;
 

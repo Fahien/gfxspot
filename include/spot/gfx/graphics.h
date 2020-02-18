@@ -7,8 +7,8 @@
 
 #include <vulkan/vulkan_core.h>
 
-#include "spot/gfx/glfw.hpp"
-#include "spot/gfx/renderer.hpp"
+#include "spot/gfx/glfw.h"
+#include "spot/gfx/renderer.h"
 #include "spot/gfx/descriptors.h"
 #include "spot/gfx/commands.h"
 #include "spot/gfx/images.h"

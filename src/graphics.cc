@@ -1,4 +1,4 @@
-#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/graphics.h"
 
 #include <array>
 #include <filesystem>

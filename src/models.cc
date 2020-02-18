@@ -3,7 +3,7 @@
 #include <cassert>
 #include <spot/gltf/gltf.h>
 
-#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/graphics.h"
 
 
 namespace mth = spot::math;

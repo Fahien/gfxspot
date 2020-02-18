@@ -1,9 +1,9 @@
-#include "spot/gfx/glfw.hpp"
+#include "spot/gfx/glfw.h"
 
 #include <cassert>
 #include <GLFW/glfw3.h>
 
-#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/graphics.h"
 
 namespace spot::gfx
 {

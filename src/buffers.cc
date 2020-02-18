@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cstring>
 
-#include "spot/gfx/graphics.hpp"
+#include "spot/gfx/graphics.h"
 
 namespace spot::gfx
 {

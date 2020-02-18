@@ -14,16 +14,16 @@ include( AddGltfSpot )
 
 # Lib
 set( SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/src/png.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffers.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/commands.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/descriptors.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/images.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/renderer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/png.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffers.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/commands.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/descriptors.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/images.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/renderer.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pipelines.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/models.cc
-	${CMAKE_CURRENT_SOURCE_DIR}/src/graphics.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/graphics.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw.cc
 )
 add_library( ${PROJECT_NAME} ${SOURCES} )
 target_include_directories( ${PROJECT_NAME} PUBLIC
@@ -33,7 +33,7 @@ target_link_libraries( ${PROJECT_NAME} ${Vulkan_LIBRARIES} ${GLFW_LIBRARY} PNG::
 target_compile_features( ${PROJECT_NAME} PUBLIC cxx_std_17 )
 
 function( add_demo NUM )
-	set( DEMO_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/test/demo-${NUM}.cpp )
+	set( DEMO_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/test/demo-${NUM}.cc )
 	add_executable( ${PROJECT_NAME}-demo-${NUM} ${DEMO_SOURCES} )
 	target_link_libraries( ${PROJECT_NAME}-demo-${NUM} ${PROJECT_NAME} )
 	target_compile_features( ${PROJECT_NAME}-demo-${NUM} PUBLIC cxx_std_17 )

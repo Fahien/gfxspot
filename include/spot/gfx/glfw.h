@@ -49,6 +49,8 @@ class Glfw
 
 		mth::Vec2 scroll = {};
 
+		mth::Vec2 swipe = {};
+
 		class Surface
 		{
 		  public:
