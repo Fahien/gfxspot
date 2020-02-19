@@ -75,6 +75,26 @@ spot::gltf::Node& create_quad( gfx::Graphics& graphics )
 }
 
 
+gtf::Node& create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c )
+{
+	auto& node = graphics.models.nodes.emplace_back();
+
+	auto& mesh = graphics.models.meshes.emplace_back();
+	node.mesh_index = graphics.models.meshes.size() - 1;
+
+	auto& primitive = mesh.primitives.emplace_back();
+	primitive.vertices = {
+		gfx::Vertex( a.p, a.c ),
+		gfx::Vertex( b.p, b.c ),
+		gfx::Vertex( c.p, c.c )
+	};
+
+	primitive.indices = { 0, 1, 1, 2, 2, 0 };
+
+	return node;
+}
+
+
 int main()
 {
 	using namespace spot::gfx;
@@ -86,7 +106,7 @@ int main()
 		Dot( Vec3( 0.5f, 0.5f ) ) );
 	graphics.renderer.add( square );
 	
-	auto triangle = Triangle(
+	auto& triangle = create_triangle( graphics,
 		Dot( Vec3( 0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( -0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ) ) );
@@ -100,7 +120,7 @@ int main()
 		graphics.glfw.poll();
 		auto dt = graphics.glfw.get_delta();
 
-		update( dt, triangle.ubo );
+		update( dt, triangle );
 		update( dt, square.ubo );
 		update( dt, quad );
 

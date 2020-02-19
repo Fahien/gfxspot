@@ -85,7 +85,7 @@ using Index = uint16_t;
 
 
 /// @brief A primitives has a central role in rendering
-/// as it stores vertices, indices, and the material
+/// as it stores vertices, indices, and its material
 struct Primitive
 {
 	/// Vertices and indices do not change
@@ -95,9 +95,6 @@ struct Primitive
 	/// A material use to draw the primitive
 	/// It can change at runtime
 	Material* material = nullptr;
-
-	/// @todo move this somewhere else
-	UniformBufferObject ubo = {};
 };
 
 

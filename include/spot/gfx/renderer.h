@@ -16,7 +16,6 @@ namespace spot::gfx
 
 struct Line;
 struct Rect;
-struct Triangle;
 struct Mesh;
 struct Primitive;
 
@@ -70,7 +69,6 @@ class Renderer
 	Renderer( Graphics& g );
 
 	void add( const Line& t );
-	void add( const Triangle& t );
 	void add( const Rect& r );
 	void add( const gltf::Node& n );
 
@@ -82,7 +80,7 @@ class Renderer
 	/// - DescriptorPool and DescriptorSet per swapchain image
 	std::unordered_map<const Line*, Resources> line_resources;
 	std::unordered_map<const Rect*, Resources> rect_resources;
-	std::unordered_map<const Triangle*, Resources> triangle_resources;
+
 	/// @brief The key of this map is a hash value of a Node and a Primitive
 	/// The rationale is that a node may refer to multiple primitives
 	/// And each primitives may need a different PipelineLayout

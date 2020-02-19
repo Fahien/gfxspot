@@ -46,5 +46,4 @@ class GraphicsPipeline
 };
 
 
-
 } // namespace spot::gfx

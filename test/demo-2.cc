@@ -9,12 +9,6 @@
 namespace gfx = spot::gfx;
 
 
-void update( const double dt, gfx::Triangle& r )
-{
-	r.ubo.model.rotateY( mth::radians( dt * 16.0 ) );
-}
-
-
 void update( const double dt, gfx::UniformBufferObject& ubo )
 {
 	ubo.model.matrix[5] = 1.0f + std::min<float>( -std::sin( dt ) * 4.0, 0.0f );

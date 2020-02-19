@@ -46,19 +46,6 @@ struct Line
 };
 
 
-struct Triangle
-{
-	Triangle( Dot a, Dot b, Dot c )
-	: dots { a, b, c }
-	{}
-
-	std::array<Dot, 3> dots = {};
-
-	const std::array<Index, 6> indices = { 0, 1, 1, 2, 2, 0 };
-
-	UniformBufferObject ubo = {};
-};
-
 
 struct Rect
 {
@@ -290,9 +277,12 @@ class Graphics
 	void render_end();
 
 	void draw( Line& line );
-	void draw( Triangle& tri );
 	void draw( Rect& rect );
-	void draw( const gltf::Node& node, Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
+
+	void draw_lines( const gltf::Node& node, Primitive& p, const math::Mat4& transform = math::Mat4::identity );
+	void draw_lines( const gltf::Node& node, const math::Mat4& transform = math::Mat4::identity );
+
+	void draw( const gltf::Node& node, Primitive& p, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const gltf::Node& node, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const gltf::Scene& scene );
 

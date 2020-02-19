@@ -10,9 +10,51 @@ namespace gfx = spot::gfx;
 namespace gtf = spot::gltf;
 
 
-void update( const double dt, gfx::UniformBufferObject& ubo )
+gtf::Node& create_line( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b )
 {
-	ubo.model.rotateZ( -mth::radians( dt * 16.0 ) );
+	auto& node = graphics.models.nodes.emplace_back();
+
+	auto& mesh = graphics.models.meshes.emplace_back();
+	node.mesh_index = graphics.models.meshes.size() - 1;
+
+	auto& primitive = mesh.primitives.emplace_back();
+	primitive.vertices = {
+		gfx::Vertex( a.p, a.c ),
+		gfx::Vertex( b.p, b.c )
+	};
+
+	primitive.indices = { 0, 1 };
+
+	return node;
+}
+
+
+gtf::Node& create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c )
+{
+	auto& node = graphics.models.nodes.emplace_back();
+
+	auto& mesh = graphics.models.meshes.emplace_back();
+	node.mesh_index = graphics.models.meshes.size() - 1;
+
+	auto& primitive = mesh.primitives.emplace_back();
+	primitive.vertices = {
+		gfx::Vertex( a.p, a.c ),
+		gfx::Vertex( b.p, b.c ),
+		gfx::Vertex( c.p, c.c )
+	};
+
+	primitive.indices = { 0, 1, 1, 2, 2, 0 };
+
+	return node;
+}
+
+
+/// @todo Test thoroughly this, as meshes suddenly disappear at a random moment
+void rotate( gtf::Node& n, float angle )
+{
+	auto matrix = mth::Mat4( n.rotation );
+	matrix.rotateY( angle );
+	n.rotation = mth::Quat( matrix );
 }
 
 
@@ -22,22 +64,22 @@ int main()
 
 	auto graphics = Graphics();
 
-	auto x = Line(
+	auto& x = create_line( graphics,
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ), Color( 1.0f, 0.0f, 0.0f, 1.0f) ),
 		Dot( Vec3( 1.0f, 0.0f, 0.0f ), Color( 1.0f, 0.0f, 0.0f, 1.0f ) ) );
 	graphics.renderer.add( x );
 	
-	auto y = Line(
+	auto& y = create_line( graphics,
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ), Color( 0.0f, 1.0f, 0.0f, 1.0f) ),
 		Dot( Vec3( 0.0f, 1.0f, 0.0f ), Color( 0.0f, 1.0f, 0.0f, 1.0f ) ) );
 	graphics.renderer.add( y );
 
-	auto z = Line(
+	auto& z = create_line( graphics,
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ), Color( 0.0f, 0.0f, 1.0f, 1.0f ) ),
 		Dot( Vec3( 0.0f, 0.0f, 1.0f ), Color( 0.0f, 0.0f, 1.0f, 1.0f ) ) );
 	graphics.renderer.add( z );
 
-	auto triangle = Triangle(
+	auto triangle = create_triangle( graphics,
 		Dot( Vec3( 0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( -0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ) ) );
@@ -58,10 +100,10 @@ int main()
 		if ( graphics.window.swipe.x != 0 )
 		{
 			auto angle = mth::radians( graphics.window.swipe.x );
-			x.ubo.model.rotateY( angle );
-			y.ubo.model.rotateY( angle );
-			z.ubo.model.rotateY( angle );
-			triangle.ubo.model.rotateY( angle );
+			rotate( x, angle );
+			rotate( y, angle );
+			rotate( z, angle );
+			rotate( triangle, angle );
 		}
 
 		if ( graphics.render_begin() )

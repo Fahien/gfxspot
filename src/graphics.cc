@@ -33,7 +33,7 @@ VkVertexInputBindingDescription get_bindings()
 {
 	VkVertexInputBindingDescription bindings = {};
 	bindings.binding = 0;
-	bindings.stride = sizeof( T );
+	bindings.stride = sizeof( Vertex );
 	bindings.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 	return bindings;
 }
@@ -47,12 +47,12 @@ std::vector<VkVertexInputAttributeDescription> get_attributes<Dot>()
 	attributes[0].binding = 0;
 	attributes[0].location = 0;
 	attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-	attributes[0].offset = offsetof( Dot, p );
+	attributes[0].offset = offsetof( Vertex, p );
 
 	attributes[1].binding = 0;
 	attributes[1].location = 1;
 	attributes[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributes[1].offset = offsetof( Dot, c );
+	attributes[1].offset = offsetof( Vertex, c );
 
 	return attributes;
 }
@@ -1143,25 +1143,28 @@ void Graphics::draw( Line& line )
 }
 
 
-
-void Graphics::draw( Triangle& tri )
+void Graphics::draw_lines( const gtf::Node& node, Primitive& primitive, const mth::Mat4& transform )
 {
-	auto& resources = renderer.triangle_resources.find( &tri )->second;
+	auto pair = renderer.mesh_resources.find( hash( node, primitive ) );
+	assert( pair != std::end( renderer.mesh_resources ) && "Cannot find resources for a mesh" );
+	auto& resources = pair->second;
 
-	tri.ubo.view = view;
-	tri.ubo.proj = proj;
+	UniformBufferObject ubo;
+	ubo.model = transform;
+	ubo.view = view;
+	ubo.proj = proj;
 
-	auto data = reinterpret_cast<const uint8_t*>( &tri.ubo );
+	auto data = reinterpret_cast<const uint8_t*>( &ubo );
 	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
 	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
 	current_command_buffer->bind( line_pipeline );
-	current_command_buffer->bind_vertex_buffers( resources.vertex_buffer );
+	current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
 	current_command_buffer->bind_index_buffer( resources.index_buffer );
 
 	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
 	current_command_buffer->bind_descriptor_sets( line_layout, descriptor_set );
-	current_command_buffer->draw_indexed( resources.index_buffer.count() );
+	current_command_buffer->draw_indexed( primitive.indices.size() );
 }
 
 
@@ -1186,38 +1189,36 @@ void Graphics::draw( Rect& rect )
 }
 
 
-void Graphics::draw( const gtf::Node& node, Mesh& mesh, const mth::Mat4& transform )
+void Graphics::draw( const gtf::Node& node, Primitive& primitive, const mth::Mat4& transform )
 {
-	for( auto& primitive : mesh.primitives )
-	{
-		auto& layout = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_layout : mesh_layout;
+	assert( primitive.material && "Cannot render primitive without material with this layout" );
+	auto& layout = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_layout : mesh_layout;
 
-		auto pair = renderer.mesh_resources.find( hash( node, primitive ) );
-		assert( pair != std::end( renderer.mesh_resources ) && "Cannot find resources for a mesh" );
-		auto& resources = pair->second;
+	auto pair = renderer.mesh_resources.find( hash( node, primitive ) );
+	assert( pair != std::end( renderer.mesh_resources ) && "Cannot find resources for a mesh" );
+	auto& resources = pair->second;
 
-		UniformBufferObject ubo;
-		ubo.model = transform;
-		ubo.view  = view;
-		ubo.proj  = proj;
+	UniformBufferObject ubo;
+	ubo.model = transform;
+	ubo.view  = view;
+	ubo.proj  = proj;
 
-		auto data = reinterpret_cast<const uint8_t*>( &ubo );
-		auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
-		uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
+	auto data = reinterpret_cast<const uint8_t*>( &ubo );
+	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
+	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
-		auto material_data = reinterpret_cast<const uint8_t*>( &primitive.material->ubo );
-		auto& material_ubo = resources.material_ubos[current_frame_index];
-		material_ubo.upload( material_data, sizeof( Material::Ubo ) );
+	auto material_data = reinterpret_cast<const uint8_t*>( &primitive.material->ubo );
+	auto& material_ubo = resources.material_ubos[current_frame_index];
+	material_ubo.upload( material_data, sizeof( Material::Ubo ) );
 
-		auto& pipeline = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_pipeline : mesh_pipeline;
-		current_command_buffer->bind( pipeline );
-		current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
-		current_command_buffer->bind_index_buffer( resources.index_buffer );
+	auto& pipeline = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_pipeline : mesh_pipeline;
+	current_command_buffer->bind( pipeline );
+	current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
+	current_command_buffer->bind_index_buffer( resources.index_buffer );
 
-		auto& descriptor_set = resources.descriptor_sets[current_frame_index];
-		current_command_buffer->bind_descriptor_sets( layout, descriptor_set );
-		current_command_buffer->draw_indexed( primitive.indices.size() );
-	}
+	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
+	current_command_buffer->bind_descriptor_sets( layout, descriptor_set );
+	current_command_buffer->draw_indexed( primitive.indices.size() );
 }
 
 
@@ -1240,7 +1241,17 @@ void Graphics::draw( const gtf::Node& node, const mth::Mat4& transform )
 	if ( node.mesh_index >= 0 )
 	{
 		auto& mesh = models.meshes[node.mesh_index];
-		draw( node, mesh, temp_transform );
+		for ( auto& primitive : mesh.primitives )
+		{
+			if ( primitive.material )
+			{
+				draw( node, primitive, temp_transform );
+			}
+			else
+			{
+				draw_lines( node, primitive, temp_transform );
+			}
+		}
 	}
 }
 

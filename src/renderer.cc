@@ -129,23 +129,26 @@ MeshResources::MeshResources( Device& d, Swapchain& swapchain, PipelineLayout& l
 		writes.emplace_back( write );
 
 		VkDescriptorBufferInfo mat_info = {};
-		mat_info.buffer = material_ubos[i].handle;
-		mat_info.offset = 0;
-		mat_info.range = sizeof( Material::Ubo );
-	
-		VkWriteDescriptorSet mat_write = {};
-		mat_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		mat_write.dstSet = descriptor_sets[i];
-		mat_write.dstBinding = 1;
-		mat_write.dstArrayElement = 0;
-		mat_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		mat_write.descriptorCount = 1;
-		mat_write.pBufferInfo = &mat_info;
+		if ( primitive.material )
+		{
+			mat_info.buffer = material_ubos[i].handle;
+			mat_info.offset = 0;
+			mat_info.range = sizeof( Material::Ubo );
 
-		writes.emplace_back( mat_write );
+			VkWriteDescriptorSet mat_write = {};
+			mat_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			mat_write.dstSet = descriptor_sets[i];
+			mat_write.dstBinding = 1;
+			mat_write.dstArrayElement = 0;
+			mat_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			mat_write.descriptorCount = 1;
+			mat_write.pBufferInfo = &mat_info;
+
+			writes.emplace_back( mat_write );
+		}
 
 		VkDescriptorImageInfo image_info = {};
-		if ( primitive.material->texture != VK_NULL_HANDLE )
+		if ( primitive.material && primitive.material->texture != VK_NULL_HANDLE )
 		{
 			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			image_info.imageView = primitive.material->texture;
@@ -193,34 +196,6 @@ void Renderer::add( const Line& line )
 	auto& index_buffer = it->second.index_buffer;
 	index_buffer.set_count( line.indices.size() );
 	index_buffer.upload( reinterpret_cast<const uint8_t*>( line.indices.data() ) );
-}
-
-
-void Renderer::add( const Triangle& rect )
-{
-	// Find Vulkan resources associated to this rect
-	auto it = triangle_resources.find( &rect );
-	if ( it == std::end( triangle_resources ) )
-	{
-		auto[new_it, ok] = triangle_resources.emplace(
-			&rect,
-			Resources( graphics.device, graphics.swapchain, graphics.line_layout )
-		);
-		if (ok)
-		{
-			it = new_it;
-		}
-	}
-
-	// Vertices
-	auto& vertex_buffer = it->second.vertex_buffer;
-	vertex_buffer.set_count( rect.dots.size() );
-	vertex_buffer.upload( reinterpret_cast<const uint8_t*>( rect.dots.data() ) );
-
-	// Indices
-	auto& index_buffer = it->second.index_buffer;
-	index_buffer.set_count( rect.indices.size() );
-	index_buffer.upload( reinterpret_cast<const uint8_t*>( rect.indices.data() ) );
 }
 
 
@@ -273,8 +248,25 @@ void Renderer::add( const gtf::Node& node )
 		// If not found, create new resources
 		if ( it == std::end( mesh_resources ) )
 		{
-			auto& layout = primitive.material->texture != VK_NULL_HANDLE ? graphics.mesh_layout : graphics.mesh_no_image_layout;
-			auto resource = MeshResources( graphics.device, graphics.swapchain, layout, primitive );
+			PipelineLayout* layout = nullptr;
+			if ( primitive.material )
+			{
+				if ( primitive.material->texture != VK_NULL_HANDLE )
+				{
+
+					layout = &graphics.mesh_layout;
+				}
+				else
+				{
+					layout = &graphics.mesh_no_image_layout;
+				}
+			}
+			else
+			{
+				layout = &graphics.line_layout;
+			}
+
+			auto resource = MeshResources( graphics.device, graphics.swapchain, *layout, primitive );
 			auto [it, ok] = mesh_resources.emplace( key, std::move( resource ) );
 			assert( ok && "Cannot emplace mesh resource" );
 		}
