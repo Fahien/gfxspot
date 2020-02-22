@@ -19,6 +19,21 @@ Models::Models( Graphics& g )
 {}
 
 
+int Models::create_node()
+{
+	auto& node = nodes.emplace_back();
+	node.index = nodes.size() - 1;
+	return node.index;
+}
+
+
+gtf::Node* Models::get_node( const int index )
+{
+	assert( index >= 0 && index < nodes.size() && "Cannot get node out of bounds" );
+	return &nodes[index];
+}
+
+
 gtf::Scene& Models::load( const std::string& path )
 {
 	auto model = spot::gltf::Gltf::load( path );

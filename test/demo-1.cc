@@ -24,7 +24,7 @@ void update( const double dt, gtf::Node& node )
 }
 
 
-spot::gltf::Node& create_quad( gfx::Graphics& graphics )
+int create_quad( gfx::Graphics& graphics )
 {
 	using namespace spot::gfx;
 
@@ -68,19 +68,21 @@ spot::gltf::Node& create_quad( gfx::Graphics& graphics )
 
 	graphics.models.meshes.emplace_back( std::move( quad ) );
 
-	auto& node = graphics.models.nodes.emplace_back();
-	node.mesh_index = 0;
-	node.index = 0;
-	return node;
+	auto node_index = graphics.models.create_node();
+	auto node = graphics.models.get_node( node_index );
+	node->mesh = 0;
+
+	return node_index;
 }
 
 
-gtf::Node& create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c )
+int create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c )
 {
-	auto& node = graphics.models.nodes.emplace_back();
+	auto node_index = graphics.models.create_node();
+	auto& node = *graphics.models.get_node( node_index );
 
 	auto& mesh = graphics.models.meshes.emplace_back();
-	node.mesh_index = graphics.models.meshes.size() - 1;
+	node.mesh = graphics.models.meshes.size() - 1;
 
 	auto& primitive = mesh.primitives.emplace_back();
 	primitive.vertices = {
@@ -91,7 +93,7 @@ gtf::Node& create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx
 
 	primitive.indices = { 0, 1, 1, 2, 2, 0 };
 
-	return node;
+	return node_index;
 }
 
 
@@ -106,13 +108,13 @@ int main()
 		Dot( Vec3( 0.5f, 0.5f ) ) );
 	graphics.renderer.add( square );
 	
-	auto& triangle = create_triangle( graphics,
+	auto triangle = create_triangle( graphics,
 		Dot( Vec3( 0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( -0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ) ) );
 	graphics.renderer.add( triangle );
 
-	auto& quad = create_quad( graphics );
+	auto quad = create_quad( graphics );
 	graphics.renderer.add( quad );
 
 	while ( graphics.window.is_alive() )
@@ -120,9 +122,9 @@ int main()
 		graphics.glfw.poll();
 		auto dt = graphics.glfw.get_delta();
 
-		update( dt, triangle );
+		update( dt, *graphics.models.get_node( triangle ) );
 		update( dt, square.ubo );
-		update( dt, quad );
+		update( dt, *graphics.models.get_node( quad ) );
 
 		if ( graphics.render_begin() )
 		{

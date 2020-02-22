@@ -863,9 +863,9 @@ mth::Mat4 perspective( const float a, const float y, const float f, const float 
 	float cotfov = 1.0f / std::tan( 0.5f * y );
 	proj.matrix[0] = cotfov / a;
 	proj.matrix[5] = -cotfov;
-	proj.matrix[10] = -( n + f ) / ( f - n );
-	proj.matrix[14] = -2.0f * n * f / ( f - n );
+	proj.matrix[10] = f / ( ( n - f ) * 2.0f );
 	proj.matrix[11] = -1.0f;
+	proj.matrix[14] = n * f / ( ( n - f ) * 2.0f );
 
 	return proj;
 }
@@ -884,22 +884,22 @@ mth::Mat4 look_at( const mth::Vec3& eye, const mth::Vec3& center, mth::Vec3 up )
 
 	mth::Mat4 matrix = {};
 
-	matrix[0][0] = right.x;
-	matrix[1][0] = right.y;
-	matrix[2][0] = right.z;
-	matrix[3][0] = -mth::Vec3::dot( right, eye );
-	matrix[0][1] = up.x;
-	matrix[1][1] = up.y;
-	matrix[2][1] = up.z;
-	matrix[3][1] = -mth::Vec3::dot( up, eye );
-	matrix[0][2] = forward.x;
-	matrix[1][2] = forward.y;
-	matrix[2][2] = forward.z;
-	matrix[3][2] = -mth::Vec3::dot( forward, eye );
-	matrix[0][3] = 0;
-	matrix[1][3] = 0;
-	matrix[2][3] = 0;
-	matrix[3][3] = 1.0f;
+	matrix( 0, 0 ) = right.x;
+	matrix( 0, 1 ) = right.y;
+	matrix( 0, 2 ) = right.z;
+	matrix( 0, 3 ) = -mth::Vec3::dot( right, eye );
+	matrix( 1, 0 ) = up.x;
+	matrix( 1, 1 ) = up.y;
+	matrix( 1, 2 ) = up.z;
+	matrix( 1, 3 ) = -mth::Vec3::dot( up, eye );
+	matrix( 2, 0 ) = forward.x;
+	matrix( 2, 1 ) = forward.y;
+	matrix( 2, 2 ) = forward.z;
+	matrix( 2, 3 ) = -mth::Vec3::dot( forward, eye );
+	matrix( 3, 0 ) = 0.0f;
+	matrix( 3, 1 ) = 0.0f;
+	matrix( 3, 2 ) = 0.0f;
+	matrix( 3, 3 ) = 1.0f;
 
 	return matrix;
 }
@@ -1222,34 +1222,37 @@ void Graphics::draw( const gtf::Node& node, Primitive& primitive, const mth::Mat
 }
 
 
-void Graphics::draw( const gtf::Node& node, const mth::Mat4& transform )
+void Graphics::draw( const int node_index, const mth::Mat4& transform )
 {
+	auto node = models.get_node( node_index );
+
 	// Current transform
-	auto temp_transform = node.matrix;
-	temp_transform.scale( node.scale );
-	temp_transform.rotate( node.rotation );
-	temp_transform.translate( node.translation );
+	auto temp_transform = node->matrix;
+	temp_transform.scale( node->scale );
+	temp_transform.rotate( node->rotation );
+	temp_transform.translate( node->translation );
 	temp_transform = transform * temp_transform;
 
 	// Render its children
-	for ( auto child : node.children )
+	for ( auto index : node->children )
 	{
-		draw( *child, temp_transform );
+		draw( index, temp_transform );
 	}
 
 	// Render the node
-	if ( node.mesh_index >= 0 )
+	if ( node->mesh >= 0 )
 	{
-		auto& mesh = models.meshes[node.mesh_index];
+		assert( node->mesh < models.meshes.size() && "Cannot get mesh out of bounds" );
+		auto& mesh = models.meshes[node->mesh];
 		for ( auto& primitive : mesh.primitives )
 		{
 			if ( primitive.material )
 			{
-				draw( node, primitive, temp_transform );
+				draw( *node, primitive, temp_transform );
 			}
 			else
 			{
-				draw_lines( node, primitive, temp_transform );
+				draw_lines( *node, primitive, temp_transform );
 			}
 		}
 	}
@@ -1258,9 +1261,10 @@ void Graphics::draw( const gtf::Node& node, const mth::Mat4& transform )
 
 void Graphics::draw( const gtf::Scene& scene )
 {
-	std::for_each( std::begin( scene.nodes ), std::end( scene.nodes ), [this]( auto n ) {
-		draw( models.nodes[n] );
-	});
+	std::for_each(
+		std::begin( scene.nodes ),
+		std::end( scene.nodes ),
+		[this]( auto n ) { draw( n ); } );
 }
 
 

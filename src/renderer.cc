@@ -4,6 +4,7 @@
 #include <spot/gltf/mesh.h>
 
 #include "spot/gfx/graphics.h"
+#include "spot/gfx/models.h"
 
 namespace gtf = spot::gltf;
 
@@ -229,19 +230,24 @@ void Renderer::add( const Rect& rect )
 
 size_t hash( const gtf::Node& node, const Primitive& primitive )
 {
-	size_t hash = reinterpret_cast<size_t>( &node );
+	size_t hash = node.index;
 	hash += reinterpret_cast<size_t>( &primitive );
 	return hash;
 }
 
 
-void Renderer::add( const gtf::Node& node )
+void Renderer::add( const int node_index )
 {
-	auto& mesh = graphics.models.meshes[node.mesh_index];
+	auto node = graphics.models.get_node( node_index );
+	if ( node->mesh < 0 )
+	{
+		return;
+	}
+	auto& mesh = graphics.models.meshes[node->mesh];
 
 	for ( auto& primitive : mesh.primitives )
 	{
-		auto key = hash( node, primitive );
+		auto key = hash( *node, primitive );
 		// Find Vulkan resources associated to this mesh
 		auto it = mesh_resources.find( key );
 
@@ -270,7 +276,15 @@ void Renderer::add( const gtf::Node& node )
 			auto [it, ok] = mesh_resources.emplace( key, std::move( resource ) );
 			assert( ok && "Cannot emplace mesh resource" );
 		}
+	}
+}
 
+
+void Renderer::add( const Models& models )
+{
+	for ( auto& node : models.get_nodes() )
+	{
+		add( node.index );
 	}
 }
 

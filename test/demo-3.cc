@@ -22,7 +22,7 @@ void update( const double dt, gtf::Node& node )
 }
 
 
-gtf::Node& create_card( gfx::Graphics& graphics )
+int create_card( gfx::Graphics& graphics )
 {
 	using namespace gfx;
 
@@ -62,15 +62,15 @@ gtf::Node& create_card( gfx::Graphics& graphics )
 	material.texture = graphics.images.load( "img/card.png" );
 	card.primitives[0].material = &material;
 
-	auto& node = graphics.models.nodes.emplace_back();
-	node.index = 0;
-	node.mesh_index = 0;
+	auto node_index = graphics.models.create_node();
+	auto node = graphics.models.get_node( node_index );
+	node->mesh = 0;
 
-	graphics.renderer.add( node );
+	graphics.renderer.add( node_index );
 
-	graphics.models.scene.nodes.emplace_back( node.index );
+	graphics.models.scene.nodes.emplace_back( node_index );
 
-	return node;
+	return node_index;
 }
 
 
@@ -80,7 +80,7 @@ int main()
 
 	auto graphics = Graphics();
 
-	auto& card = create_card( graphics );
+	auto card = create_card( graphics );
 
 	graphics.view = look_at(
 		{ 0.0f, 0.0f, -2.0f },
@@ -93,7 +93,7 @@ int main()
 		graphics.glfw.poll();
 		auto dt = graphics.glfw.get_delta();
 
-		update( dt, card );
+		update( dt, *graphics.models.get_node( card ) );
 
 		if ( graphics.render_begin() )
 		{

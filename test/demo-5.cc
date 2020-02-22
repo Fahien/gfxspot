@@ -10,12 +10,13 @@ namespace gfx = spot::gfx;
 namespace gtf = spot::gltf;
 
 
-gtf::Node& create_line( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b )
+int create_line( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b )
 {
-	auto& node = graphics.models.nodes.emplace_back();
+	auto node_index = graphics.models.create_node();
+	auto node = graphics.models.get_node( node_index );
 
 	auto& mesh = graphics.models.meshes.emplace_back();
-	node.mesh_index = graphics.models.meshes.size() - 1;
+	node->mesh = graphics.models.meshes.size() - 1;
 
 	auto& primitive = mesh.primitives.emplace_back();
 	primitive.vertices = {
@@ -25,16 +26,17 @@ gtf::Node& create_line( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b )
 
 	primitive.indices = { 0, 1 };
 
-	return node;
+	return node_index;
 }
 
 
-gtf::Node& create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c )
+int create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c )
 {
-	auto& node = graphics.models.nodes.emplace_back();
+	auto node_index = graphics.models.create_node();
+	auto node = graphics.models.get_node( node_index );
 
 	auto& mesh = graphics.models.meshes.emplace_back();
-	node.mesh_index = graphics.models.meshes.size() - 1;
+	node->mesh = graphics.models.meshes.size() - 1;
 
 	auto& primitive = mesh.primitives.emplace_back();
 	primitive.vertices = {
@@ -45,51 +47,55 @@ gtf::Node& create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx
 
 	primitive.indices = { 0, 1, 1, 2, 2, 0 };
 
-	return node;
+	return node_index;
 }
 
 
 /// @todo Test thoroughly this, as meshes suddenly disappear at a random moment
 void rotate( gtf::Node& n, float angle )
 {
-	auto matrix = mth::Mat4( n.rotation );
-	matrix.rotateY( angle );
-	n.rotation = mth::Quat( matrix );
+	const mth::Vec3 axis = { 0.0f, 0.0f, 1.0f };
+	auto rot_axis = mth::Quat( axis, angle );
+	n.rotation *= rot_axis;
 }
 
 
-int main()
+int main( const int argc, const char** argv )
 {
 	using namespace spot::gfx;
 
 	auto graphics = Graphics();
 
-	auto& x = create_line( graphics,
+	gtf::Scene* scene = nullptr;
+	if ( argc > 1 )
+	{
+		auto path = std::string( argv[1] );
+		scene = &graphics.models.load( path );
+	}
+
+	auto x = create_line( graphics,
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ), Color( 1.0f, 0.0f, 0.0f, 1.0f) ),
 		Dot( Vec3( 1.0f, 0.0f, 0.0f ), Color( 1.0f, 0.0f, 0.0f, 1.0f ) ) );
-	graphics.renderer.add( x );
 	
-	auto& y = create_line( graphics,
+	auto y = create_line( graphics,
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ), Color( 0.0f, 1.0f, 0.0f, 1.0f) ),
 		Dot( Vec3( 0.0f, 1.0f, 0.0f ), Color( 0.0f, 1.0f, 0.0f, 1.0f ) ) );
-	graphics.renderer.add( y );
 
-	auto& z = create_line( graphics,
+	auto z = create_line( graphics,
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ), Color( 0.0f, 0.0f, 1.0f, 1.0f ) ),
 		Dot( Vec3( 0.0f, 0.0f, 1.0f ), Color( 0.0f, 0.0f, 1.0f, 1.0f ) ) );
-	graphics.renderer.add( z );
 
 	auto triangle = create_triangle( graphics,
 		Dot( Vec3( 0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( -0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ) ) );
-	graphics.renderer.add( triangle );
+	
+	graphics.renderer.add( graphics.models );
 
-	graphics.view = look_at(
-		{ 1.5f, 1.5f, 1.5f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 1.0f, 0.0f }
-	);
+	mth::Vec3 eye = { 1.5f, 1.5f, 1.5f };
+	mth::Vec3 zero = {};
+	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	graphics.view = look_at( eye, zero, up );
 
 	while ( graphics.window.is_alive() )
 	{
@@ -100,10 +106,15 @@ int main()
 		if ( graphics.window.swipe.x != 0 )
 		{
 			auto angle = mth::radians( graphics.window.swipe.x );
-			rotate( x, angle );
-			rotate( y, angle );
-			rotate( z, angle );
-			rotate( triangle, angle );
+			rotate( *graphics.models.get_node( x ), angle );
+			rotate( *graphics.models.get_node( y ), angle );
+			rotate( *graphics.models.get_node( z ), angle );
+			rotate( *graphics.models.get_node( triangle ), angle );
+		}
+
+		if ( graphics.window.scroll.y != 0 )
+		{
+			graphics.models.get_node( 2 )->translation.y += graphics.window.scroll.y;
 		}
 
 		if ( graphics.render_begin() )
@@ -111,7 +122,14 @@ int main()
 			graphics.draw( x );
 			graphics.draw( y );
 			graphics.draw( z );
-			graphics.draw( triangle );
+			if ( scene )
+			{
+				graphics.draw( *scene );
+			}
+			else
+			{
+				graphics.draw( triangle );
+			}
 
 			graphics.render_end();
 		}

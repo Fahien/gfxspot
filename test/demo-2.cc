@@ -127,10 +127,11 @@ int main()
 
 	graphics.models.meshes.emplace_back( std::move( bugart ) );
 
-	auto& node = graphics.models.nodes.emplace_back();
-	node.mesh_index = 0;
+	auto node_index = graphics.models.create_node();
+	auto node = graphics.models.get_node( node_index );
+	node->mesh = 0;
 
-	graphics.renderer.add( node );
+	graphics.renderer.add( node_index );
 
 	while ( graphics.window.is_alive() )
 	{
@@ -139,7 +140,7 @@ int main()
 
 		if ( graphics.render_begin() )
 		{
-			graphics.draw( node );
+			graphics.draw( node_index );
 			graphics.render_end();
 		}
 	}

@@ -22,6 +22,7 @@ struct Primitive;
 class Device;
 class Swapchain;
 class Graphics;
+class Models;
 
 struct Resources
 {
@@ -70,7 +71,8 @@ class Renderer
 
 	void add( const Line& t );
 	void add( const Rect& r );
-	void add( const gltf::Node& n );
+	void add( int node );
+	void add( const Models& models );
 
 	Graphics& graphics;
 
@@ -81,7 +83,7 @@ class Renderer
 	std::unordered_map<const Line*, Resources> line_resources;
 	std::unordered_map<const Rect*, Resources> rect_resources;
 
-	/// @brief The key of this map is a hash value of a Node and a Primitive
+	/// @brief The key of this map is a hash value of a node index and a Primitive
 	/// The rationale is that a node may refer to multiple primitives
 	/// And each primitives may need a different PipelineLayout
 	std::unordered_map<size_t, MeshResources> mesh_resources;

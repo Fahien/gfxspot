@@ -114,17 +114,29 @@ class Models
 
 	gltf::Scene& load( const std::string& path );
 
+	/// @brief Creates a node and assign it an index
+	/// @return The created node
+	int create_node();
+
+	/// @return The node at index i, null otherwhise
+	gltf::Node* get_node( int i );
+
+	/// @return The list of nodes;
+	const std::vector<gltf::Node>& get_nodes() const { return nodes; };
+
 	Graphics& graphics;
 
 	Images images;
 
-	std::vector<gltf::Node> nodes;
 	gltf::Scene scene;
 
 	/// Materials can be referred by multiple primitives
 	std::vector<gfx::Material> materials;
 
 	std::vector<gfx::Mesh> meshes;
+
+  private:
+	std::vector<gltf::Node> nodes;
 };
 
 
