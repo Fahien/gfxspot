@@ -18,6 +18,8 @@ class Buffer;
 
 struct Color
 {
+	static const Color white;
+
 	Color( float rr = 0.0f, float gg = 0.0f, float bb = 0.0f, float aa = 1.0f )
 	: r { rr }, g { gg }, b { bb }, a { aa } {}
 
@@ -30,6 +32,8 @@ struct Color
 
 struct Material
 {
+	static Material white;
+
 	struct alignas(16) Ubo
 	{
 		Color color;
@@ -104,6 +108,7 @@ struct Primitive
 struct Mesh
 {
 	static Mesh create_line( const Vec3& a, const Vec3& b );
+	static Mesh create_rect( const Vec3& a, const Vec3& b );
 
 	std::vector<Primitive> primitives;
 };

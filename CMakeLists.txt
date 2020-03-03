@@ -45,6 +45,7 @@ add_demo( 2 )
 add_demo( 3 )
 add_demo( 4 )
 add_demo( 5 )
+add_demo( 6 )
 add_demo( 7 )
 
 include( shaders )

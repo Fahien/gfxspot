@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <spot/gfx/graphics.h>
 
 /// Draw a line from 0.1 to 4.5
@@ -30,4 +31,6 @@ int main()
 			gfx.render_end();
 		}
 	}
+
+	return EXIT_SUCCESS;
 }

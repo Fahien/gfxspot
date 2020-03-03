@@ -13,6 +13,14 @@ namespace gtf = spot::gltf;
 namespace spot::gfx
 {
 
+const Color Color::white = { 1.0f, 1.0f, 1.0f };
+
+Material Material::white = Material{
+	Ubo{
+		Color::white
+	}
+};
+
 
 Mesh Mesh::create_line( const Vec3& a, const Vec3& b )
 {
@@ -25,6 +33,44 @@ Mesh Mesh::create_line( const Vec3& a, const Vec3& b )
 	prim.vertices[1].p = b;
 
 	prim.indices = { 0, 1 };
+
+	ret.primitives.emplace_back( std::move( prim ) );
+
+	return ret;
+}
+
+
+Mesh Mesh::create_rect( const Vec3& a, const Vec3& b )
+{
+	Mesh ret;
+
+	Primitive prim;
+
+	prim.vertices.resize( 4 );
+	prim.vertices[0].p = a;
+	prim.vertices[1].p = Vec3( b.x, a.y );
+	prim.vertices[2].p = b;
+	prim.vertices[3].p = Vec3( a.x, b.y );
+
+	prim.material = &Material::white;
+
+	// .---B
+	// A---`
+	bool case1 = ( b.x > a.x && b.y > a.y );
+
+	// ,---A
+	// B---`
+	bool case2 = ( b.x < a.x && b.y < a.y );
+
+	if ( case1 || case2 )
+	{
+		prim.indices = { 0, 1, 2, 0, 2, 3 };
+	}
+	else
+	{
+		prim.indices = { 0, 2, 1, 0, 3, 2 };
+	}
+	
 
 	ret.primitives.emplace_back( std::move( prim ) );
 
