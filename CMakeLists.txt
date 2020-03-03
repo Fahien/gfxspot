@@ -11,6 +11,7 @@ find_package( GLFW )
 find_package( PNG )
 include( AddMathSpot )
 include( AddGltfSpot )
+include( doxygen )
 
 # Lib
 set( SOURCES
@@ -44,5 +45,6 @@ add_demo( 2 )
 add_demo( 3 )
 add_demo( 4 )
 add_demo( 5 )
+add_demo( 7 )
 
 include( shaders )

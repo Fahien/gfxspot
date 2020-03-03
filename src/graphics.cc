@@ -1189,6 +1189,52 @@ void Graphics::draw( Rect& rect )
 }
 
 
+void Graphics::draw( Mesh& mesh )
+{
+	for ( auto& prim : mesh.primitives )
+	{
+		draw( prim );
+	}
+}
+
+
+void Graphics::draw( Primitive& primitive, const mth::Mat4& transform )
+{
+	auto pair = renderer.prim_resources.find( hash( primitive ) );
+	if ( pair == std::end( renderer.prim_resources ) )
+	{
+		printf( "Cannot find resources for a primitive, adding\n" );
+		pair = renderer.add( primitive );
+	}
+
+	auto& resources = pair->second;
+
+	UniformBufferObject ubo;
+	ubo.model = transform;
+	ubo.view  = view;
+	ubo.proj  = proj;
+
+	auto data = reinterpret_cast<const uint8_t*>( &ubo );
+	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
+	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
+
+	if ( primitive.material )
+	{
+		auto material_data = reinterpret_cast<const uint8_t*>( &primitive.material->ubo );
+		auto& material_ubo = resources.material_ubos[current_frame_index];
+		material_ubo.upload( material_data, sizeof( Material::Ubo ) );
+	}
+
+	current_command_buffer->bind( *primitive.pipeline );
+	current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
+	current_command_buffer->bind_index_buffer( resources.index_buffer );
+
+	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
+	current_command_buffer->bind_descriptor_sets( *primitive.layout, descriptor_set );
+	current_command_buffer->draw_indexed( primitive.indices.size() );
+}
+
+
 void Graphics::draw( const gtf::Node& node, Primitive& primitive, const mth::Mat4& transform )
 {
 	assert( primitive.material && "Cannot render primitive without material with this layout" );

@@ -95,12 +95,16 @@ struct Primitive
 	/// A material use to draw the primitive
 	/// It can change at runtime
 	Material* material = nullptr;
+	PipelineLayout* layout = nullptr;
+	GraphicsPipeline* pipeline = nullptr;
 };
 
 
 /// @brief A mesh is just a collection of primitives
 struct Mesh
 {
+	static Mesh create_line( const Vec3& a, const Vec3& b );
+
 	std::vector<Primitive> primitives;
 };
 

@@ -62,7 +62,8 @@ struct MeshResources
 	std::vector<VkDescriptorSet> descriptor_sets;
 };
 
-size_t hash( const gltf::Node& node, const Primitive& primitive );
+size_t hash( const Primitive& prim );
+size_t hash( const gltf::Node& node, const Primitive& prim );
 
 class Renderer
 {
@@ -71,6 +72,7 @@ class Renderer
 
 	void add( const Line& t );
 	void add( const Rect& r );
+	std::unordered_map<size_t, MeshResources>::iterator add( Primitive& p );
 	void add( int node );
 	void add( const Models& models );
 
@@ -82,6 +84,8 @@ class Renderer
 	/// - DescriptorPool and DescriptorSet per swapchain image
 	std::unordered_map<const Line*, Resources> line_resources;
 	std::unordered_map<const Rect*, Resources> rect_resources;
+
+	std::unordered_map<size_t, MeshResources> prim_resources;
 
 	/// @brief The key of this map is a hash value of a node index and a Primitive
 	/// The rationale is that a node may refer to multiple primitives

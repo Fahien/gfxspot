@@ -51,7 +51,6 @@ int create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c
 }
 
 
-/// @todo Test thoroughly this, as meshes suddenly disappear at a random moment
 void rotate( gtf::Node& n, float angle )
 {
 	const mth::Vec3 axis = { 0.0f, 0.0f, 1.0f };

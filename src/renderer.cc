@@ -227,12 +227,111 @@ void Renderer::add( const Rect& rect )
 	index_buffer.upload( reinterpret_cast<const uint8_t*>( rect.indices.data() ) );
 }
 
+size_t hash( size_t h ) // base function
+{
+	return h;
+}
+
+size_t hash( float h ) // base function
+{
+	double doub = h;
+	return *reinterpret_cast<size_t*>( &doub );
+}
+
+size_t hash( uint16_t h ) // base function
+{
+	return h;
+}
+
+template<typename T, typename... Targs>
+size_t hash( T value, Targs... args ) // recursive variadic function
+{
+	return hash( value ) ^ ( hash( args... ) << 1 );
+}
+
+
+template<typename T>
+size_t hash( const std::vector<T>& vec )
+{
+	size_t hv = 0;
+
+	for ( auto& elem : vec )
+	{
+		hv ^= ( hash( elem ) << 1 );
+	}
+
+	return hv;
+}
+
+
+size_t hash( const Vec3& vec )
+{
+	auto h = std::hash<float>();
+	return hash( vec.x, vec.y, vec.z );
+}
+
+
+size_t hash( const Vertex& vert )
+{
+	auto hp = hash( vert.p );
+	/// @todo Hash other things
+	return hp;
+}
+
+
+size_t hash( const Primitive& prim )
+{
+	auto hp = hash( prim.vertices );
+	auto hi = hash( prim.indices );
+	return hash( hp, hi );
+}
+
 
 size_t hash( const gtf::Node& node, const Primitive& primitive )
 {
 	size_t hash = node.index;
 	hash += reinterpret_cast<size_t>( &primitive );
 	return hash;
+}
+
+
+std::unordered_map<size_t, MeshResources>::iterator Renderer::add( Primitive& prim )
+{
+	auto key = hash( prim );
+	// Find Vulkan resources associated to this primitive
+	auto it = prim_resources.find( key );
+
+	// If not found, create new resources
+	if ( it == std::end( prim_resources ) )
+	{
+		if ( prim.material )
+		{
+			if ( prim.material->texture != VK_NULL_HANDLE )
+			{
+				/// @todo Refactor layout moving it into pipeline;
+				prim.layout = &graphics.mesh_layout;
+				prim.pipeline = &graphics.mesh_pipeline;
+			}
+			else
+			{
+				prim.layout = &graphics.mesh_no_image_layout;
+				prim.pipeline = &graphics.mesh_no_image_pipeline;
+			}
+		}
+		else
+		{
+			prim.layout = &graphics.line_layout;
+			prim.pipeline = &graphics.line_pipeline;
+		}
+
+		/// @todo Simplify prim.layout prim
+		auto resource = MeshResources( graphics.device, graphics.swapchain, *prim.layout, prim );
+		auto [it, ok] = prim_resources.emplace( key, std::move( resource ) );
+		assert( ok && "Cannot emplace primitive resource" );
+		return it;
+	}
+
+	return it;
 }
 
 

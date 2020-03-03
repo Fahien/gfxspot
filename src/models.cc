@@ -13,6 +13,25 @@ namespace gtf = spot::gltf;
 namespace spot::gfx
 {
 
+
+Mesh Mesh::create_line( const Vec3& a, const Vec3& b )
+{
+	Mesh ret;
+
+	Primitive prim;
+
+	prim.vertices.resize( 2 );
+	prim.vertices[0].p = a;
+	prim.vertices[1].p = b;
+
+	prim.indices = { 0, 1 };
+
+	ret.primitives.emplace_back( std::move( prim ) );
+
+	return ret;
+}
+
+
 Models::Models( Graphics& g )
 : graphics { g }
 , images{ g.device }
