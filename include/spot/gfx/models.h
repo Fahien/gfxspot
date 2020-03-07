@@ -108,7 +108,9 @@ struct Primitive
 struct Mesh
 {
 	static Mesh create_line( const Vec3& a, const Vec3& b );
-	static Mesh create_rect( const Vec3& a, const Vec3& b );
+	static Mesh create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, Material* m = nullptr );
+	static Mesh create_rect( const Vec3& a, const Vec3& b, Material* m = nullptr );
+	static Mesh create_quad( const Vec3& a = { -1.0, -1.0, 0.0f }, const Vec3& b = { 1.0f, 1.0f, 0.0f } );
 
 	std::vector<Primitive> primitives;
 };
@@ -126,6 +128,10 @@ class Models
 	/// @brief Creates a node and assign it an index
 	/// @return The created node
 	int create_node();
+
+	/// @brief Creates a node with a new mesh
+	/// @return The index of the node
+	int create_node( Mesh&& m );
 
 	/// @return The node at index i, null otherwhise
 	gltf::Node* get_node( int i );

@@ -76,7 +76,7 @@ std::vector<VkDescriptorPoolSize> get_mesh_pool_size( const uint32_t count )
 }
 
 
-MeshResources::MeshResources( Device& d, Swapchain& swapchain, PipelineLayout& l, const Primitive& primitive )
+MeshResources::MeshResources( Device& d, Swapchain& swapchain, GraphicsPipeline& pipel, PipelineLayout& l, const Primitive& primitive )
 : vertex_buffer { d, primitive.vertices.size() * sizeof( Vertex ), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT }
 , index_buffer { d, primitive.indices.size() * sizeof( Index ), VK_BUFFER_USAGE_INDEX_BUFFER_BIT }
 , uniform_buffers {}
@@ -86,6 +86,8 @@ MeshResources::MeshResources( Device& d, Swapchain& swapchain, PipelineLayout& l
 	get_mesh_pool_size( swapchain.images.size() * 2 ),
 	uint32_t( swapchain.images.size() * 2 ) }
 , descriptor_sets { descriptor_pool.allocate( l.descriptor_set_layout, swapchain.images.size() ) }
+, pipeline { pipel }
+, layout { l }
 {
 	// Upload vertices
 	{
@@ -264,6 +266,13 @@ size_t hash( const std::vector<T>& vec )
 }
 
 
+size_t hash( const Vec2& vec )
+{
+	auto h = std::hash<float>();
+	return hash( vec.x, vec.y );
+}
+
+
 size_t hash( const Vec3& vec )
 {
 	auto h = std::hash<float>();
@@ -271,11 +280,19 @@ size_t hash( const Vec3& vec )
 }
 
 
+size_t hash( const Color& color )
+{
+	auto h = std::hash<float>();
+	return hash( color.r, color.g, color.b, color.a );
+}
+
+
 size_t hash( const Vertex& vert )
 {
 	auto hp = hash( vert.p );
-	/// @todo Hash other things
-	return hp;
+	auto hc = hash( vert.c );
+	auto ht = hash( vert.t );
+	return hash( hp, hc, ht );
 }
 
 
@@ -325,7 +342,7 @@ std::unordered_map<size_t, MeshResources>::iterator Renderer::add( Primitive& pr
 		}
 
 		/// @todo Simplify prim.layout prim
-		auto resource = MeshResources( graphics.device, graphics.swapchain, *prim.layout, prim );
+		auto resource = MeshResources( graphics.device, graphics.swapchain, *prim.pipeline, *prim.layout, prim );
 		auto [it, ok] = prim_resources.emplace( key, std::move( resource ) );
 		assert( ok && "Cannot emplace primitive resource" );
 		return it;
@@ -353,25 +370,28 @@ void Renderer::add( const int node_index )
 		// If not found, create new resources
 		if ( it == std::end( mesh_resources ) )
 		{
+			GraphicsPipeline* pipeline = nullptr;
 			PipelineLayout* layout = nullptr;
 			if ( primitive.material )
 			{
 				if ( primitive.material->texture != VK_NULL_HANDLE )
 				{
-
+					pipeline = &graphics.mesh_pipeline;
 					layout = &graphics.mesh_layout;
 				}
 				else
 				{
+					pipeline = &graphics.mesh_no_image_pipeline;
 					layout = &graphics.mesh_no_image_layout;
 				}
 			}
 			else
 			{
+				pipeline = &graphics.line_pipeline;
 				layout = &graphics.line_layout;
 			}
 
-			auto resource = MeshResources( graphics.device, graphics.swapchain, *layout, primitive );
+			auto resource = MeshResources( graphics.device, graphics.swapchain, *pipeline, *layout, primitive );
 			auto [it, ok] = mesh_resources.emplace( key, std::move( resource ) );
 			assert( ok && "Cannot emplace mesh resource" );
 		}

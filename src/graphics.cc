@@ -1209,10 +1209,11 @@ void Graphics::draw( Mesh& mesh )
 
 void Graphics::draw( Primitive& primitive, const mth::Mat4& transform )
 {
-	auto pair = renderer.prim_resources.find( hash( primitive ) );
+	auto hid = hash( primitive );
+	auto pair = renderer.prim_resources.find( hid );
 	if ( pair == std::end( renderer.prim_resources ) )
 	{
-		printf( "Cannot find resources for a primitive, adding\n" );
+		printf( "Cannot find resources for a primitive, adding %lu\n", hid );
 		pair = renderer.add( primitive );
 	}
 
@@ -1234,12 +1235,12 @@ void Graphics::draw( Primitive& primitive, const mth::Mat4& transform )
 		material_ubo.upload( material_data, sizeof( Material::Ubo ) );
 	}
 
-	current_command_buffer->bind( *primitive.pipeline );
+	current_command_buffer->bind( resources.pipeline );
 	current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
 	current_command_buffer->bind_index_buffer( resources.index_buffer );
 
 	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
-	current_command_buffer->bind_descriptor_sets( *primitive.layout, descriptor_set );
+	current_command_buffer->bind_descriptor_sets( resources.layout, descriptor_set );
 	current_command_buffer->draw_indexed( primitive.indices.size() );
 }
 
@@ -1301,14 +1302,7 @@ void Graphics::draw( const int node_index, const mth::Mat4& transform )
 		auto& mesh = models.meshes[node->mesh];
 		for ( auto& primitive : mesh.primitives )
 		{
-			if ( primitive.material )
-			{
-				draw( *node, primitive, temp_transform );
-			}
-			else
-			{
-				draw_lines( *node, primitive, temp_transform );
-			}
+			draw( primitive, temp_transform );
 		}
 	}
 }
@@ -1321,7 +1315,6 @@ void Graphics::draw( const gtf::Scene& scene )
 		std::end( scene.nodes ),
 		[this]( auto n ) { draw( n ); } );
 }
-
 
 
 } // namespace spot::gfx

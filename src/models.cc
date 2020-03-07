@@ -40,7 +40,35 @@ Mesh Mesh::create_line( const Vec3& a, const Vec3& b )
 }
 
 
-Mesh Mesh::create_rect( const Vec3& a, const Vec3& b )
+Mesh Mesh::create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, Material* material )
+{
+	Mesh ret;
+
+	Primitive prim;
+
+	prim.vertices.resize( 3 );
+	prim.vertices[0].p = a;
+	prim.vertices[1].p = b;
+	prim.vertices[2].p = c;
+
+	prim.material = material;
+
+	if ( material )
+	{
+		prim.indices = { 0, 1, 2 };
+	}
+	else
+	{
+		prim.indices = { 0, 1, 1, 2, 2, 0 };
+	}
+
+	ret.primitives.emplace_back( std::move( prim ) );
+
+	return ret;
+}
+
+
+Mesh Mesh::create_rect( const Vec3& a, const Vec3& b, Material* material )
 {
 	Mesh ret;
 
@@ -52,27 +80,50 @@ Mesh Mesh::create_rect( const Vec3& a, const Vec3& b )
 	prim.vertices[2].p = b;
 	prim.vertices[3].p = Vec3( a.x, b.y );
 
-	prim.material = &Material::white;
+	prim.material = material;
 
-	// .---B
-	// A---`
-	bool case1 = ( b.x > a.x && b.y > a.y );
-
-	// ,---A
-	// B---`
-	bool case2 = ( b.x < a.x && b.y < a.y );
-
-	if ( case1 || case2 )
+	if ( material )
 	{
-		prim.indices = { 0, 1, 2, 0, 2, 3 };
+		// .---B
+		// A---`
+		bool case1 = ( b.x > a.x && b.y > a.y );
+
+		// ,---A
+		// B---`
+		bool case2 = ( b.x < a.x && b.y < a.y );
+
+		if ( case1 || case2 )
+		{
+			prim.indices = { 0, 1, 2, 0, 2, 3 };
+		}
+		else
+		{
+			prim.indices = { 0, 2, 1, 0, 3, 2 };
+		}
 	}
 	else
 	{
-		prim.indices = { 0, 2, 1, 0, 3, 2 };
+		// No material, use lines
+		prim.indices = { 0, 1, 1, 2, 2, 3, 3, 0 };
 	}
-	
 
 	ret.primitives.emplace_back( std::move( prim ) );
+
+	return ret;
+}
+
+
+Mesh Mesh::create_quad( const Vec3& a, const Vec3& b )
+{
+	Mesh ret = create_rect( a, b, &Material::white );
+
+	auto& vertices = ret.primitives[0].vertices;
+
+	// Text coords
+	vertices[0].t = Vec2( 0.0f, 0.0 ); // a
+	vertices[1].t = Vec2( 1.0f, 0.0 ); // b
+	vertices[2].t = Vec2( 1.0f, 1.0 ); // c
+	vertices[3].t = Vec2( 0.0f, 1.0 ); // d
 
 	return ret;
 }
@@ -88,6 +139,18 @@ int Models::create_node()
 {
 	auto& node = nodes.emplace_back();
 	node.index = nodes.size() - 1;
+	return node.index;
+}
+
+
+int Models::create_node( Mesh&& mesh )
+{
+	auto& node = nodes.emplace_back();
+	node.index = nodes.size() - 1;
+
+	meshes.emplace_back( std::move( mesh ) );
+	node.mesh = meshes.size() - 1;
+
 	return node.index;
 }
 

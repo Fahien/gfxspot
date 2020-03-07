@@ -10,12 +10,6 @@ namespace gfx = spot::gfx;
 namespace gtf = spot::gltf;
 
 
-void update( const double dt, gfx::UniformBufferObject& ubo )
-{
-	ubo.model.rotateZ( -mth::radians( dt * 16.0 ) );
-}
-
-
 void update( const double dt, gtf::Node& node )
 {
 	static mth::Mat4 model = mth::Mat4::identity;
@@ -24,76 +18,21 @@ void update( const double dt, gtf::Node& node )
 }
 
 
-int create_quad( gfx::Graphics& graphics )
+gfx::Mesh create_lenna( gfx::Graphics& graphics )
 {
 	using namespace spot::gfx;
 
-	Mesh quad;
-
-	Primitive primitive;
-
-	primitive.vertices = {
-		Vertex(
+	Mesh quad = Mesh::create_quad(
 			Vec3( -0.5f, -0.5f, 0.0f ),
-			Color( 0.3f, 0.0f, 0.0f, 0.5f ),
-			Vec2( 0.0f, 0.0 ) // a
-		),
-		Vertex(
-			Vec3( 0.5f, -0.5f, 0.0f ),
-			Color( 0.0f, 0.3f, 0.0f, 0.5f ),
-			Vec2( 1.0f, 0.0 ) // b
-		),
-		Vertex(
-			Vec3( -0.5f, 0.5f, 0.0f ),
-			Color( 0.3f, 0.0f, 0.3f, 0.5f ),
-			Vec2( 0.0f, 1.0 ) // d
-		),
-		Vertex(
-			Vec3( 0.5f, 0.5f, 0.0f ),
-			Color( 0.0f, 0.0f, 0.3f, 0.5f ),
-			Vec2( 1.0f, 1.0 ) // c
-		),
-	};
-
-	// Currently, counterclockwise?
-	primitive.indices = { 0, 2, 1, 1, 2, 3 };
-
-	quad.primitives.emplace_back( std::move( primitive ) );
-
-	auto view = graphics.images.load( "img/lena.png" );
+			Vec3( 0.5f, 0.5f, 0.0f )
+	);
 
 	auto& material = graphics.models.materials.emplace_back();
+	auto view = graphics.images.load( "img/lena.png" );
 	material.texture = view;
 	quad.primitives[0].material = &material;
 
-	graphics.models.meshes.emplace_back( std::move( quad ) );
-
-	auto node_index = graphics.models.create_node();
-	auto node = graphics.models.get_node( node_index );
-	node->mesh = 0;
-
-	return node_index;
-}
-
-
-int create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c )
-{
-	auto node_index = graphics.models.create_node();
-	auto& node = *graphics.models.get_node( node_index );
-
-	auto& mesh = graphics.models.meshes.emplace_back();
-	node.mesh = graphics.models.meshes.size() - 1;
-
-	auto& primitive = mesh.primitives.emplace_back();
-	primitive.vertices = {
-		gfx::Vertex( a.p, a.c ),
-		gfx::Vertex( b.p, b.c ),
-		gfx::Vertex( c.p, c.c )
-	};
-
-	primitive.indices = { 0, 1, 1, 2, 2, 0 };
-
-	return node_index;
+	return quad;
 }
 
 
@@ -103,19 +42,29 @@ int main()
 
 	auto graphics = Graphics();
 
-	auto square = Rect(
-		Dot( Vec3( -0.5f, -0.5f ) ),
-		Dot( Vec3( 0.5f, 0.5f ) ) );
-	graphics.renderer.add( square );
+	auto square = graphics.models.create_node(
+		Mesh::create_rect(
+			Vec3( -0.5f, -0.5f ),
+			Vec3( 0.5f, 0.5f )
+		)
+	);
 	
-	auto triangle = create_triangle( graphics,
-		Dot( Vec3( 0.5f, 0.0f, -1.0f ) ),
-		Dot( Vec3( -0.5f, 0.0f, -1.0f ) ),
-		Dot( Vec3( 0.0f, 0.0f, 0.0f ) ) );
-	graphics.renderer.add( triangle );
+	auto triangle = graphics.models.create_node(
+		Mesh::create_triangle(
+			Vec3( 0.5f, 0.0f, -1.0f ),
+			Vec3( -0.5f, 0.0f, -1.0f ),
+			Vec3( 0.0f, 0.0f, 0.0f )
+		)
+	);
 
-	auto quad = create_quad( graphics );
-	graphics.renderer.add( quad );
+	auto quad = graphics.models.create_node(
+		create_lenna( graphics )
+	);
+
+	mth::Vec3 eye = { 1.5f, 1.5f, 1.5f };
+	mth::Vec3 zero = {};
+	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	graphics.view = look_at( eye, zero, up );
 
 	while ( graphics.window.is_alive() )
 	{
@@ -123,7 +72,7 @@ int main()
 		auto dt = graphics.glfw.get_delta();
 
 		update( dt, *graphics.models.get_node( triangle ) );
-		update( dt, square.ubo );
+		update( dt, *graphics.models.get_node( square ) );
 		update( dt, *graphics.models.get_node( quad ) );
 
 		if ( graphics.render_begin() )

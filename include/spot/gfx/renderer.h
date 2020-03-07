@@ -44,7 +44,7 @@ struct Resources
 
 struct MeshResources
 {
-	MeshResources( Device& dv, Swapchain& sc, PipelineLayout& pl, const Primitive& prim );
+	MeshResources( Device& dv, Swapchain& sc, GraphicsPipeline& pipeline, PipelineLayout& layout, const Primitive& prim );
 
 	Buffer vertex_buffer;
 	Buffer index_buffer;
@@ -60,6 +60,9 @@ struct MeshResources
 	DescriptorPool descriptor_pool;
 	// Descriptor sets for each swapchain image
 	std::vector<VkDescriptorSet> descriptor_sets;
+
+	GraphicsPipeline& pipeline;
+	PipelineLayout& layout;
 };
 
 size_t hash( const Primitive& prim );
