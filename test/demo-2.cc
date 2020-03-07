@@ -133,6 +133,11 @@ int main()
 
 	graphics.renderer.add( node_index );
 
+	mth::Vec3 eye = { 0.0f, 0.0f, -2.0f };
+	mth::Vec3 zero = {};
+	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	graphics.view = look_at( eye, zero, up );
+
 	while ( graphics.window.is_alive() )
 	{
 		graphics.glfw.poll();
