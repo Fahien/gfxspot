@@ -41,6 +41,25 @@ Image::Image( Device& d, const VkExtent2D ext, const VkFormat fmt )
 , format { fmt }
 , command_pool { d }
 {
+	// Check format
+	assert( d.physical_device.supports( format ) && "VkFormat not supported" );
+	auto props = d.physical_device.get_format_properties( fmt );
+
+	// Select proper tiling
+	VkImageTiling tiling = {};
+	if ( props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT )
+	{
+		tiling = VK_IMAGE_TILING_OPTIMAL;
+	}
+	else if ( props.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT )
+	{
+		tiling = VK_IMAGE_TILING_LINEAR;
+	}
+	else
+	{
+		assert( false && "Current device cannot sample from this format" );
+	}
+
 	// Image
 	VkImageCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -48,7 +67,7 @@ Image::Image( Device& d, const VkExtent2D ext, const VkFormat fmt )
 	info.extent = extent;
 	info.mipLevels = 1;
 	info.arrayLayers = 1;
-	info.tiling = VK_IMAGE_TILING_OPTIMAL;
+	info.tiling = tiling;
 	info.format = format;
 	info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;

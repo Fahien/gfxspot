@@ -83,10 +83,16 @@ class PhysicalDevice
 	PhysicalDevice( VkPhysicalDevice h );
 
 	VkSurfaceCapabilitiesKHR get_capabilities( VkSurfaceKHR s );
+
+	/// @return Supported surface formats
 	std::vector<VkSurfaceFormatKHR> get_formats( VkSurfaceKHR s );
+
 	std::vector<VkPresentModeKHR> get_present_modes( VkSurfaceKHR s );
 	uint32_t get_memory_type( uint32_t type_filter, VkMemoryPropertyFlags f );
-	VkFormatProperties get_format_properties( VkFormat f );
+	VkFormatProperties get_format_properties( VkFormat f ) const;
+
+	/// @return Whether a format is supported by the GPU
+	bool supports( VkFormat f ) const;
 
 	VkPhysicalDevice handle = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties properties;

@@ -83,9 +83,18 @@ Png::Png( const std::string& path )
 
 	png_get_IHDR( png, info, &width, &height, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method );
 
+	/// Some graphics card only support sampling from RGBA, therefore we are forcing RGBA
+	/// @todo Improve by querying capabilities of the GPU before adjusting png info
 	if ( color_type == PNG_COLOR_TYPE_PALETTE )
 	{
 		png_set_palette_to_rgb( png );
+		png_set_add_alpha( png, 255, PNG_FILLER_AFTER );
+		png_read_update_info( png, info );
+		color_type = png_get_color_type( png, info );
+	}
+	else if ( color_type == PNG_COLOR_TYPE_RGB )
+	{
+		png_set_add_alpha( png, 255, PNG_FILLER_AFTER );
 		png_read_update_info( png, info );
 		color_type = png_get_color_type( png, info );
 	}

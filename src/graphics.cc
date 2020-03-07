@@ -150,11 +150,20 @@ uint32_t PhysicalDevice::get_memory_type( uint32_t type_filter, VkMemoryProperty
 }
 
 
-VkFormatProperties PhysicalDevice::get_format_properties( const VkFormat format )
+VkFormatProperties PhysicalDevice::get_format_properties( const VkFormat format ) const
 {
 	VkFormatProperties props;
 	vkGetPhysicalDeviceFormatProperties( handle, format, &props );
 	return props;
+}
+
+
+bool PhysicalDevice::supports( const VkFormat format ) const
+{
+	VkFormatProperties zero = {};
+	auto props = get_format_properties( format );
+	auto res = std::memcmp( &props, &zero, sizeof( props ) );
+	return res != 0;
 }
 
 
