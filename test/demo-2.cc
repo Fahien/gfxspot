@@ -131,8 +131,6 @@ int main()
 	auto node = graphics.models.get_node( node_index );
 	node->mesh = 0;
 
-	graphics.renderer.add( node_index );
-
 	mth::Vec3 eye = { 0.0f, 0.0f, -2.0f };
 	mth::Vec3 zero = {};
 	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };

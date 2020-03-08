@@ -89,8 +89,6 @@ int main( const int argc, const char** argv )
 		Dot( Vec3( -0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ) ) );
 	
-	graphics.renderer.add( graphics.models );
-
 	mth::Vec3 eye = { 1.5f, 1.5f, 1.5f };
 	mth::Vec3 zero = {};
 	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };

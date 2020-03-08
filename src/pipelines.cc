@@ -22,6 +22,7 @@ PipelineLayout::PipelineLayout( Device& d, const std::vector<VkDescriptorSetLayo
 	assert( res == VK_SUCCESS && "Cannot create pipeline layout" );
 }
 
+
 PipelineLayout::~PipelineLayout()
 {
 	if ( handle != VK_NULL_HANDLE )
@@ -34,7 +35,7 @@ PipelineLayout::~PipelineLayout()
 GraphicsPipeline::GraphicsPipeline(
 	VkVertexInputBindingDescription bindings,
 	const std::vector<VkVertexInputAttributeDescription>& attributes,
-	PipelineLayout& layout,
+	PipelineLayout& layo,
 	ShaderModule& vert,
 	ShaderModule& frag,
 	RenderPass& render_pass,
@@ -42,6 +43,7 @@ GraphicsPipeline::GraphicsPipeline(
 	const VkRect2D& scissor,
 	const VkPrimitiveTopology topology )
 : device { vert.device }
+, layout { layo }
 {
 	VkPipelineVertexInputStateCreateInfo input_info = {};
 	input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -172,15 +174,17 @@ GraphicsPipeline::~GraphicsPipeline()
 
 GraphicsPipeline::GraphicsPipeline( GraphicsPipeline&& other )
 : device { other.device }
+, layout { other.layout }
 , handle { other.handle }
 {
 	other.handle = VK_NULL_HANDLE;
 }
 
+
 GraphicsPipeline& GraphicsPipeline::operator=( GraphicsPipeline&& other )
 {
-	assert( device.handle == other.device.handle &&
-		"Cannot move assign graphics line_pipeline of another device" );
+	assert( device.handle == other.device.handle && "Cannot move assign graphics line_pipeline of another device" );
+	assert( layout.handle == other.layout.handle && "Cannot move pipelines with different layout" );
 	std::swap( handle, other.handle );
 	return *this;
 }

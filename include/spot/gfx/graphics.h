@@ -287,10 +287,6 @@ class Graphics
 	void draw( Mesh& mesh );
 	void draw( Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
 
-	void draw_lines( const gltf::Node& node, Primitive& p, const math::Mat4& transform = math::Mat4::identity );
-	void draw_lines( const gltf::Node& node, const math::Mat4& transform = math::Mat4::identity );
-
-	void draw( const gltf::Node& node, Primitive& p, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const int node, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const gltf::Scene& scene );
 

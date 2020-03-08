@@ -10,6 +10,8 @@
 
 #include <spot/gltf/node.h>
 
+#include "spot/gfx/hash.h"
+
 namespace gtf = spot::gltf;
 
 
@@ -1053,7 +1055,8 @@ bool Graphics::render_begin()
 			line_frag,
 			render_pass,
 			viewport,
-			scissor, VK_PRIMITIVE_TOPOLOGY_POINT_LIST );
+			scissor,
+			VK_PRIMITIVE_TOPOLOGY_POINT_LIST );
 		line_pipeline = GraphicsPipeline(
 			get_bindings<Dot>(),
 			get_attributes<Dot>(),
@@ -1062,7 +1065,8 @@ bool Graphics::render_begin()
 			line_frag,
 			render_pass,
 			viewport,
-			scissor, VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
+			scissor,
+			VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
 		mesh_pipeline = GraphicsPipeline(
 			get_bindings<Vertex>(),
 			get_attributes<Vertex>(),
@@ -1152,31 +1156,6 @@ void Graphics::draw( Line& line )
 }
 
 
-void Graphics::draw_lines( const gtf::Node& node, Primitive& primitive, const mth::Mat4& transform )
-{
-	auto pair = renderer.mesh_resources.find( hash( node, primitive ) );
-	assert( pair != std::end( renderer.mesh_resources ) && "Cannot find resources for a mesh" );
-	auto& resources = pair->second;
-
-	UniformBufferObject ubo;
-	ubo.model = transform;
-	ubo.view = view;
-	ubo.proj = proj;
-
-	auto data = reinterpret_cast<const uint8_t*>( &ubo );
-	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
-	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
-
-	current_command_buffer->bind( line_pipeline );
-	current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
-	current_command_buffer->bind_index_buffer( resources.index_buffer );
-
-	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
-	current_command_buffer->bind_descriptor_sets( line_layout, descriptor_set );
-	current_command_buffer->draw_indexed( primitive.indices.size() );
-}
-
-
 void Graphics::draw( Rect& rect )
 {
 	auto& resources = renderer.rect_resources.find( &rect )->second;
@@ -1210,8 +1189,8 @@ void Graphics::draw( Mesh& mesh )
 void Graphics::draw( Primitive& primitive, const mth::Mat4& transform )
 {
 	auto hid = hash( primitive );
-	auto pair = renderer.prim_resources.find( hid );
-	if ( pair == std::end( renderer.prim_resources ) )
+	auto pair = renderer.resources.find( hid );
+	if ( pair == std::end( renderer.resources ) )
 	{
 		printf( "Cannot find resources for a primitive, adding %lu\n", hid );
 		pair = renderer.add( primitive );
@@ -1240,40 +1219,7 @@ void Graphics::draw( Primitive& primitive, const mth::Mat4& transform )
 	current_command_buffer->bind_index_buffer( resources.index_buffer );
 
 	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
-	current_command_buffer->bind_descriptor_sets( resources.layout, descriptor_set );
-	current_command_buffer->draw_indexed( primitive.indices.size() );
-}
-
-
-void Graphics::draw( const gtf::Node& node, Primitive& primitive, const mth::Mat4& transform )
-{
-	assert( primitive.material && "Cannot render primitive without material with this layout" );
-	auto& layout = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_layout : mesh_layout;
-
-	auto pair = renderer.mesh_resources.find( hash( node, primitive ) );
-	assert( pair != std::end( renderer.mesh_resources ) && "Cannot find resources for a mesh" );
-	auto& resources = pair->second;
-
-	UniformBufferObject ubo;
-	ubo.model = transform;
-	ubo.view  = view;
-	ubo.proj  = proj;
-
-	auto data = reinterpret_cast<const uint8_t*>( &ubo );
-	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
-	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
-
-	auto material_data = reinterpret_cast<const uint8_t*>( &primitive.material->ubo );
-	auto& material_ubo = resources.material_ubos[current_frame_index];
-	material_ubo.upload( material_data, sizeof( Material::Ubo ) );
-
-	auto& pipeline = primitive.material->texture == VK_NULL_HANDLE ? mesh_no_image_pipeline : mesh_pipeline;
-	current_command_buffer->bind( pipeline );
-	current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
-	current_command_buffer->bind_index_buffer( resources.index_buffer );
-
-	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
-	current_command_buffer->bind_descriptor_sets( layout, descriptor_set );
+	current_command_buffer->bind_descriptor_sets( resources.pipeline.layout, descriptor_set );
 	current_command_buffer->draw_indexed( primitive.indices.size() );
 }
 

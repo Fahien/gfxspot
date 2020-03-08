@@ -24,9 +24,10 @@ class Swapchain;
 class Graphics;
 class Models;
 
-struct Resources
+
+struct DynamicResources
 {
-	Resources( Device& d, Swapchain& s, PipelineLayout& l );
+	DynamicResources( Device& d, Swapchain& s, GraphicsPipeline& pl );
 
 	// Vertices and indices do not change, hence one is enough
 	DynamicBuffer vertex_buffer;
@@ -35,16 +36,18 @@ struct Resources
 	// Uniform buffer for each swapchain image
 	std::vector<Buffer> uniform_buffers;
 
+	GraphicsPipeline& pipeline;
 	/// Descriptor pool for descriptor sets
 	DescriptorPool descriptor_pool;
 	// Descriptor sets for each swapchain image
 	std::vector<VkDescriptorSet> descriptor_sets;
+
 };
 
 
-struct MeshResources
+struct Resources
 {
-	MeshResources( Device& dv, Swapchain& sc, GraphicsPipeline& pipeline, PipelineLayout& layout, const Primitive& prim );
+	Resources( Device& dv, Swapchain& sc, GraphicsPipeline& gp, const Primitive& pm );
 
 	Buffer vertex_buffer;
 	Buffer index_buffer;
@@ -56,28 +59,22 @@ struct MeshResources
 	//ImageView image_view;
 	Sampler sampler;
 
+	GraphicsPipeline& pipeline;
 	/// Descriptor pool for descriptor sets
 	DescriptorPool descriptor_pool;
 	// Descriptor sets for each swapchain image
 	std::vector<VkDescriptorSet> descriptor_sets;
-
-	GraphicsPipeline& pipeline;
-	PipelineLayout& layout;
 };
 
-size_t hash( const Primitive& prim );
-size_t hash( const gltf::Node& node, const Primitive& prim );
 
 class Renderer
 {
   public:
-	Renderer( Graphics& g );
+	Renderer( Graphics& gfx );
 
-	void add( const Line& t );
-	void add( const Rect& r );
-	std::unordered_map<size_t, MeshResources>::iterator add( Primitive& p );
-	void add( int node );
-	void add( const Models& models );
+	void add( const Line& ln );
+	void add( const Rect& rt );
+	std::unordered_map<size_t, Resources>::iterator add( Primitive& pm );
 
 	Graphics& graphics;
 
@@ -85,15 +82,13 @@ class Renderer
 	/// - vertex buffer containing constant data about its vertices
 	/// - uniform buffers that can change per swapchain image
 	/// - DescriptorPool and DescriptorSet per swapchain image
-	std::unordered_map<const Line*, Resources> line_resources;
-	std::unordered_map<const Rect*, Resources> rect_resources;
+	std::unordered_map<const Line*, DynamicResources> line_resources;
+	std::unordered_map<const Rect*, DynamicResources> rect_resources;
 
-	std::unordered_map<size_t, MeshResources> prim_resources;
-
-	/// @brief The key of this map is a hash value of a node index and a Primitive
-	/// The rationale is that a node may refer to multiple primitives
-	/// And each primitives may need a different PipelineLayout
-	std::unordered_map<size_t, MeshResources> mesh_resources;
+	/// @brief The key is a hash value of the primitive
+	/// Meshes with the same primitive will use the same resources
+	std::unordered_map<size_t, Resources> resources;
 };
 
-}
+
+} // namespace spot::gfx

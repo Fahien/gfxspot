@@ -12,9 +12,10 @@ namespace gtf = spot::gltf;
 
 void update( const double dt, gtf::Node& node )
 {
-	auto matrix = mth::Mat4( node.rotation );
-	matrix.rotateZ( mth::radians( dt * 128.0f ) );
-	node.rotation = mth::Quat( matrix );
+	auto radians = mth::radians( dt * 128.0f );
+	auto z = mth::Vec3( 0.0f, 0.0f, 1.0f );
+	auto quat = mth::Quat( z, radians );
+	node.rotation *= quat;
 
 	static float acc = 0;
 	acc += dt;
@@ -65,8 +66,6 @@ int create_card( gfx::Graphics& graphics )
 	auto node_index = graphics.models.create_node();
 	auto node = graphics.models.get_node( node_index );
 	node->mesh = 0;
-
-	graphics.renderer.add( node_index );
 
 	graphics.models.scene.nodes.emplace_back( node_index );
 

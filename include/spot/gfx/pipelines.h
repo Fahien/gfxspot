@@ -42,6 +42,8 @@ class GraphicsPipeline
 	GraphicsPipeline& operator=( GraphicsPipeline&& o );
 
 	Device& device;
+	PipelineLayout& layout;
+
 	VkPipeline handle = VK_NULL_HANDLE;
 };
 

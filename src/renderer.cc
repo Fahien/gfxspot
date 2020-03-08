@@ -5,6 +5,7 @@
 
 #include "spot/gfx/graphics.h"
 #include "spot/gfx/models.h"
+#include "spot/gfx/hash.h"
 
 namespace gtf = spot::gltf;
 
@@ -27,14 +28,15 @@ std::vector<VkDescriptorPoolSize> get_uniform_pool_sizes( const uint32_t count )
 }
 
 
-Resources::Resources( Device& d, Swapchain& s, PipelineLayout& l )
+DynamicResources::DynamicResources( Device& d, Swapchain& s, GraphicsPipeline& gp )
 : vertex_buffer { d, sizeof( Dot ), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT }
 , index_buffer { d, sizeof( Index ), VK_BUFFER_USAGE_INDEX_BUFFER_BIT }
 , uniform_buffers {}
+, pipeline { gp }
 , descriptor_pool { d,
 	get_uniform_pool_sizes( s.images.size() ),
 	uint32_t( s.images.size() ) }
-, descriptor_sets { descriptor_pool.allocate( l.descriptor_set_layout, s.images.size() ) }
+, descriptor_sets { descriptor_pool.allocate( pipeline.layout.descriptor_set_layout, s.images.size() ) }
 {
 	for ( size_t i = 0; i < s.images.size(); ++i )
 	{
@@ -76,18 +78,19 @@ std::vector<VkDescriptorPoolSize> get_mesh_pool_size( const uint32_t count )
 }
 
 
-MeshResources::MeshResources( Device& d, Swapchain& swapchain, GraphicsPipeline& pipel, PipelineLayout& l, const Primitive& primitive )
+Resources::Resources( Device& d, Swapchain& swapchain, GraphicsPipeline& pipel, const Primitive& primitive )
 : vertex_buffer { d, primitive.vertices.size() * sizeof( Vertex ), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT }
 , index_buffer { d, primitive.indices.size() * sizeof( Index ), VK_BUFFER_USAGE_INDEX_BUFFER_BIT }
 , uniform_buffers {}
 , material_ubos {}
 , sampler { d }
-, descriptor_pool { d,
+, descriptor_pool {
+	d,
 	get_mesh_pool_size( swapchain.images.size() * 2 ),
-	uint32_t( swapchain.images.size() * 2 ) }
-, descriptor_sets { descriptor_pool.allocate( l.descriptor_set_layout, swapchain.images.size() ) }
+	uint32_t( swapchain.images.size() * 2 )
+}
+, descriptor_sets { descriptor_pool.allocate( pipel.layout.descriptor_set_layout, swapchain.images.size() ) }
 , pipeline { pipel }
-, layout { l }
 {
 	// Upload vertices
 	{
@@ -182,7 +185,7 @@ void Renderer::add( const Line& line )
 	{
 		auto[new_it, ok] = line_resources.emplace(
 			&line,
-			Resources( graphics.device, graphics.swapchain, graphics.line_layout )
+			DynamicResources( graphics.device, graphics.swapchain, graphics.line_pipeline )
 		);
 		if (ok)
 		{
@@ -210,7 +213,7 @@ void Renderer::add( const Rect& rect )
 	{
 		auto[new_it, ok] = rect_resources.emplace(
 			&rect,
-			Resources( graphics.device, graphics.swapchain, graphics.line_layout )
+			DynamicResources( graphics.device, graphics.swapchain, graphics.line_pipeline )
 		);
 		if (ok)
 		{
@@ -229,97 +232,15 @@ void Renderer::add( const Rect& rect )
 	index_buffer.upload( reinterpret_cast<const uint8_t*>( rect.indices.data() ) );
 }
 
-size_t hash( size_t h ) // base function
-{
-	return h;
-}
 
-size_t hash( float h ) // base function
-{
-	double doub = h;
-	return *reinterpret_cast<size_t*>( &doub );
-}
-
-size_t hash( uint16_t h ) // base function
-{
-	return h;
-}
-
-template<typename T, typename... Targs>
-size_t hash( T value, Targs... args ) // recursive variadic function
-{
-	return hash( value ) ^ ( hash( args... ) << 1 );
-}
-
-
-template<typename T>
-size_t hash( const std::vector<T>& vec )
-{
-	size_t hv = 0;
-
-	for ( auto& elem : vec )
-	{
-		hv ^= ( hash( elem ) << 1 );
-	}
-
-	return hv;
-}
-
-
-size_t hash( const Vec2& vec )
-{
-	auto h = std::hash<float>();
-	return hash( vec.x, vec.y );
-}
-
-
-size_t hash( const Vec3& vec )
-{
-	auto h = std::hash<float>();
-	return hash( vec.x, vec.y, vec.z );
-}
-
-
-size_t hash( const Color& color )
-{
-	auto h = std::hash<float>();
-	return hash( color.r, color.g, color.b, color.a );
-}
-
-
-size_t hash( const Vertex& vert )
-{
-	auto hp = hash( vert.p );
-	auto hc = hash( vert.c );
-	auto ht = hash( vert.t );
-	return hash( hp, hc, ht );
-}
-
-
-size_t hash( const Primitive& prim )
-{
-	auto hp = hash( prim.vertices );
-	auto hi = hash( prim.indices );
-	return hash( hp, hi );
-}
-
-
-size_t hash( const gtf::Node& node, const Primitive& primitive )
-{
-	size_t hash = node.index;
-	hash += reinterpret_cast<size_t>( &primitive );
-	return hash;
-}
-
-
-std::unordered_map<size_t, MeshResources>::iterator Renderer::add( Primitive& prim )
+std::unordered_map<size_t, Resources>::iterator Renderer::add( Primitive& prim )
 {
 	auto key = hash( prim );
 	// Find Vulkan resources associated to this primitive
-	auto it = prim_resources.find( key );
+	auto it = resources.find( key );
 
 	// If not found, create new resources
-	if ( it == std::end( prim_resources ) )
+	if ( it == std::end( resources ) )
 	{
 		if ( prim.material )
 		{
@@ -342,69 +263,13 @@ std::unordered_map<size_t, MeshResources>::iterator Renderer::add( Primitive& pr
 		}
 
 		/// @todo Simplify prim.layout prim
-		auto resource = MeshResources( graphics.device, graphics.swapchain, *prim.pipeline, *prim.layout, prim );
-		auto [it, ok] = prim_resources.emplace( key, std::move( resource ) );
+		auto resource = Resources( graphics.device, graphics.swapchain, *prim.pipeline, prim );
+		auto [it, ok] = resources.emplace( key, std::move( resource ) );
 		assert( ok && "Cannot emplace primitive resource" );
 		return it;
 	}
 
 	return it;
-}
-
-
-void Renderer::add( const int node_index )
-{
-	auto node = graphics.models.get_node( node_index );
-	if ( node->mesh < 0 )
-	{
-		return;
-	}
-	auto& mesh = graphics.models.meshes[node->mesh];
-
-	for ( auto& primitive : mesh.primitives )
-	{
-		auto key = hash( *node, primitive );
-		// Find Vulkan resources associated to this mesh
-		auto it = mesh_resources.find( key );
-
-		// If not found, create new resources
-		if ( it == std::end( mesh_resources ) )
-		{
-			GraphicsPipeline* pipeline = nullptr;
-			PipelineLayout* layout = nullptr;
-			if ( primitive.material )
-			{
-				if ( primitive.material->texture != VK_NULL_HANDLE )
-				{
-					pipeline = &graphics.mesh_pipeline;
-					layout = &graphics.mesh_layout;
-				}
-				else
-				{
-					pipeline = &graphics.mesh_no_image_pipeline;
-					layout = &graphics.mesh_no_image_layout;
-				}
-			}
-			else
-			{
-				pipeline = &graphics.line_pipeline;
-				layout = &graphics.line_layout;
-			}
-
-			auto resource = MeshResources( graphics.device, graphics.swapchain, *pipeline, *layout, primitive );
-			auto [it, ok] = mesh_resources.emplace( key, std::move( resource ) );
-			assert( ok && "Cannot emplace mesh resource" );
-		}
-	}
-}
-
-
-void Renderer::add( const Models& models )
-{
-	for ( auto& node : models.get_nodes() )
-	{
-		add( node.index );
-	}
 }
 
 

@@ -66,8 +66,6 @@ int create_card( gfx::Graphics& graphics )
 	auto node = graphics.models.get_node( node_index );
 	node->mesh = 0;
 
-	graphics.renderer.add( node_index );
-
 	graphics.models.scene.nodes.emplace_back( node_index );
 
 	return node_index;
@@ -81,8 +79,6 @@ int main()
 	auto graphics = Graphics();
 
 	auto& scene = graphics.models.load( "img/milktruck/CesiumMilkTruck.gltf" );
-
-	graphics.renderer.add( graphics.models );
 
 	mth::Vec3 eye = {};
 	mth::Vec3 origin = {};
