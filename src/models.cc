@@ -22,7 +22,7 @@ Material Material::white = Material{
 };
 
 
-Mesh Mesh::create_line( const Vec3& a, const Vec3& b )
+Mesh Mesh::create_line( const Vec3& a, const Vec3& b, const float line_width )
 {
 	Mesh ret;
 
@@ -33,6 +33,8 @@ Mesh Mesh::create_line( const Vec3& a, const Vec3& b )
 	prim.vertices[1].p = b;
 
 	prim.indices = { 0, 1 };
+
+	prim.line_width = line_width;
 
 	ret.primitives.emplace_back( std::move( prim ) );
 

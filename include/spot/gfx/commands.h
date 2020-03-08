@@ -39,6 +39,7 @@ class CommandBuffer
 	void bind_index_buffer( DynamicBuffer& b );
 
 	void bind( GraphicsPipeline& p );
+	void set_line_width( float line_width );
 
 	void bind_descriptor_sets( const PipelineLayout& layout, VkDescriptorSet set );
 

@@ -99,15 +99,16 @@ struct Primitive
 	/// A material use to draw the primitive
 	/// It can change at runtime
 	Material* material = nullptr;
-	PipelineLayout* layout = nullptr;
-	GraphicsPipeline* pipeline = nullptr;
+
+	/// Depth of line to use for line topology
+	float line_width = 1.0f;
 };
 
 
 /// @brief A mesh is just a collection of primitives
 struct Mesh
 {
-	static Mesh create_line( const Vec3& a, const Vec3& b );
+	static Mesh create_line( const Vec3& a, const Vec3& b, float line_width = 1.0f );
 	static Mesh create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, Material* m = nullptr );
 	static Mesh create_rect( const Vec3& a, const Vec3& b, Material* m = nullptr );
 	static Mesh create_quad( const Vec3& a = { -1.0, -1.0, 0.0f }, const Vec3& b = { 1.0f, 1.0f, 0.0f } );

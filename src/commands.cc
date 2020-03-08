@@ -134,6 +134,12 @@ void CommandBuffer::bind( GraphicsPipeline& line_pipeline )
 }
 
 
+void CommandBuffer::set_line_width( const float line_width )
+{
+	vkCmdSetLineWidth( handle, line_width );
+}
+
+
 void CommandBuffer::set_viewport( const VkViewport& viewport )
 {
 	vkCmdSetViewport( handle, 0, 1, &viewport );

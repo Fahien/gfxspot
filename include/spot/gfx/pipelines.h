@@ -45,6 +45,9 @@ class GraphicsPipeline
 	PipelineLayout& layout;
 
 	VkPipeline handle = VK_NULL_HANDLE;
+
+	/// Index used to store the pipeline in a vector
+	uint64_t index = 0;
 };
 
 

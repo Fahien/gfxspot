@@ -25,6 +25,7 @@ class Scene;
 namespace spot::gfx
 {
 
+
 struct alignas(16) Dot
 {
 	Dot( Vec3 pp = {}, Color cc = { 1.0f } ) : p { pp }, c { cc } {}
@@ -44,7 +45,6 @@ struct Line
 
 	UniformBufferObject ubo = {};
 };
-
 
 
 struct Rect
@@ -96,6 +96,7 @@ class PhysicalDevice
 
 	VkPhysicalDevice handle = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties properties;
+	VkPhysicalDeviceFeatures features;
 	std::vector<VkQueueFamilyProperties> queue_families;
 	std::vector<VkExtensionProperties> extensions;
 };
@@ -273,6 +274,7 @@ class ShaderModule
 
 
 mth::Mat4 look_at( const mth::Vec3& eye, const mth::Vec3& center, mth::Vec3 up );
+mth::Mat4 ortho( float left, float right, float bottom, float top, float near, float far );
 
 class Graphics
 {
@@ -317,11 +319,6 @@ class Graphics
 
 	VkViewport viewport = {};
 	VkRect2D   scissor  = {};
-
-	GraphicsPipeline line_pipeline;
-	GraphicsPipeline dot_pipeline;
-	GraphicsPipeline mesh_pipeline;
-	GraphicsPipeline mesh_no_image_pipeline;
 
 	Renderer renderer;
 

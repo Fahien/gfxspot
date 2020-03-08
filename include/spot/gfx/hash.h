@@ -39,7 +39,9 @@ size_t hash( const Primitive& pm );
 template<typename T, typename... Targs>
 size_t hash( T value, Targs... args ) // recursive variadic function
 {
-	return hash( value ) ^ ( hash( args... ) << 1 );
+	auto hv = hash( value );
+	hv ^= hash( args... ) + 0x9e3779b9 + ( hv << 6 ) + ( hv >> 2 );
+	return hv;
 }
 
 
@@ -50,7 +52,8 @@ size_t hash( const std::vector<T>& vec )
 
 	for ( auto& elem : vec )
 	{
-		hv ^= ( hash( elem ) << 1 );
+		/// @ref https://stackoverflow.com/a/2595226
+		hv ^= hash( elem ) + 0x9e3779b9 + ( hv << 6 ) + ( hv >> 2 );
 	}
 
 	return hv;

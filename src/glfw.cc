@@ -50,6 +50,15 @@ void set_window_size( GLFWwindow* handle, const int width, const int height )
 	window->extent.height = height;
 }
 
+
+void set_framebuffer_size( GLFWwindow* handle, const int width, const int height )
+{
+	auto window = reinterpret_cast<Glfw::Window*>( glfwGetWindowUserPointer( handle ) );
+	window->frame.width  = width;
+	window->frame.height = height;
+}
+
+
 void scroll_callback( GLFWwindow* handle, double xoffset, double yoffset )
 {
 	auto window = reinterpret_cast<Glfw::Window*>( glfwGetWindowUserPointer( handle ) );
@@ -87,9 +96,15 @@ Glfw::Window::Window()
 	glfwWindowHint( GLFW_CLIENT_API, GLFW_NO_API );
 	handle = glfwCreateWindow( extent.width, extent.height, "Graphics", nullptr, nullptr );
 
+	int width, height;
+	glfwGetFramebufferSize( handle, &width, &height );
+	frame.width = static_cast<uint32_t>( width );
+	frame.height = static_cast<uint32_t>( height );
+
 	// Callbacks
 	glfwSetWindowUserPointer( handle, this );
 	glfwSetWindowSizeCallback( handle, set_window_size );
+	glfwSetFramebufferSizeCallback( handle, set_framebuffer_size );
 	glfwSetScrollCallback( handle, scroll_callback );
 	glfwSetMouseButtonCallback( handle, mouse_callback );
 }

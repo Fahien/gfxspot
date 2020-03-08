@@ -36,7 +36,7 @@ struct DynamicResources
 	// Uniform buffer for each swapchain image
 	std::vector<Buffer> uniform_buffers;
 
-	GraphicsPipeline& pipeline;
+	uint64_t pipeline = 0;
 	/// Descriptor pool for descriptor sets
 	DescriptorPool descriptor_pool;
 	// Descriptor sets for each swapchain image
@@ -59,7 +59,7 @@ struct Resources
 	//ImageView image_view;
 	Sampler sampler;
 
-	GraphicsPipeline& pipeline;
+	uint64_t pipeline;
 	/// Descriptor pool for descriptor sets
 	DescriptorPool descriptor_pool;
 	// Descriptor sets for each swapchain image
@@ -72,11 +72,16 @@ class Renderer
   public:
 	Renderer( Graphics& gfx );
 
+	void recreate_pipelines();
+
 	void add( const Line& ln );
 	void add( const Rect& rt );
 	std::unordered_map<size_t, Resources>::iterator add( Primitive& pm );
 
 	Graphics& graphics;
+
+	/// @brief Collection of pipelines
+	std::vector<GraphicsPipeline> pipelines;
 
 	/// @brief Each model will have
 	/// - vertex buffer containing constant data about its vertices
@@ -88,6 +93,10 @@ class Renderer
 	/// @brief The key is a hash value of the primitive
 	/// Meshes with the same primitive will use the same resources
 	std::unordered_map<size_t, Resources> resources;
+
+  private:
+	/// @return Find the line pipeline with a specific width
+	uint64_t find_pipeline( float line_width );
 };
 
 

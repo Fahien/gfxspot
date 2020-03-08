@@ -30,68 +30,11 @@ Rect::Rect( Dot bottom_left, Dot top_right )
 }
 
 
-template <typename T>
-VkVertexInputBindingDescription get_bindings()
-{
-	VkVertexInputBindingDescription bindings = {};
-	bindings.binding = 0;
-	bindings.stride = sizeof( Vertex );
-	bindings.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-	return bindings;
-}
-
-
-template <>
-std::vector<VkVertexInputAttributeDescription> get_attributes<Dot>()
-{
-	std::vector<VkVertexInputAttributeDescription> attributes( 2 );
-
-	attributes[0].binding = 0;
-	attributes[0].location = 0;
-	attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-	attributes[0].offset = offsetof( Vertex, p );
-
-	attributes[1].binding = 0;
-	attributes[1].location = 1;
-	attributes[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributes[1].offset = offsetof( Vertex, c );
-
-	return attributes;
-}
-
-template <>
-std::vector<VkVertexInputAttributeDescription> get_attributes<Vertex>()
-{
-	std::vector<VkVertexInputAttributeDescription> attributes( 4 );
-
-	attributes[0].binding = 0;
-	attributes[0].location = 0;
-	attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-	attributes[0].offset = offsetof( Vertex, p );
-
-	attributes[1].binding = 0;
-	attributes[1].location = 1;
-	attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-	attributes[1].offset = offsetof( Vertex, n );
-
-	attributes[2].binding = 0;
-	attributes[2].location = 2;
-	attributes[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributes[2].offset = offsetof( Vertex, c );
-
-	attributes[3].binding = 0;
-	attributes[3].location = 3;
-	attributes[3].format = VK_FORMAT_R32G32_SFLOAT;
-	attributes[3].offset = offsetof( Vertex, t );
-
-	return attributes;
-}
-
-
 PhysicalDevice::PhysicalDevice( VkPhysicalDevice h )
 : handle { h }
 {
 	vkGetPhysicalDeviceProperties( handle, &properties );
+	vkGetPhysicalDeviceFeatures( handle, &features );
 
 	uint32_t queue_family_count;
 	vkGetPhysicalDeviceQueueFamilyProperties( handle, &queue_family_count, nullptr );
@@ -247,6 +190,11 @@ Device::Device( PhysicalDevice& d, const VkSurfaceKHR s, const RequiredExtension
 	// Features
 	VkPhysicalDeviceFeatures features = {};
 	features.samplerAnisotropy = VK_TRUE;
+
+	if ( physical_device.features.wideLines == VK_TRUE )
+	{
+		features.wideLines = VK_TRUE;
+	}
 
 	info.pEnabledFeatures = &features;
 
@@ -793,8 +741,8 @@ VkViewport create_viewport( const Glfw::Window& window )
 	VkViewport viewport = {};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = window.extent.width;
-	viewport.height = window.extent.height;
+	viewport.width = window.frame.width;
+	viewport.height = window.frame.height;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	return viewport;
@@ -805,7 +753,7 @@ VkRect2D create_scissor( const Glfw::Window& window )
 {
 	VkRect2D scissor = {};
 	scissor.offset = {0, 0};
-	scissor.extent = window.extent;
+	scissor.extent = window.frame;
 	return scissor;
 }
 
@@ -959,44 +907,6 @@ Graphics::Graphics()
 , mesh_no_image_layout { device, get_mesh_no_image_bindings() }
 , viewport { create_viewport( window ) }
 , scissor { create_scissor( window ) }
-, line_pipeline {
-	get_bindings<Dot>(),
-	get_attributes<Dot>(),
-	line_layout,
-	line_vert,
-	line_frag,
-	render_pass,
-	viewport,
-	scissor,
-	VK_PRIMITIVE_TOPOLOGY_LINE_LIST }
-, dot_pipeline {
-	get_bindings<Dot>(),
-	get_attributes<Dot>(),
-	line_layout,
-	line_vert,
-	line_frag,
-	render_pass,
-	viewport,
-	scissor,
-	VK_PRIMITIVE_TOPOLOGY_POINT_LIST }
-, mesh_pipeline {
-	get_bindings<Vertex>(),
-	get_attributes<Vertex>(),
-	mesh_layout,
-	mesh_vert,
-	mesh_frag,
-	render_pass,
-	viewport,
-	scissor }
-, mesh_no_image_pipeline {
-	get_bindings<Vertex>(),
-	get_attributes<Vertex>(),
-	mesh_no_image_layout,
-	mesh_no_image_vert,
-	mesh_no_image_frag,
-	render_pass,
-	viewport,
-	scissor }
 , renderer { *this }
 , command_pool { device }
 , command_buffers { command_pool.allocate_command_buffers( swapchain.images.size() ) }
@@ -1033,8 +943,8 @@ bool Graphics::render_begin()
 		VK_NULL_HANDLE,
 		&image_index );
 	if ( res == VK_ERROR_OUT_OF_DATE_KHR ||
-		viewport.width != window.extent.width ||
-		viewport.height != window.extent.height )
+		viewport.width != window.frame.width ||
+		viewport.height != window.frame.height )
 	{
 		// Recreate current semaphore
 		images_available.back() = Semaphore( device );
@@ -1043,57 +953,20 @@ bool Graphics::render_begin()
 		render_pass = RenderPass( swapchain );
 
 		// Update viewport and scissor
-		viewport.width = window.extent.width;
-		viewport.height = window.extent.height;
-		scissor.extent = window.extent;
+		viewport.width = window.frame.width;
+		viewport.height = window.frame.height;
+		scissor.extent = window.frame;
 
-		dot_pipeline = GraphicsPipeline(
-			get_bindings<Dot>(),
-			get_attributes<Dot>(),
-			line_layout,
-			line_vert,
-			line_frag,
-			render_pass,
-			viewport,
-			scissor,
-			VK_PRIMITIVE_TOPOLOGY_POINT_LIST );
-		line_pipeline = GraphicsPipeline(
-			get_bindings<Dot>(),
-			get_attributes<Dot>(),
-			line_layout,
-			line_vert,
-			line_frag,
-			render_pass,
-			viewport,
-			scissor,
-			VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
-		mesh_pipeline = GraphicsPipeline(
-			get_bindings<Vertex>(),
-			get_attributes<Vertex>(),
-			mesh_layout,
-			mesh_vert,
-			mesh_frag,
-			render_pass,
-			viewport,
-			scissor );
-		mesh_no_image_pipeline = GraphicsPipeline(
-			get_bindings<Vertex>(),
-			get_attributes<Vertex>(),
-			mesh_no_image_layout,
-			mesh_no_image_vert,
-			mesh_no_image_frag,
-			render_pass,
-			viewport,
-			scissor );
+		renderer.recreate_pipelines();
 
 		frames = Frames( swapchain );
 		framebuffers = frames.create_framebuffers( render_pass );
 
-		proj = perspective(
-			viewport.width / viewport.height,
-			mth::radians( 60.0f ),
-			10000.0f,
-			0.125f );
+		//proj = perspective(
+		//	viewport.width / viewport.height,
+		//	mth::radians( 60.0f ),
+		//	10000.0f,
+		//	0.125f );
 
 		for ( auto& fence : frames_in_flight )
 		{
@@ -1146,7 +1019,9 @@ void Graphics::draw( Line& line )
 	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
 	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
-	current_command_buffer->bind( line_pipeline );
+	auto& pipeline = renderer.pipelines[resources.pipeline];
+
+	current_command_buffer->bind( pipeline );
 	current_command_buffer->bind_vertex_buffers( resources.vertex_buffer );
 	current_command_buffer->bind_index_buffer( resources.index_buffer );
 
@@ -1167,7 +1042,9 @@ void Graphics::draw( Rect& rect )
 	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
 	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
-	current_command_buffer->bind( line_pipeline );
+	auto& pipeline = renderer.pipelines[resources.pipeline];
+
+	current_command_buffer->bind( pipeline );
 	current_command_buffer->bind_vertex_buffers( resources.vertex_buffer );
 	current_command_buffer->bind_index_buffer( resources.index_buffer );
 
@@ -1207,19 +1084,29 @@ void Graphics::draw( Primitive& primitive, const mth::Mat4& transform )
 	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
 	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
+	auto& pipeline = renderer.pipelines[resources.pipeline];
+	current_command_buffer->bind( pipeline );
+
 	if ( primitive.material )
 	{
 		auto material_data = reinterpret_cast<const uint8_t*>( &primitive.material->ubo );
 		auto& material_ubo = resources.material_ubos[current_frame_index];
 		material_ubo.upload( material_data, sizeof( Material::Ubo ) );
 	}
+	else
+	{
+		// Check wideline support
+		if ( device.physical_device.features.wideLines == VK_TRUE )
+		{
+			current_command_buffer->set_line_width( primitive.line_width );
+		}
+	}
 
-	current_command_buffer->bind( resources.pipeline );
 	current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
 	current_command_buffer->bind_index_buffer( resources.index_buffer );
 
 	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
-	current_command_buffer->bind_descriptor_sets( resources.pipeline.layout, descriptor_set );
+	current_command_buffer->bind_descriptor_sets( pipeline.layout, descriptor_set );
 	current_command_buffer->draw_indexed( primitive.indices.size() );
 }
 

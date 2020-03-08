@@ -176,6 +176,7 @@ GraphicsPipeline::GraphicsPipeline( GraphicsPipeline&& other )
 : device { other.device }
 , layout { other.layout }
 , handle { other.handle }
+, index { other.index }
 {
 	other.handle = VK_NULL_HANDLE;
 }
@@ -186,6 +187,7 @@ GraphicsPipeline& GraphicsPipeline::operator=( GraphicsPipeline&& other )
 	assert( device.handle == other.device.handle && "Cannot move assign graphics line_pipeline of another device" );
 	assert( layout.handle == other.layout.handle && "Cannot move pipelines with different layout" );
 	std::swap( handle, other.handle );
+	std::swap( index, other.index );
 	return *this;
 }
 

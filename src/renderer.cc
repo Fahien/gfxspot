@@ -13,9 +13,113 @@ namespace spot::gfx
 {
 
 
+template <typename T>
+VkVertexInputBindingDescription get_bindings()
+{
+	VkVertexInputBindingDescription bindings = {};
+	bindings.binding = 0;
+	bindings.stride = sizeof( Vertex );
+	bindings.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	return bindings;
+}
+
+
+template <>
+std::vector<VkVertexInputAttributeDescription> get_attributes<Dot>()
+{
+	std::vector<VkVertexInputAttributeDescription> attributes( 2 );
+
+	attributes[0].binding = 0;
+	attributes[0].location = 0;
+	attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributes[0].offset = offsetof( Vertex, p );
+
+	attributes[1].binding = 0;
+	attributes[1].location = 1;
+	attributes[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	attributes[1].offset = offsetof( Vertex, c );
+
+	return attributes;
+}
+
+template <>
+std::vector<VkVertexInputAttributeDescription> get_attributes<Vertex>()
+{
+	std::vector<VkVertexInputAttributeDescription> attributes( 4 );
+
+	attributes[0].binding = 0;
+	attributes[0].location = 0;
+	attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributes[0].offset = offsetof( Vertex, p );
+
+	attributes[1].binding = 0;
+	attributes[1].location = 1;
+	attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributes[1].offset = offsetof( Vertex, n );
+
+	attributes[2].binding = 0;
+	attributes[2].location = 2;
+	attributes[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	attributes[2].offset = offsetof( Vertex, c );
+
+	attributes[3].binding = 0;
+	attributes[3].location = 3;
+	attributes[3].format = VK_FORMAT_R32G32_SFLOAT;
+	attributes[3].offset = offsetof( Vertex, t );
+
+	return attributes;
+}
+
+
+
 Renderer::Renderer( Graphics& g )
 : graphics { g }
-{}
+{
+	recreate_pipelines();
+}
+
+
+void Renderer::recreate_pipelines()
+{
+	pipelines.clear();
+
+	auto mesh_pipeline = GraphicsPipeline(
+		get_bindings<Vertex>(),
+		get_attributes<Vertex>(),
+		graphics.mesh_layout,
+		graphics.mesh_vert,
+		graphics.mesh_frag,
+		graphics.render_pass,
+		graphics.viewport,
+		graphics.scissor );
+	mesh_pipeline.index = 0;
+	pipelines.emplace_back( std::move( mesh_pipeline ) );
+
+	auto mesh_no_image_pipeline = GraphicsPipeline(
+		get_bindings<Vertex>(),
+		get_attributes<Vertex>(),
+		graphics.mesh_no_image_layout,
+		graphics.mesh_no_image_vert,
+		graphics.mesh_no_image_frag,
+		graphics.render_pass,
+		graphics.viewport,
+		graphics.scissor );
+	mesh_no_image_pipeline.index = 1;
+	pipelines.emplace_back( std::move( mesh_no_image_pipeline ) );
+
+	auto line_pipeline = GraphicsPipeline(
+		get_bindings<Dot>(),
+		get_attributes<Dot>(),
+		graphics.line_layout,
+		graphics.line_vert,
+		graphics.line_frag,
+		graphics.render_pass,
+		graphics.viewport,
+		graphics.scissor,
+		VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
+	line_pipeline.index = 2;
+	pipelines.emplace_back( std::move( line_pipeline ) );
+}
 
 
 std::vector<VkDescriptorPoolSize> get_uniform_pool_sizes( const uint32_t count )
@@ -32,11 +136,11 @@ DynamicResources::DynamicResources( Device& d, Swapchain& s, GraphicsPipeline& g
 : vertex_buffer { d, sizeof( Dot ), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT }
 , index_buffer { d, sizeof( Index ), VK_BUFFER_USAGE_INDEX_BUFFER_BIT }
 , uniform_buffers {}
-, pipeline { gp }
+, pipeline { gp.index }
 , descriptor_pool { d,
 	get_uniform_pool_sizes( s.images.size() ),
 	uint32_t( s.images.size() ) }
-, descriptor_sets { descriptor_pool.allocate( pipeline.layout.descriptor_set_layout, s.images.size() ) }
+, descriptor_sets { descriptor_pool.allocate( gp.layout.descriptor_set_layout, s.images.size() ) }
 {
 	for ( size_t i = 0; i < s.images.size(); ++i )
 	{
@@ -84,13 +188,13 @@ Resources::Resources( Device& d, Swapchain& swapchain, GraphicsPipeline& pipel, 
 , uniform_buffers {}
 , material_ubos {}
 , sampler { d }
+, pipeline { pipel.index }
 , descriptor_pool {
 	d,
 	get_mesh_pool_size( swapchain.images.size() * 2 ),
 	uint32_t( swapchain.images.size() * 2 )
 }
 , descriptor_sets { descriptor_pool.allocate( pipel.layout.descriptor_set_layout, swapchain.images.size() ) }
-, pipeline { pipel }
 {
 	// Upload vertices
 	{
@@ -177,6 +281,27 @@ Resources::Resources( Device& d, Swapchain& swapchain, GraphicsPipeline& pipel, 
 }
 
 
+/// @return The index of the standard mesh pipeline, which is at index 0 by default
+uint64_t get_mesh_pipeline()
+{
+	return 0;
+}
+
+
+/// @return The index of the no-image-mesh pipeline, which is at index 1 by default
+uint64_t get_mesh_no_image_pipeline()
+{
+	return 1;
+}
+
+
+/// @return The index of the line pipeline, 2 by default
+uint64_t get_line_pipeline()
+{
+	return 2;
+}
+
+
 void Renderer::add( const Line& line )
 {
 	// Find Vulkan resources associated to this rect
@@ -185,7 +310,7 @@ void Renderer::add( const Line& line )
 	{
 		auto[new_it, ok] = line_resources.emplace(
 			&line,
-			DynamicResources( graphics.device, graphics.swapchain, graphics.line_pipeline )
+			DynamicResources( graphics.device, graphics.swapchain, pipelines[get_line_pipeline()] )
 		);
 		if (ok)
 		{
@@ -213,7 +338,7 @@ void Renderer::add( const Rect& rect )
 	{
 		auto[new_it, ok] = rect_resources.emplace(
 			&rect,
-			DynamicResources( graphics.device, graphics.swapchain, graphics.line_pipeline )
+			DynamicResources( graphics.device, graphics.swapchain, pipelines[get_line_pipeline()] )
 		);
 		if (ok)
 		{
@@ -242,28 +367,25 @@ std::unordered_map<size_t, Resources>::iterator Renderer::add( Primitive& prim )
 	// If not found, create new resources
 	if ( it == std::end( resources ) )
 	{
-		if ( prim.material )
+		uint64_t pipeline;
+		if ( !prim.material )
 		{
-			if ( prim.material->texture != VK_NULL_HANDLE )
-			{
-				/// @todo Refactor layout moving it into pipeline;
-				prim.layout = &graphics.mesh_layout;
-				prim.pipeline = &graphics.mesh_pipeline;
-			}
-			else
-			{
-				prim.layout = &graphics.mesh_no_image_layout;
-				prim.pipeline = &graphics.mesh_no_image_pipeline;
-			}
+			pipeline = get_line_pipeline();
 		}
 		else
 		{
-			prim.layout = &graphics.line_layout;
-			prim.pipeline = &graphics.line_pipeline;
+			if ( prim.material->texture != VK_NULL_HANDLE )
+			{
+				pipeline = get_mesh_pipeline();
+			}
+			else
+			{
+				pipeline = get_mesh_no_image_pipeline();
+			}
 		}
 
 		/// @todo Simplify prim.layout prim
-		auto resource = Resources( graphics.device, graphics.swapchain, *prim.pipeline, prim );
+		auto resource = Resources( graphics.device, graphics.swapchain, pipelines[pipeline], prim );
 		auto [it, ok] = resources.emplace( key, std::move( resource ) );
 		assert( ok && "Cannot emplace primitive resource" );
 		return it;
