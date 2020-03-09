@@ -13,16 +13,56 @@ namespace gtf = spot::gltf;
 namespace spot::gfx
 {
 
+const Color Color::black = { 0.0f, 0.0f, 0.0f };
 const Color Color::white = { 1.0f, 1.0f, 1.0f };
+const Color Color::red = { 1.0f, 0.0f, 0.0f };
+const Color Color::green = { 0.0f, 1.0f, 0.0f };
+const Color Color::blue = { 0.0f, 0.0f, 1.0f };
+const Color Color::yellow = { 1.0f, 1.0f, 0.0f };
 
-Material Material::white = Material{
-	Ubo{
-		Color::white
-	}
+Material& Material::get_black()
+{
+	static Material black {
+		Ubo{
+			Color::black
+		}
+	};
+	return black;
 };
 
+Material& Material::get_white()
+{
+	static Material white {
+		Ubo{
+			Color::white
+		}
+	};
+	return white;
+};
 
-Mesh Mesh::create_line( const Vec3& a, const Vec3& b, const float line_width )
+Material& Material::get_red()
+{
+	static Material red = Material{
+		Material::Ubo {
+			Color::red
+		}
+	};
+	return red;
+}
+
+
+Material& Material::get_yellow()
+{
+	static Material yellow = Material{
+		Material::Ubo {
+			Color::yellow
+		}
+	};
+	return yellow;
+}
+
+
+Mesh Mesh::create_line( const Vec3& a, const Vec3& b, const Color& c, const float line_width )
 {
 	Mesh ret;
 
@@ -30,7 +70,9 @@ Mesh Mesh::create_line( const Vec3& a, const Vec3& b, const float line_width )
 
 	prim.vertices.resize( 2 );
 	prim.vertices[0].p = a;
+	prim.vertices[0].c = c;
 	prim.vertices[1].p = b;
+	prim.vertices[1].c = c;
 
 	prim.indices = { 0, 1 };
 
@@ -78,9 +120,9 @@ Mesh Mesh::create_rect( const Vec3& a, const Vec3& b, Material* material )
 
 	prim.vertices.resize( 4 );
 	prim.vertices[0].p = a;
-	prim.vertices[1].p = Vec3( b.x, a.y );
+	prim.vertices[1].p = Vec3( b.x, a.y, a.z );
 	prim.vertices[2].p = b;
-	prim.vertices[3].p = Vec3( a.x, b.y );
+	prim.vertices[3].p = Vec3( a.x, b.y, a.z );
 
 	prim.material = material;
 
@@ -96,11 +138,11 @@ Mesh Mesh::create_rect( const Vec3& a, const Vec3& b, Material* material )
 
 		if ( case1 || case2 )
 		{
-			prim.indices = { 0, 1, 2, 0, 2, 3 };
+			prim.indices = { 0, 2, 1, 0, 3, 2 };
 		}
 		else
 		{
-			prim.indices = { 0, 2, 1, 0, 3, 2 };
+			prim.indices = { 0, 1, 2, 0, 2, 3 };
 		}
 	}
 	else
@@ -117,7 +159,7 @@ Mesh Mesh::create_rect( const Vec3& a, const Vec3& b, Material* material )
 
 Mesh Mesh::create_quad( const Vec3& a, const Vec3& b )
 {
-	Mesh ret = create_rect( a, b, &Material::white );
+	Mesh ret = create_rect( a, b, &Material::get_white() );
 
 	auto& vertices = ret.primitives[0].vertices;
 

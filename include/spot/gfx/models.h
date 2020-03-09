@@ -18,7 +18,12 @@ class Buffer;
 
 struct Color
 {
+	static const Color black;
 	static const Color white;
+	static const Color red;
+	static const Color green;
+	static const Color blue;
+	static const Color yellow;
 
 	Color( float rr = 0.0f, float gg = 0.0f, float bb = 0.0f, float aa = 1.0f )
 	: r { rr }, g { gg }, b { bb }, a { aa } {}
@@ -32,7 +37,10 @@ struct Color
 
 struct Material
 {
-	static Material white;
+	static Material& get_black();
+	static Material& get_white();
+	static Material& get_yellow();
+	static Material& get_red();
 
 	struct alignas(16) Ubo
 	{
@@ -108,7 +116,7 @@ struct Primitive
 /// @brief A mesh is just a collection of primitives
 struct Mesh
 {
-	static Mesh create_line( const Vec3& a, const Vec3& b, float line_width = 1.0f );
+	static Mesh create_line( const Vec3& a, const Vec3& b, const Color& c = Color::white, float line_width = 1.0f );
 	static Mesh create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, Material* m = nullptr );
 	static Mesh create_rect( const Vec3& a, const Vec3& b, Material* m = nullptr );
 	static Mesh create_quad( const Vec3& a = { -1.0, -1.0, 0.0f }, const Vec3& b = { 1.0f, 1.0f, 0.0f } );

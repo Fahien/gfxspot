@@ -286,7 +286,7 @@ class Graphics
 
 	void draw( Line& line );
 	void draw( Rect& rect );
-	void draw( Mesh& mesh );
+	void draw( Mesh& mesh, const mth::Mat4& transform = math::Mat4::identity );
 	void draw( Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
 
 	void draw( const int node, const math::Mat4& transform = math::Mat4::identity );

@@ -1054,11 +1054,11 @@ void Graphics::draw( Rect& rect )
 }
 
 
-void Graphics::draw( Mesh& mesh )
+void Graphics::draw( Mesh& mesh, const mth::Mat4& transform )
 {
 	for ( auto& prim : mesh.primitives )
 	{
-		draw( prim );
+		draw( prim, transform );
 	}
 }
 
@@ -1069,7 +1069,6 @@ void Graphics::draw( Primitive& primitive, const mth::Mat4& transform )
 	auto pair = renderer.resources.find( hid );
 	if ( pair == std::end( renderer.resources ) )
 	{
-		printf( "Cannot find resources for a primitive, adding %lu\n", hid );
 		pair = renderer.add( primitive );
 	}
 
