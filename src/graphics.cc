@@ -1054,25 +1054,26 @@ void Graphics::draw( Rect& rect )
 }
 
 
-void Graphics::draw( Mesh& mesh, const mth::Mat4& transform )
+void Graphics::draw( const uint32_t node, Mesh& mesh, const mth::Mat4& transform )
 {
 	for ( auto& prim : mesh.primitives )
 	{
-		draw( prim, transform );
+		draw( node, prim, transform );
 	}
 }
 
 
-void Graphics::draw( Primitive& primitive, const mth::Mat4& transform )
+void Graphics::draw( const uint32_t node, Primitive& primitive, const mth::Mat4& transform )
 {
-	auto hid = hash( primitive );
-	auto pair = renderer.resources.find( hid );
-	if ( pair == std::end( renderer.resources ) )
+	auto node_pair = renderer.node_resources.find( node );
+	if ( node_pair == std::end( renderer.node_resources ) )
 	{
-		pair = renderer.add( primitive );
+		renderer.add( node );
+		return;
 	}
 
-	auto& resources = pair->second;
+	auto hash_prim = hash( primitive );
+	auto& resources = renderer.primitive_resources.at( hash_prim );
 
 	UniformBufferObject ubo;
 	ubo.model = transform;
@@ -1080,16 +1081,21 @@ void Graphics::draw( Primitive& primitive, const mth::Mat4& transform )
 	ubo.proj  = proj;
 
 	auto data = reinterpret_cast<const uint8_t*>( &ubo );
-	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
+
+	auto& node_resources = node_pair->second;
+	auto& uniform_buffer = node_resources.ubos[current_frame_index];
 	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
-	auto& pipeline = renderer.pipelines[resources.pipeline];
+	size_t hash_desc = hash( node, primitive.get_material() );
+	auto& descriptor_resources = renderer.descriptor_resources.at( hash_desc );
+	auto& pipeline = renderer.pipelines[descriptor_resources.pipeline];
 	current_command_buffer->bind( pipeline );
 
-	if ( primitive.material )
+	if ( auto material = models.get_material( primitive.get_material() ) )
 	{
-		auto material_data = reinterpret_cast<const uint8_t*>( &primitive.material->ubo );
-		auto& material_ubo = resources.material_ubos[current_frame_index];
+		auto material_data = reinterpret_cast<const uint8_t*>( &material->ubo );
+		auto& material_resources = renderer.material_resources.at( primitive.get_material() );
+		auto& material_ubo = material_resources.ubos[current_frame_index];
 		material_ubo.upload( material_data, sizeof( Material::Ubo ) );
 	}
 	else
@@ -1104,13 +1110,13 @@ void Graphics::draw( Primitive& primitive, const mth::Mat4& transform )
 	current_command_buffer->bind_vertex_buffer( resources.vertex_buffer );
 	current_command_buffer->bind_index_buffer( resources.index_buffer );
 
-	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
+	auto& descriptor_set = descriptor_resources.descriptor_sets[current_frame_index];
 	current_command_buffer->bind_descriptor_sets( pipeline.layout, descriptor_set );
 	current_command_buffer->draw_indexed( primitive.indices.size() );
 }
 
 
-void Graphics::draw( const int node_index, const mth::Mat4& transform )
+void Graphics::draw( const uint32_t node_index, const mth::Mat4& transform )
 {
 	auto node = models.get_node( node_index );
 
@@ -1134,7 +1140,7 @@ void Graphics::draw( const int node_index, const mth::Mat4& transform )
 		auto& mesh = models.meshes[node->mesh];
 		for ( auto& primitive : mesh.primitives )
 		{
-			draw( primitive, temp_transform );
+			draw( node_index, primitive, temp_transform );
 		}
 	}
 }

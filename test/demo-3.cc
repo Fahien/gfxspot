@@ -29,9 +29,7 @@ int create_card( gfx::Graphics& graphics )
 
 	Mesh& card = graphics.models.meshes.emplace_back();
 
-	Primitive primitive;
-
-	primitive.vertices = {
+	std::vector<Vertex> vertices = {
 		Vertex(
 			Vec3( -1.25f, -1.75f, 0.0f ),
 			Color( 0.3f, 0.0f, 0.0f, 0.5f ),
@@ -55,21 +53,19 @@ int create_card( gfx::Graphics& graphics )
 	};
 
 	// Currently, counterclockwise?
-	primitive.indices = { 0, 2, 1, 1, 2, 3 };
+	std::vector<Index> indices = { 0, 2, 1, 1, 2, 3 };
 
-	card.primitives.emplace_back( std::move( primitive ) );
-
-	auto& material = graphics.models.materials.emplace_back( Material() );
+	auto& material = graphics.models.create_material();
 	material.texture = graphics.images.load( "img/card.png" );
-	card.primitives[0].material = &material;
 
-	auto node_index = graphics.models.create_node();
-	auto node = graphics.models.get_node( node_index );
-	node->mesh = 0;
+	card.primitives.emplace_back( Primitive( std::move( vertices ), std::move( indices ), material.index ) );
 
-	graphics.models.scene.nodes.emplace_back( node_index );
+	auto& node = graphics.models.create_node();
+	node.mesh = 0;
 
-	return node_index;
+	graphics.models.scene.nodes.emplace_back( node.index );
+
+	return node.index;
 }
 
 

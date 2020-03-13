@@ -169,6 +169,57 @@ DynamicResources::DynamicResources( Device& d, Swapchain& s, GraphicsPipeline& g
 }
 
 
+std::vector<Buffer> create_mvp_ubos( const Swapchain& swapchain )
+{
+	std::vector<Buffer> ret;
+
+	for ( size_t i = 0; i < swapchain.images.size(); ++i )
+	{
+		ret.emplace_back(
+			Buffer(
+				swapchain.device,
+				sizeof( UniformBufferObject ),
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+			)
+		);
+	}
+
+	return ret;
+}
+
+
+std::vector<Buffer> create_mat_ubos( const Swapchain& swapchain )
+{
+	std::vector<Buffer> ret;
+
+	for ( size_t i = 0; i < swapchain.images.size(); ++i )
+	{
+		ret.emplace_back(
+			Buffer(
+				swapchain.device,
+				sizeof( Material::Ubo ),
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+			)
+		);
+	}
+
+	return ret;
+}
+
+
+NodeResources::NodeResources( const Swapchain& swapchain )
+: ubos { create_mvp_ubos( swapchain ) }
+{
+}
+
+
+MaterialResources::MaterialResources( const Swapchain& swapchain )
+: ubos { create_mat_ubos( swapchain ) }
+, sampler{ swapchain.device }
+{
+}
+
+
 std::vector<VkDescriptorPoolSize> get_mesh_pool_size( const uint32_t count )
 {
 	std::vector<VkDescriptorPoolSize> pool_sizes(2);
@@ -182,19 +233,17 @@ std::vector<VkDescriptorPoolSize> get_mesh_pool_size( const uint32_t count )
 }
 
 
-Resources::Resources( Device& d, Swapchain& swapchain, GraphicsPipeline& pipel, const Primitive& primitive )
-: vertex_buffer { d, primitive.vertices.size() * sizeof( Vertex ), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT }
-, index_buffer { d, primitive.indices.size() * sizeof( Index ), VK_BUFFER_USAGE_INDEX_BUFFER_BIT }
-, uniform_buffers {}
-, material_ubos {}
-, sampler { d }
-, pipeline { pipel.index }
-, descriptor_pool {
-	d,
-	get_mesh_pool_size( swapchain.images.size() * 2 ),
-	uint32_t( swapchain.images.size() * 2 )
-}
-, descriptor_sets { descriptor_pool.allocate( pipel.layout.descriptor_set_layout, swapchain.images.size() ) }
+PrimitiveResources::PrimitiveResources( const Renderer& renderer, const Primitive& primitive )
+: vertex_buffer {
+		renderer.graphics.device,
+		primitive.vertices.size() * sizeof( Vertex ),
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+	}
+, index_buffer {
+		renderer.graphics.device,
+		primitive.indices.size() * sizeof( Index ),
+		VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+	}
 {
 	// Upload vertices
 	{
@@ -209,21 +258,31 @@ Resources::Resources( Device& d, Swapchain& swapchain, GraphicsPipeline& pipel, 
 		auto size = primitive.indices.size() * sizeof( Index );
 		index_buffer.upload( data, size );
 	}
+}
 
-	for ( size_t i = 0; i < swapchain.images.size(); ++i )
+DescriptorResources::DescriptorResources( const Renderer& renderer, const GraphicsPipeline& pipel, const uint64_t node, const Material* material )
+: pipeline { pipel.index }
+, descriptor_pool {
+		renderer.graphics.swapchain.device,
+		get_mesh_pool_size( renderer.graphics.swapchain.images.size() * 2 ),
+		uint32_t( renderer.graphics.swapchain.images.size() * 2 )
+	}
+, descriptor_sets {
+		descriptor_pool.allocate(
+			pipel.layout.descriptor_set_layout,
+			renderer.graphics.swapchain.images.size()
+		)
+	}
+{
+	assert( renderer.node_resources.count( node ) && "Node resources were not created" );
+	const auto& node_res = renderer.node_resources.at( node );
+
+	for ( size_t i = 0; i < renderer.graphics.swapchain.images.size(); ++i )
 	{
-		uniform_buffers.emplace_back(
-			Buffer( d, sizeof( UniformBufferObject ), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT )
-		);
-
-		material_ubos.emplace_back(
-			Buffer( d, sizeof( Material::Ubo ), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT )
-		);
-
 		std::vector<VkWriteDescriptorSet> writes = {};
 
 		VkDescriptorBufferInfo buffer_info = {};
-		buffer_info.buffer = uniform_buffers[i].handle;
+		buffer_info.buffer = node_res.ubos[i].handle;
 		buffer_info.offset = 0;
 		buffer_info.range = sizeof( UniformBufferObject );
 	
@@ -239,9 +298,12 @@ Resources::Resources( Device& d, Swapchain& swapchain, GraphicsPipeline& pipel, 
 		writes.emplace_back( write );
 
 		VkDescriptorBufferInfo mat_info = {};
-		if ( primitive.material )
+		if ( material )
 		{
-			mat_info.buffer = material_ubos[i].handle;
+			assert( renderer.material_resources.count( material->index ) && "Material resources were not created" );
+			auto& mat_res = renderer.material_resources.at( material->index );
+
+			mat_info.buffer = mat_res.ubos[i].handle;
 			mat_info.offset = 0;
 			mat_info.range = sizeof( Material::Ubo );
 
@@ -258,11 +320,14 @@ Resources::Resources( Device& d, Swapchain& swapchain, GraphicsPipeline& pipel, 
 		}
 
 		VkDescriptorImageInfo image_info = {};
-		if ( primitive.material && primitive.material->texture != VK_NULL_HANDLE )
+		if ( material && material->texture != VK_NULL_HANDLE )
 		{
+			assert( renderer.material_resources.count( material->index ) && "Material resources were not created" );
+			auto& mat_res = renderer.material_resources.at( material->index );
+
 			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			image_info.imageView = primitive.material->texture;
-			image_info.sampler = sampler.handle;
+			image_info.imageView = material->texture;
+			image_info.sampler = mat_res.sampler.handle;
 
 			VkWriteDescriptorSet write = {};
 			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -276,7 +341,7 @@ Resources::Resources( Device& d, Swapchain& swapchain, GraphicsPipeline& pipel, 
 			writes.emplace_back( write );
 		}
 
-		vkUpdateDescriptorSets( d.handle, writes.size(), writes.data(), 0, nullptr );
+		vkUpdateDescriptorSets( pipel.device.handle, writes.size(), writes.data(), 0, nullptr );
 	}
 }
 
@@ -357,43 +422,67 @@ void Renderer::add( const Rect& rect )
 	index_buffer.upload( reinterpret_cast<const uint8_t*>( rect.indices.data() ) );
 }
 
-
-std::unordered_map<size_t, Resources>::iterator Renderer::add( Primitive& prim )
+void Renderer::add( const uint32_t node_index )
 {
-	auto key = hash( prim );
-	// Find Vulkan resources associated to this primitive
-	auto it = resources.find( key );
-
-	// If not found, create new resources
-	if ( it == std::end( resources ) )
+	auto node = graphics.models.get_node( node_index );
+	if ( node->mesh < 0 )
 	{
-		uint64_t pipeline;
-		if ( !prim.material )
+		return; // no mesh to add
+	}
+
+	// At this point a node has a mesh, therefore we create ubos for MVP matrix
+	if ( node_resources.find( node_index ) == std::end( node_resources ) )
+	{
+		node_resources.emplace( node_index, NodeResources( graphics.swapchain ) );
+	}
+
+	auto mesh = graphics.models.meshes[node->mesh];
+	for ( auto& prim : mesh.primitives )
+	{
+		auto hash_prim = hash( prim );
+		printf( "Prim %lu\n", hash_prim );
+		primitive_resources.emplace( hash_prim, PrimitiveResources( *this, prim ) );
+
+		auto key = hash( node_index, prim.get_material() );
+		// Find Vulkan resources associated to this pair ( node, material )
+		auto it = descriptor_resources.find( key );
+
+		// If not found, create new resources
+		if ( it == std::end( descriptor_resources ) )
 		{
-			pipeline = get_line_pipeline();
-		}
-		else
-		{
-			if ( prim.material->texture != VK_NULL_HANDLE )
+			uint64_t pipeline;
+
+			auto material = graphics.models.get_material( prim.get_material() );
+			if ( material )
 			{
-				pipeline = get_mesh_pipeline();
+				// Add ubo for this material
+				if ( material_resources.find( prim.get_material() ) == std::end( material_resources ) )
+				{
+					material_resources.emplace( prim.get_material(), graphics.swapchain );
+				}
+
+				if ( material->texture != VK_NULL_HANDLE )
+				{
+					pipeline = get_mesh_pipeline();
+				}
+				else
+				{
+					pipeline = get_mesh_no_image_pipeline();
+				}
 			}
 			else
 			{
-				pipeline = get_mesh_no_image_pipeline();
+				pipeline = get_line_pipeline();
 			}
+
+			/// @todo Simplify prim.layout prim
+			auto resource = DescriptorResources( *this, pipelines[pipeline], node_index, material );
+			auto [it, ok] = descriptor_resources.emplace( key, std::move( resource ) );
+			assert( ok && "Cannot emplace primitive resource" );
+			printf("Descriptor [node %d, material %d]\n", node_index, prim.get_material() );
 		}
-
-		/// @todo Simplify prim.layout prim
-		auto resource = Resources( graphics.device, graphics.swapchain, pipelines[pipeline], prim );
-		auto [it, ok] = resources.emplace( key, std::move( resource ) );
-		assert( ok && "Cannot emplace primitive resource" );
-		return it;
 	}
-
-	return it;
 }
 
 
 } // namespace spot::gfx
- 

@@ -3,7 +3,8 @@
 #include <cassert>
 
 #include "spot/gfx/graphics.h"
-
+#include "spot/gfx/renderer.h"
+#include "spot/gfx/hash.h"
 
 namespace spot::gfx
 {

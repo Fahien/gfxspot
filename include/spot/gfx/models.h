@@ -51,6 +51,8 @@ struct Material
 	} ubo;
 
 	VkImageView texture = VK_NULL_HANDLE;
+
+	int32_t index = -1;
 };
 
 
@@ -100,16 +102,25 @@ using Index = uint16_t;
 /// as it stores vertices, indices, and its material
 struct Primitive
 {
+	Primitive() = default;
+
+	Primitive(
+		const std::vector<Vertex>& vv,
+		const std::vector<Index>& ii,
+		int32_t material = -1 );
+
 	/// Vertices and indices do not change
 	std::vector<Vertex> vertices = {};
 	std::vector<Index> indices = {};
 
-	/// A material use to draw the primitive
-	/// It can change at runtime
-	Material* material = nullptr;
-
 	/// Depth of line to use for line topology
 	float line_width = 1.0f;
+
+	int32_t get_material() const noexcept { return material; }
+
+private:
+	/// An index to the material to use to draw the primitive
+	int32_t material = -1;
 };
 
 
@@ -117,9 +128,14 @@ struct Primitive
 struct Mesh
 {
 	static Mesh create_line( const Vec3& a, const Vec3& b, const Color& c = Color::white, float line_width = 1.0f );
-	static Mesh create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, Material* m = nullptr );
-	static Mesh create_rect( const Vec3& a, const Vec3& b, Material* m = nullptr );
-	static Mesh create_quad( const Vec3& a = { -1.0, -1.0, 0.0f }, const Vec3& b = { 1.0f, 1.0f, 0.0f } );
+	static Mesh create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, int32_t material = -1 );
+	static Mesh create_rect( const Vec3& a, const Vec3& b, int32_t material = -1 );
+
+	static Mesh create_quad(
+		const Vec3& a = { -1.0, -1.0, 0.0f },
+		const Vec3& b = { 1.0f, 1.0f, 0.0f },
+		int32_t material = -1
+	);
 
 	std::vector<Primitive> primitives;
 };
@@ -136,14 +152,20 @@ class Models
 
 	/// @brief Creates a node and assign it an index
 	/// @return The created node
-	int create_node();
+	gltf::Node& create_node();
 
 	/// @brief Creates a node with a new mesh
 	/// @return The index of the node
-	int create_node( Mesh&& m );
+	gltf::Node& create_node( Mesh&& m );
 
 	/// @return The node at index i, null otherwhise
-	gltf::Node* get_node( int i );
+	gltf::Node* get_node( int32_t i );
+
+	/// @return A new material with a proper index
+	Material& create_material( Material&& m = {} );
+
+	/// @return The material at index i, null otherwhise
+	gfx::Material* get_material( int32_t i );
 
 	/// @return The list of nodes;
 	const std::vector<gltf::Node>& get_nodes() const { return nodes; };
@@ -154,13 +176,13 @@ class Models
 
 	gltf::Scene scene;
 
-	/// Materials can be referred by multiple primitives
-	std::vector<gfx::Material> materials;
-
 	std::vector<gfx::Mesh> meshes;
 
   private:
 	std::vector<gltf::Node> nodes;
+
+	/// Materials can be referred by multiple primitives
+	std::vector<gfx::Material> materials;
 };
 
 

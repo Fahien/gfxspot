@@ -25,6 +25,11 @@ class Primitive;
 
 // Base functions
 size_t hash( uint16_t h );
+size_t hash( uint32_t h );
+size_t hash( uint64_t h );
+size_t hash( int16_t h );
+size_t hash( int32_t h );
+size_t hash( int64_t h );
 size_t hash( size_t h );
 size_t hash( float h );
 

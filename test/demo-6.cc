@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <spot/gfx/graphics.h>
 
-/// Draw a line from 0.1 to 4.5
+/// Draw a rectangle
 int main()
 {
 	using namespace spot::gfx;
@@ -11,7 +11,9 @@ int main()
 	auto a = Vec3(); // ( x=0.0f, y=0.0f, z=0.0f )
 	auto b = Vec3( 4.5f, 2.0f ); // ( x=4.5f, y=2.0f, z=0.0f )
 
-	auto rect = Mesh::create_rect( a, b );
+	auto& root = gfx.models.create_node(
+		Mesh::create_rect( a, b )
+	);
 
 	auto eye = mth::Vec3( 0.0f, 0.0f, 8.0f ); // Out of the screen
 	auto origin = mth::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
@@ -27,7 +29,7 @@ int main()
 
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( rect );
+			gfx.draw( root.index );
 			gfx.render_end();
 		}
 	}

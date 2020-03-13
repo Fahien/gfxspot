@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "spot/gfx/descriptors.h"
 
 namespace spot::gfx
@@ -7,8 +9,11 @@ namespace spot::gfx
 
 class ShaderModule;
 class Device;
+class Swapchain;
 class RenderPass;
-
+class Renderer;
+struct Resources;
+struct Primitive;
 
 class PipelineLayout
 {

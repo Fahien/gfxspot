@@ -4,13 +4,56 @@
 namespace spot::gfx
 {
 
+struct Colors
+{
+	int32_t black;
+	int32_t white;
+	int32_t red;
+	int32_t green;
+	int32_t blue;
+	int32_t yellow;
+};
+
+
+Colors create_colors( spot::gfx::Graphics& gfx )
+{
+	Colors ret;
+
+	auto& black = gfx.models.create_material();
+	black.ubo.color = Color( 30.0f / 255.0f, 30.0f / 255.0f, 30.0f / 255.0f );
+	ret.black = black.index;
+
+	auto& white = gfx.models.create_material();
+	white.ubo.color = Color( 1.0f, 1.0f, 1.0f );
+	ret.white = white.index;
+
+	auto& red = gfx.models.create_material();
+	red.ubo.color = Color( 190.0f / 255.0f, 50.0f / 255.0f, 50.0f / 255.0f );
+	ret.red = red.index;
+
+	auto& green = gfx.models.create_material();
+	green.ubo.color = Color( 0.0f, 1.0f, 0.0f );
+	ret.green = green.index;
+
+	auto& blue = gfx.models.create_material();
+	blue.ubo.color = Color( 0.0f, 0.0f, 1.0f );
+	ret.blue = blue.index;
+
+	auto& yellow = gfx.models.create_material();
+	yellow.ubo.color = Color( 230.0f / 255.0f, 200.0f / 255.0f, 100.0f / 255.0f );
+	ret.yellow = yellow.index;
+
+	return ret;
+}
+
 const float screen_width = 2.0f;
 const float width = screen_width / 128.0f;
 const float step = width * 2.0f;
 
-std::vector<Mesh> create_lines()
+
+uint32_t create_lines( const Colors& colors, Graphics& gfx )
 {
-	std::vector<Mesh> ret;
+	auto root_index = gfx.models.create_node().index;
 
 	// First half
 	// White lines
@@ -21,16 +64,21 @@ std::vector<Mesh> create_lines()
 		// Bottom right
 		auto b = Vec3( x + width, 1.0f, 0.0f );
 
-		auto line = Mesh::create_rect( a, b, &Material::get_white() );
+		auto line = Mesh::create_rect( a, b, colors.white );
 
-		ret.emplace_back( std::move( line ) );
+		auto& node = gfx.models.create_node( std::move( line ) );
+		auto root = gfx.models.get_node( root_index );
+		root->children.push_back( node.index );
 	}
 	// + black background
 	{
 		auto a = Vec3( -1.0f, -1.0f, -0.1f );
 		auto b = Vec3( 0.0f, 1.0f, -0.1f );
-		auto line = Mesh::create_rect( a, b, &Material::get_black() );
-		ret.emplace_back( std::move( line ) );
+		auto line = Mesh::create_rect( a, b, colors.black );
+		
+		auto& node = gfx.models.create_node( std::move( line ) );
+		auto root = gfx.models.get_node( root_index );
+		root->children.push_back( node.index );
 	}
 
 	// Second half - top
@@ -40,25 +88,38 @@ std::vector<Mesh> create_lines()
 		auto a = Vec3( 0.0, y, 0.0f );
 		auto b = Vec3( 1.0f, y + width, 0.0f );
 
-		auto line = Mesh::create_rect( a, b, &Material::get_yellow() );
+		auto line = Mesh::create_rect( a, b, colors.yellow );
 		
-		ret.emplace_back( std::move( line ) );
+		auto& node = gfx.models.create_node( std::move( line ) );
+		auto root = gfx.models.get_node( root_index );
+		root->children.push_back( node.index );
 	}
-	// + black background
+	// + white background
+	{
+		auto a = Vec3( 0.0f, 0.0f - width, -0.1f );
+		auto b = Vec3( 1.0f, -1.0f, -0.1f );
+		auto line = Mesh::create_rect( a, b, colors.white );
+		auto& node = gfx.models.create_node( std::move( line ) );
+		auto root = gfx.models.get_node( root_index );
+		root->children.push_back( node.index );
+	}
+	// Black delimitator
 	{
 		auto a = Vec3( 0.0f, 0.0f, -0.1f );
-		auto b = Vec3( 1.0f, -1.0f, -0.1f );
-		auto line = Mesh::create_rect( a, b, &Material::get_black() );
-		ret.emplace_back( std::move( line ) );
+		auto b = Vec3( 1.0f, -width, -0.1f );
+		auto line = Mesh::create_rect( a, b, colors.black );
+		auto& node = gfx.models.create_node( std::move( line ) );
+		auto root = gfx.models.get_node( root_index );
+		root->children.push_back( node.index );
 	}
 
-	return ret;
+	return root_index;
 }
 
 
-std::vector<Mesh> create_red_lines()
+int32_t create_red_lines( const Colors& colors, Graphics& gfx )
 {
-	std::vector<Mesh> ret;
+	auto& root = gfx.models.create_node();
 
 	float red_width = width * sqrtf( 2.0f );
 	float step = red_width * 2;
@@ -72,19 +133,21 @@ std::vector<Mesh> create_red_lines()
 		// Top right
 		auto b = Vec3( x + red_width, 1.0f, -0.2f );
 
-		auto line = Mesh::create_rect( a, b, &Material::get_red() );
+		auto line = Mesh::create_rect( a, b, colors.red );
 
-		ret.emplace_back( std::move( line ) );
+		auto& node = gfx.models.create_node( std::move( line ) );
+		root.children.emplace_back( node.index );
 	}
 	// + black background
 	{
 		auto a = Vec3( 0.0f, -1.0f, -0.3f );
 		auto b = Vec3( 2.0f, 1.0f, -0.3f );
-		auto line = Mesh::create_rect( a, b, &Material::get_black() );
-		ret.emplace_back( std::move( line ) );
+		auto line = Mesh::create_rect( a, b, colors.white );
+		auto& node = gfx.models.create_node( std::move( line ) );
+		root.children.emplace_back( node.index );
 	}
 
-	return ret;
+	return root.index;
 }
 
 
@@ -98,8 +161,10 @@ int main()
 
 	auto gfx = Graphics();
 
-	std::vector<Mesh> lines = create_lines();
-	std::vector<Mesh> red_lines = create_red_lines();
+	Colors colors = create_colors( gfx );
+
+	auto lines = create_lines( colors , gfx );
+	auto red_lines = create_red_lines( colors , gfx );
 
 	auto eye = mth::Vec3( 0.0f, 0.0f, 1.0f ); // Out of the screen
 	auto origin = mth::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
@@ -119,15 +184,8 @@ int main()
 
 		if ( gfx.render_begin() )
 		{
-			for ( auto& line : lines )
-			{
-				gfx.draw( line );
-			}
-
-			for ( auto& line : red_lines )
-			{
-				gfx.draw( line, rot45 );
-			}
+			gfx.draw( lines );
+			gfx.draw( red_lines, rot45 );
 
 			gfx.render_end();
 		}

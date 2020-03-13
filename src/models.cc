@@ -61,6 +61,15 @@ Material& Material::get_yellow()
 	return yellow;
 }
 
+Primitive::Primitive(
+	const std::vector<Vertex>& vv,
+	const std::vector<Index>& ii,
+	int32_t mat )
+: vertices { std::move( vv ) }
+, indices { std::move( ii ) }
+, material { mat }
+{
+}
 
 Mesh Mesh::create_line( const Vec3& a, const Vec3& b, const Color& c, const float line_width )
 {
@@ -84,49 +93,50 @@ Mesh Mesh::create_line( const Vec3& a, const Vec3& b, const Color& c, const floa
 }
 
 
-Mesh Mesh::create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, Material* material )
+Mesh Mesh::create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, const int32_t material )
 {
 	Mesh ret;
 
-	Primitive prim;
+	std::vector<Vertex> vertices;
+	vertices.resize( 3 );
+	vertices[0].p = a;
+	vertices[1].p = b;
+	vertices[2].p = c;
 
-	prim.vertices.resize( 3 );
-	prim.vertices[0].p = a;
-	prim.vertices[1].p = b;
-	prim.vertices[2].p = c;
-
-	prim.material = material;
-
-	if ( material )
+	std::vector<Index> indices;
+	if ( material >= 0 )
 	{
-		prim.indices = { 0, 1, 2 };
+		indices = { 0, 1, 2 };
 	}
 	else
 	{
-		prim.indices = { 0, 1, 1, 2, 2, 0 };
+		indices = { 0, 1, 1, 2, 2, 0 };
 	}
 
-	ret.primitives.emplace_back( std::move( prim ) );
+	ret.primitives.emplace_back(
+		Primitive(
+			std::move( vertices ),
+			std::move( indices ),
+			material )
+	);
 
 	return ret;
 }
 
 
-Mesh Mesh::create_rect( const Vec3& a, const Vec3& b, Material* material )
+Mesh Mesh::create_rect( const Vec3& a, const Vec3& b, const int32_t material )
 {
 	Mesh ret;
 
-	Primitive prim;
+	std::vector<Vertex> vertices;
+	vertices.resize( 4 );
+	vertices[0].p = a;
+	vertices[1].p = Vec3( b.x, a.y, a.z );
+	vertices[2].p = b;
+	vertices[3].p = Vec3( a.x, b.y, a.z );
 
-	prim.vertices.resize( 4 );
-	prim.vertices[0].p = a;
-	prim.vertices[1].p = Vec3( b.x, a.y, a.z );
-	prim.vertices[2].p = b;
-	prim.vertices[3].p = Vec3( a.x, b.y, a.z );
-
-	prim.material = material;
-
-	if ( material )
+	std::vector<Index> indices;
+	if ( material >= 0 )
 	{
 		// .---B
 		// A---`
@@ -138,28 +148,33 @@ Mesh Mesh::create_rect( const Vec3& a, const Vec3& b, Material* material )
 
 		if ( case1 || case2 )
 		{
-			prim.indices = { 0, 2, 1, 0, 3, 2 };
+			indices = { 0, 2, 1, 0, 3, 2 };
 		}
 		else
 		{
-			prim.indices = { 0, 1, 2, 0, 2, 3 };
+			indices = { 0, 1, 2, 0, 2, 3 };
 		}
 	}
 	else
 	{
 		// No material, use lines
-		prim.indices = { 0, 1, 1, 2, 2, 3, 3, 0 };
+		indices = { 0, 1, 1, 2, 2, 3, 3, 0 };
 	}
 
-	ret.primitives.emplace_back( std::move( prim ) );
+	ret.primitives.emplace_back(
+		Primitive(
+			std::move( vertices ),
+			std::move( indices ),
+			material )
+	);
 
 	return ret;
 }
 
 
-Mesh Mesh::create_quad( const Vec3& a, const Vec3& b )
+Mesh Mesh::create_quad( const Vec3& a, const Vec3& b, const int32_t material )
 {
-	Mesh ret = create_rect( a, b, &Material::get_white() );
+	Mesh ret = create_rect( a, b, material );
 
 	auto& vertices = ret.primitives[0].vertices;
 
@@ -179,15 +194,15 @@ Models::Models( Graphics& g )
 {}
 
 
-int Models::create_node()
+gltf::Node& Models::create_node()
 {
 	auto& node = nodes.emplace_back();
 	node.index = nodes.size() - 1;
-	return node.index;
+	return node;
 }
 
 
-int Models::create_node( Mesh&& mesh )
+gltf::Node& Models::create_node( Mesh&& mesh )
 {
 	auto& node = nodes.emplace_back();
 	node.index = nodes.size() - 1;
@@ -195,14 +210,31 @@ int Models::create_node( Mesh&& mesh )
 	meshes.emplace_back( std::move( mesh ) );
 	node.mesh = meshes.size() - 1;
 
-	return node.index;
+	return node;
 }
 
 
-gtf::Node* Models::get_node( const int index )
+gtf::Node* Models::get_node( const int32_t index )
 {
 	assert( index >= 0 && index < nodes.size() && "Cannot get node out of bounds" );
 	return &nodes[index];
+}
+
+
+Material& Models::create_material( Material&& material )
+{
+	material.index = materials.size();
+	return materials.emplace_back( std::move( material ) );
+}
+
+
+gfx::Material* Models::get_material( const int32_t index )
+{
+	if ( index >= 0 && index < materials.size() )
+	{
+		return &materials[index];
+	}
+	return nullptr;
 }
 
 
@@ -238,25 +270,21 @@ gtf::Scene& Models::load( const std::string& path )
 
 		for ( auto& p : m.primitives )
 		{
-			gfx::Primitive primitive;
-
-			// Material
-			if ( p.material_index >= 0 )
-			{
-				primitive.material = &materials[p.material_index];
-			}
+			std::vector<Index> indices;
 
 			// Indices
 			if ( auto accessor = p.get_indices() )
 			{
-				primitive.indices.resize( accessor->count );
-				std::memcpy( primitive.indices.data(), accessor->get_data(), accessor->get_size() );
+				indices.resize( accessor->count );
+				std::memcpy( indices.data(), accessor->get_data(), accessor->get_size() );
 
 				assert( accessor->component_type == spot::gltf::Accessor::ComponentType::UNSIGNED_SHORT );
 				assert( accessor->type == spot::gltf::Accessor::Type::SCALAR );
 			}
 
 			// Vertex attributes
+			std::vector<Vertex> vertices;
+
 			auto attributes = p.get_attributes();
 			for ( auto [semantic, accessor] : attributes )
 			{
@@ -264,14 +292,14 @@ gtf::Scene& Models::load( const std::string& path )
 				auto elem_size = accessor->get_size() / accessor->count;
 				auto stride = accessor->get_stride();
 
-				if ( primitive.vertices.empty() )
+				if ( vertices.empty() )
 				{
-					primitive.vertices.resize( accessor->count );
+					vertices.resize( accessor->count );
 				}
 
 				switch ( semantic )
 				{
-				case spot::gltf::Mesh::Primitive::Semantic::POSITION:
+				case gtf::Mesh::Primitive::Semantic::POSITION:
 				{
 					if ( stride == 0 )
 					{
@@ -280,7 +308,7 @@ gtf::Scene& Models::load( const std::string& path )
 				
 					for ( size_t i = 0; i < accessor->count; ++i )
 					{
-						auto& vert = primitive.vertices[i];
+						auto& vert = vertices[i];
 						auto vert_data = data + i * stride;
 						std::memcpy( &vert.p.x, vert_data, elem_size );
 					}
@@ -289,7 +317,7 @@ gtf::Scene& Models::load( const std::string& path )
 					assert( accessor->type == spot::gltf::Accessor::Type::VEC3 );
 					break;
 				}
-				case spot::gltf::Mesh::Primitive::Semantic::NORMAL:
+				case gtf::Mesh::Primitive::Semantic::NORMAL:
 				{
 					if ( stride == 0 )
 					{
@@ -298,7 +326,7 @@ gtf::Scene& Models::load( const std::string& path )
 
 					for ( size_t i = 0; i < accessor->count; ++i )
 					{
-						auto& vert = primitive.vertices[i];
+						auto& vert = vertices[i];
 						auto vert_data = data + i * stride;
 						std::memcpy( &vert.n.x, vert_data, elem_size );
 					}
@@ -307,7 +335,7 @@ gtf::Scene& Models::load( const std::string& path )
 					assert( accessor->type == spot::gltf::Accessor::Type::VEC3 );
 					break;
 				}
-				case spot::gltf::Mesh::Primitive::Semantic::TEXCOORD_0:
+				case gtf::Mesh::Primitive::Semantic::TEXCOORD_0:
 				{
 					if ( stride == 0 )
 					{
@@ -316,7 +344,7 @@ gtf::Scene& Models::load( const std::string& path )
 
 					for ( size_t i = 0; i < accessor->count; ++i )
 					{
-						auto& vert = primitive.vertices[i];
+						auto& vert = vertices[i];
 						auto vert_data = data + i * stride;
 						std::memcpy( &vert.t.x, vert_data, elem_size );
 					}
@@ -325,7 +353,7 @@ gtf::Scene& Models::load( const std::string& path )
 					assert( accessor->type == spot::gltf::Accessor::Type::VEC2 );
 					break;
 				}
-				case spot::gltf::Mesh::Primitive::Semantic::COLOR_0:
+				case gtf::Mesh::Primitive::Semantic::COLOR_0:
 				{
 					if ( stride == 0 )
 					{
@@ -334,7 +362,7 @@ gtf::Scene& Models::load( const std::string& path )
 
 					for ( size_t i = 0; i < accessor->count; ++i )
 					{
-						auto& vert = primitive.vertices[i];
+						auto& vert = vertices[i];
 						auto vert_data = data + i * stride;
 						std::memcpy( &vert.c.r, vert_data, elem_size );
 					}
@@ -350,7 +378,12 @@ gtf::Scene& Models::load( const std::string& path )
 				}
 			}
 
-			mesh.primitives.emplace_back( std::move( primitive ) );
+			mesh.primitives.emplace_back(
+				Primitive(
+					std::move( vertices ),
+					std::move( indices ),
+					p.material )
+			);
 		}
 
 		meshes.emplace_back( std::move( mesh ) );

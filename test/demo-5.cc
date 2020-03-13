@@ -12,11 +12,10 @@ namespace gtf = spot::gltf;
 
 int create_line( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b )
 {
-	auto node_index = graphics.models.create_node();
-	auto node = graphics.models.get_node( node_index );
+	auto& node = graphics.models.create_node();
 
 	auto& mesh = graphics.models.meshes.emplace_back();
-	node->mesh = graphics.models.meshes.size() - 1;
+	node.mesh = graphics.models.meshes.size() - 1;
 
 	auto& primitive = mesh.primitives.emplace_back();
 	primitive.vertices = {
@@ -26,17 +25,16 @@ int create_line( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b )
 
 	primitive.indices = { 0, 1 };
 
-	return node_index;
+	return node.index;
 }
 
 
 int create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c )
 {
-	auto node_index = graphics.models.create_node();
-	auto node = graphics.models.get_node( node_index );
+	auto& node = graphics.models.create_node();
 
 	auto& mesh = graphics.models.meshes.emplace_back();
-	node->mesh = graphics.models.meshes.size() - 1;
+	node.mesh = graphics.models.meshes.size() - 1;
 
 	auto& primitive = mesh.primitives.emplace_back();
 	primitive.vertices = {
@@ -47,7 +45,7 @@ int create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c
 
 	primitive.indices = { 0, 1, 1, 2, 2, 0 };
 
-	return node_index;
+	return node.index;
 }
 
 

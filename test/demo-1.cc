@@ -22,15 +22,15 @@ gfx::Mesh create_lenna( gfx::Graphics& graphics )
 {
 	using namespace spot::gfx;
 
-	Mesh quad = Mesh::create_quad(
-			Vec3( -0.5f, -0.5f, 0.0f ),
-			Vec3( 0.5f, 0.5f, 0.0f )
-	);
-
-	auto& material = graphics.models.materials.emplace_back();
+	auto& material = graphics.models.create_material();
 	auto view = graphics.images.load( "img/lena.png" );
 	material.texture = view;
-	quad.primitives[0].material = &material;
+
+	Mesh quad = Mesh::create_quad(
+			Vec3( -0.5f, -0.5f, 0.0f ),
+			Vec3( 0.5f, 0.5f, 0.0f ),
+			material.index
+	);
 
 	return quad;
 }
@@ -47,7 +47,7 @@ int main()
 			Vec3( -0.5f, -0.5f ),
 			Vec3( 0.5f, 0.5f )
 		)
-	);
+	).index;
 	
 	auto triangle = graphics.models.create_node(
 		Mesh::create_triangle(
@@ -55,13 +55,13 @@ int main()
 			Vec3( -0.5f, 0.0f, -1.0f ),
 			Vec3( 0.0f, 0.0f, 0.0f )
 		)
-	);
+	).index;
 
-	auto quad = graphics.models.create_node(
+	auto& quad = graphics.models.create_node(
 		create_lenna( graphics )
-	);
+	).index;
 
-	mth::Vec3 eye = { 1.5f, 1.5f, 1.5f };
+	mth::Vec3 eye = { 1.5f, 1.5f, -1.5f };
 	mth::Vec3 zero = {};
 	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
 	graphics.view = look_at( eye, zero, up );

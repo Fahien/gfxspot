@@ -5,20 +5,51 @@ namespace spot::gfx
 {
 
 
-size_t hash( size_t h ) // base function
+size_t hash( size_t h )
 {
 	return h;
 }
 
 
-size_t hash( float h ) // base function
+size_t hash( int16_t h )
 {
-	double doub = h;
-	return *reinterpret_cast<size_t*>( &doub );
+	return hash( int64_t( h ) );
 }
 
 
-size_t hash( uint16_t h ) // base function
+size_t hash( int32_t h )
+{
+	return hash( int64_t( h ) );
+}
+
+
+size_t hash( const int64_t value )
+{
+	auto h = std::hash<int64_t>();
+	return h( value );
+}
+
+
+size_t hash( float value )
+{
+	auto h = std::hash<float>();
+	return h( value );
+}
+
+
+size_t hash( uint16_t h )
+{
+	return hash( uint64_t( h ) );
+}
+
+
+size_t hash( uint32_t h )
+{
+	return hash( uint64_t( h ) );
+}
+
+
+size_t hash( uint64_t h )
 {
 	return h;
 }
@@ -40,7 +71,6 @@ size_t hash( const Vec3& vec )
 
 size_t hash( const Color& color )
 {
-	auto h = std::hash<float>();
 	return hash( color.r, color.g, color.b, color.a );
 }
 
