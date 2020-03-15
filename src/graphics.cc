@@ -1030,7 +1030,12 @@ void Graphics::draw( const uint32_t node, Primitive& primitive, const mth::Mat4&
 	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
 	size_t hash_desc = hash( node, primitive.get_material() );
-	auto& descriptor_resources = renderer.descriptor_resources.at( hash_desc );
+	auto desc_it = renderer.descriptor_resources.find( hash_desc );
+	if ( desc_it == std::end( renderer.descriptor_resources ) )
+	{
+		desc_it = renderer.add_descriptors( node, primitive.get_material() );
+	}
+	auto& descriptor_resources = desc_it->second;
 	auto& pipeline = renderer.pipelines[descriptor_resources.pipeline];
 	current_command_buffer->bind( pipeline );
 

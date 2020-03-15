@@ -102,6 +102,7 @@ class Renderer
 	void recreate_pipelines();
 
 	void add( uint32_t node );
+	std::unordered_map<size_t, DescriptorResources>::iterator add_descriptors( uint32_t node, int32_t material );
 
 	Graphics& graphics;
 

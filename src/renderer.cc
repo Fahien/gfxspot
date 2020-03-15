@@ -410,34 +410,43 @@ void Renderer::add( const uint32_t node_index )
 			primitive_resources.emplace( hash_prim, PrimitiveResources( graphics.device, prim ) );
 		}
 
-		// We need descriptors for the MVP ubos and material textures
-		// A node may have a mesh with multiple primitives with different materials
-		// And the same material may appear into multiple primitives of different nodes
-		// So we hash combine both node and material
-		auto key = hash( node_index, prim.get_material() );
-		if ( descriptor_resources.find( key ) != std::end( descriptor_resources ) )
-		{
-			// Skip if we already have resources associated to this pair ( node, material )
-			continue;
-		}
-	
-		auto material = graphics.models.get_material( prim.get_material() );
-		if ( material )
-		{
-			// Add ubo for this material
-			if ( material_resources.find( prim.get_material() ) == std::end( material_resources ) )
-			{
-				material_resources.emplace( prim.get_material(), graphics.swapchain );
-			}
-		}
-
-		auto pipeline_index = select_pipeline( material );
-		auto& graphics_pipeline = pipelines[pipeline_index];
-		auto resource = DescriptorResources( *this, graphics_pipeline, node_index, material );
-		auto [it, ok] = descriptor_resources.emplace( key, std::move( resource ) );
-		assert( ok && "Cannot emplace primitive resource" );
-		printf("Descriptor [node %d, material %d]\n", node_index, prim.get_material() );
+		add_descriptors( node_index, prim.get_material() );
 	}
+}
+
+std::unordered_map<size_t, DescriptorResources>::iterator
+Renderer::add_descriptors( const uint32_t node_index, const int32_t material_index )
+{
+	// We need descriptors for the MVP ubos and material textures
+	// A node may have a mesh with multiple primitives with different materials
+	// And the same material may appear into multiple primitives of different nodes
+	// So we hash combine both node and material
+	auto key = hash( node_index, material_index );
+	auto it = descriptor_resources.find( key );
+	if ( it != std::end( descriptor_resources ) )
+	{
+		// Skip if we already have resources associated to this pair ( node, material )
+		return it;
+	}
+
+	auto material = graphics.models.get_material( material_index );
+	if ( material )
+	{
+		// Add ubo for this material
+		if ( material_resources.find( material_index ) == std::end( material_resources ) )
+		{
+			material_resources.emplace( material_index, graphics.swapchain );
+		}
+	}
+
+	auto pipeline_index = select_pipeline( material );
+	auto& graphics_pipeline = pipelines[pipeline_index];
+	auto resource = DescriptorResources( *this, graphics_pipeline, node_index, material );
+	bool ok;
+	std::tie( it, ok ) = descriptor_resources.emplace( key, std::move( resource ) );
+	assert( ok && "Cannot emplace primitive resource" );
+	printf("Descriptor [node %d, material %d]\n", node_index, material_index );
+	return it;
 }
 
 

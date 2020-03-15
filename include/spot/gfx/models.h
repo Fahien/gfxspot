@@ -100,8 +100,9 @@ using Index = uint16_t;
 
 /// @brief A primitives has a central role in rendering
 /// as it stores vertices, indices, and its material
-struct Primitive
+class Primitive
 {
+  public:
 	Primitive() = default;
 
 	Primitive(
@@ -117,6 +118,7 @@ struct Primitive
 	float line_width = 1.0f;
 
 	int32_t get_material() const noexcept { return material; }
+	void set_material( int32_t m ) { material = m; }
 
 private:
 	/// An index to the material to use to draw the primitive

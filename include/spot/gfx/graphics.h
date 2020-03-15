@@ -76,39 +76,7 @@ class PhysicalDevice
 
 class Device;
 class CommandBuffer;
-
-
-class Semaphore
-{
-  public:
-	Semaphore( Device& d );
-	~Semaphore();
-
-	Semaphore( Semaphore&& other );
-	Semaphore& operator=( Semaphore&& other );
-
-	Device& device;
-	VkSemaphore handle = VK_NULL_HANDLE;
-};
-
-
-class Fence
-{
-  public:
-	Fence( Device& d );
-	~Fence();
-
-	Fence( Fence&& o );
-	Fence& operator=( Fence&& o );
-
-	void wait() const;
-	void reset();
-
-	Device& device;
-	VkFence handle = VK_NULL_HANDLE;
-	bool can_wait = true;
-};
-
+class Fence;
 
 class Queue
 {
@@ -242,6 +210,38 @@ class ShaderModule
 
 	Device& device;
 	VkShaderModule handle = VK_NULL_HANDLE;
+};
+
+
+class Semaphore
+{
+  public:
+	Semaphore( Device& d );
+	~Semaphore();
+
+	Semaphore( Semaphore&& other );
+	Semaphore& operator=( Semaphore&& other );
+
+	Device& device;
+	VkSemaphore handle = VK_NULL_HANDLE;
+};
+
+
+class Fence
+{
+  public:
+	Fence( Device& d );
+	~Fence();
+
+	Fence( Fence&& o );
+	Fence& operator=( Fence&& o );
+
+	void wait() const;
+	void reset();
+
+	Device& device;
+	VkFence handle = VK_NULL_HANDLE;
+	bool can_wait = true;
 };
 
 
