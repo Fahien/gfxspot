@@ -18,7 +18,6 @@
 
 namespace spot::gltf
 {
-class Node;
 class Scene;
 }
 
@@ -35,36 +34,9 @@ struct alignas(16) Dot
 };
 
 
-struct Line
-{
-	Line( Dot a = {}, Dot b = {} ) : dots { a, b } {}
-
-	std::array<Dot, 2> dots = {};
-
-	const std::array<Index, 2> indices = { 0, 1 };
-
-	UniformBufferObject ubo = {};
-};
-
-
-struct Rect
-{
-	Rect( Dot bottom_left, Dot top_right );
-
-	Rect( Dot a, Dot b, Dot c, Dot d )
-	: dots { a, b, c, d }
-	{}
-
-	std::array<Dot, 4> dots = {};
-
-	const std::array<Index, 8> indices = { 0, 1, 1, 2, 2, 3, 3, 0 };
-
-	UniformBufferObject ubo = {};
-};
-
-
 template<typename T>
 VkVertexInputBindingDescription get_bindings();
+
 
 template<typename T>
 std::vector<VkVertexInputAttributeDescription> get_attributes();
@@ -284,8 +256,6 @@ class Graphics
 	bool render_begin();
 	void render_end();
 
-	void draw( Line& line );
-	void draw( Rect& rect );
 	void draw( uint32_t node, Mesh& mesh, const mth::Mat4& transform = math::Mat4::identity );
 	void draw( uint32_t node, Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
 

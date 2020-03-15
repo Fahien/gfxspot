@@ -215,7 +215,7 @@ NodeResources::NodeResources( const Swapchain& swapchain )
 
 MaterialResources::MaterialResources( const Swapchain& swapchain )
 : ubos { create_mat_ubos( swapchain ) }
-, sampler{ swapchain.device }
+, sampler { swapchain.device }
 {
 }
 
@@ -233,17 +233,15 @@ std::vector<VkDescriptorPoolSize> get_mesh_pool_size( const uint32_t count )
 }
 
 
-PrimitiveResources::PrimitiveResources( const Renderer& renderer, const Primitive& primitive )
+PrimitiveResources::PrimitiveResources( const Device& device, const Primitive& primitive )
 : vertex_buffer {
-		renderer.graphics.device,
+		device,
 		primitive.vertices.size() * sizeof( Vertex ),
-		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
-	}
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT }
 , index_buffer {
-		renderer.graphics.device,
+		device,
 		primitive.indices.size() * sizeof( Index ),
-		VK_BUFFER_USAGE_INDEX_BUFFER_BIT
-	}
+		VK_BUFFER_USAGE_INDEX_BUFFER_BIT }
 {
 	// Upload vertices
 	{
@@ -259,6 +257,7 @@ PrimitiveResources::PrimitiveResources( const Renderer& renderer, const Primitiv
 		index_buffer.upload( data, size );
 	}
 }
+
 
 DescriptorResources::DescriptorResources( const Renderer& renderer, const GraphicsPipeline& pipel, const uint64_t node, const Material* material )
 : pipeline { pipel.index }
@@ -367,60 +366,22 @@ uint64_t get_line_pipeline()
 }
 
 
-void Renderer::add( const Line& line )
+/// @return The pipeline to use for this material
+uint64_t select_pipeline( Material* material )
 {
-	// Find Vulkan resources associated to this rect
-	auto it = line_resources.find( &line );
-	if ( it == std::end( line_resources ) )
+	if ( material )
 	{
-		auto[new_it, ok] = line_resources.emplace(
-			&line,
-			DynamicResources( graphics.device, graphics.swapchain, pipelines[get_line_pipeline()] )
-		);
-		if (ok)
+		if ( material->texture != VK_NULL_HANDLE )
 		{
-			it = new_it;
+			return get_mesh_pipeline();
 		}
+
+		return get_mesh_no_image_pipeline();
 	}
 
-	// Vertices
-	auto& vertex_buffer = it->second.vertex_buffer;
-	vertex_buffer.set_count( line.dots.size() );
-	vertex_buffer.upload( reinterpret_cast<const uint8_t*>( line.dots.data() ) );
-
-	// Indices
-	auto& index_buffer = it->second.index_buffer;
-	index_buffer.set_count( line.indices.size() );
-	index_buffer.upload( reinterpret_cast<const uint8_t*>( line.indices.data() ) );
+	return get_line_pipeline();
 }
 
-
-void Renderer::add( const Rect& rect )
-{
-	// Find Vulkan resources associated to this rect
-	auto it = rect_resources.find( &rect );
-	if ( it == std::end( rect_resources ) )
-	{
-		auto[new_it, ok] = rect_resources.emplace(
-			&rect,
-			DynamicResources( graphics.device, graphics.swapchain, pipelines[get_line_pipeline()] )
-		);
-		if (ok)
-		{
-			it = new_it;
-		}
-	}
-
-	// Vertices
-	auto& vertex_buffer = it->second.vertex_buffer;
-	vertex_buffer.set_count( rect.dots.size() );
-	vertex_buffer.upload( reinterpret_cast<const uint8_t*>( rect.dots.data() ) );
-
-	// Indices
-	auto& index_buffer = it->second.index_buffer;
-	index_buffer.set_count( rect.indices.size() );
-	index_buffer.upload( reinterpret_cast<const uint8_t*>( rect.indices.data() ) );
-}
 
 void Renderer::add( const uint32_t node_index )
 {
@@ -430,57 +391,52 @@ void Renderer::add( const uint32_t node_index )
 		return; // no mesh to add
 	}
 
-	// At this point a node has a mesh, therefore we create ubos for MVP matrix
+	// The node has a mesh, therefore we need UBOs for the MVP matrix
+	// MVP ubos are store in node resources
 	if ( node_resources.find( node_index ) == std::end( node_resources ) )
 	{
 		node_resources.emplace( node_index, NodeResources( graphics.swapchain ) );
 	}
 
+	// Now get the mesh, and its primitives
 	auto mesh = graphics.models.meshes[node->mesh];
 	for ( auto& prim : mesh.primitives )
 	{
+		// We need vertex and index buffers. These are stored in primitive resources
 		auto hash_prim = hash( prim );
-		printf( "Prim %lu\n", hash_prim );
-		primitive_resources.emplace( hash_prim, PrimitiveResources( *this, prim ) );
-
-		auto key = hash( node_index, prim.get_material() );
-		// Find Vulkan resources associated to this pair ( node, material )
-		auto it = descriptor_resources.find( key );
-
-		// If not found, create new resources
-		if ( it == std::end( descriptor_resources ) )
+		// Avoid duplication of primitive resources
+		if ( primitive_resources.find( hash_prim ) == std::end( primitive_resources ) )
 		{
-			uint64_t pipeline;
-
-			auto material = graphics.models.get_material( prim.get_material() );
-			if ( material )
-			{
-				// Add ubo for this material
-				if ( material_resources.find( prim.get_material() ) == std::end( material_resources ) )
-				{
-					material_resources.emplace( prim.get_material(), graphics.swapchain );
-				}
-
-				if ( material->texture != VK_NULL_HANDLE )
-				{
-					pipeline = get_mesh_pipeline();
-				}
-				else
-				{
-					pipeline = get_mesh_no_image_pipeline();
-				}
-			}
-			else
-			{
-				pipeline = get_line_pipeline();
-			}
-
-			/// @todo Simplify prim.layout prim
-			auto resource = DescriptorResources( *this, pipelines[pipeline], node_index, material );
-			auto [it, ok] = descriptor_resources.emplace( key, std::move( resource ) );
-			assert( ok && "Cannot emplace primitive resource" );
-			printf("Descriptor [node %d, material %d]\n", node_index, prim.get_material() );
+			primitive_resources.emplace( hash_prim, PrimitiveResources( graphics.device, prim ) );
 		}
+
+		// We need descriptors for the MVP ubos and material textures
+		// A node may have a mesh with multiple primitives with different materials
+		// And the same material may appear into multiple primitives of different nodes
+		// So we hash combine both node and material
+		auto key = hash( node_index, prim.get_material() );
+		if ( descriptor_resources.find( key ) != std::end( descriptor_resources ) )
+		{
+			// Skip if we already have resources associated to this pair ( node, material )
+			continue;
+		}
+	
+		auto material = graphics.models.get_material( prim.get_material() );
+		if ( material )
+		{
+			// Add ubo for this material
+			if ( material_resources.find( prim.get_material() ) == std::end( material_resources ) )
+			{
+				material_resources.emplace( prim.get_material(), graphics.swapchain );
+			}
+		}
+
+		auto pipeline_index = select_pipeline( material );
+		auto& graphics_pipeline = pipelines[pipeline_index];
+		auto resource = DescriptorResources( *this, graphics_pipeline, node_index, material );
+		auto [it, ok] = descriptor_resources.emplace( key, std::move( resource ) );
+		assert( ok && "Cannot emplace primitive resource" );
+		printf("Descriptor [node %d, material %d]\n", node_index, prim.get_material() );
 	}
 }
 

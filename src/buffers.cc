@@ -9,7 +9,7 @@ namespace spot::gfx
 {
 
 
-Buffer::Buffer( Device& d, const VkDeviceSize size, const VkBufferUsageFlags usage )
+Buffer::Buffer( const Device& d, const VkDeviceSize size, const VkBufferUsageFlags usage )
 : device { d }
 {
 	assert( size > 0 && "Cannot create buffer of size 0" );

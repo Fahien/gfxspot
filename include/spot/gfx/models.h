@@ -158,6 +158,9 @@ class Models
 	/// @return The index of the node
 	gltf::Node& create_node( Mesh&& m );
 
+	/// @brief Using a handle is the best way to avoid dangling pointers
+	/// Make sure you use the returned pointer in a short scope and
+	/// remember to not modify the list of nodes in the meanwhile
 	/// @return The node at index i, null otherwhise
 	gltf::Node* get_node( int32_t i );
 
@@ -168,7 +171,7 @@ class Models
 	Material& create_material( Material&& m = {} );
 
 	/// @return The material at index i, null otherwhise
-	gfx::Material* get_material( int32_t i );
+	Material* get_material( int32_t i );
 
 	/// @return The list of nodes;
 	const std::vector<gltf::Node>& get_nodes() const { return nodes; };
@@ -179,13 +182,13 @@ class Models
 
 	gltf::Scene scene;
 
-	std::vector<gfx::Mesh> meshes;
+	std::vector<Mesh> meshes;
 
   private:
 	std::vector<gltf::Node> nodes;
 
 	/// Materials can be referred by multiple primitives
-	std::vector<gfx::Material> materials;
+	std::vector<Material> materials;
 };
 
 

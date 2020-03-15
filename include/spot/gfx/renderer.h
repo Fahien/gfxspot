@@ -14,16 +14,12 @@
 namespace spot::gfx
 {
 
-struct Line;
-struct Rect;
-struct Mesh;
 struct Primitive;
 struct Material;
 
 class Device;
 class Swapchain;
 class Graphics;
-class Models;
 
 
 struct DynamicResources
@@ -46,15 +42,13 @@ struct DynamicResources
 };
 
 
-/// @todo This resources associate too many things
-/// To improve this, consider that:
-/// - Primitives that are equal should have same vertex and index buffer
-/// - Those primitives may have different materials and different uniform
-/// That is why mvp-bo and material-bo should each be stored in their own resource set
-/// @ref Renderer
+/// @brief Vulkan resources for Primitives.
+/// Multiple primitives that are actually equal could use the same vertex and index buffer
+/// Those primitives may have different materials and belong to different nodes with different transforms
+/// That is why mvp-bo and material-bo are stored in their own resource set
 struct PrimitiveResources
 {
-	PrimitiveResources( const Renderer& renderer, const Primitive& pm );
+	PrimitiveResources( const Device& device, const Primitive& pm );
 
 	Buffer vertex_buffer;
 	Buffer index_buffer;
@@ -107,8 +101,6 @@ class Renderer
 
 	void recreate_pipelines();
 
-	void add( const Line& ln );
-	void add( const Rect& rt );
 	void add( uint32_t node );
 
 	Graphics& graphics;
@@ -116,24 +108,17 @@ class Renderer
 	/// @brief Collection of pipelines
 	std::vector<GraphicsPipeline> pipelines;
 
-	/// @brief Each model will have
-	/// - vertex buffer containing constant data about its vertices
-	/// - uniform buffers that can change per swapchain image
-	/// - DescriptorPool and DescriptorSet per swapchain image
-	std::unordered_map<const Line*, DynamicResources> line_resources;
-	std::unordered_map<const Rect*, DynamicResources> rect_resources;
-
 	/// @brief The key is a hash value of the primitive
 	/// Meshes with the same primitive will use the same resources
 	std::unordered_map<size_t, PrimitiveResources> primitive_resources;
 
-	/// @brief Key is node index
-	/// Value is ubos for frames
-	std::unordered_map<uint32_t, NodeResources> node_resources;
-
 	/// @brief Key is material index
 	/// Value is ubos for material
 	std::unordered_map<uint32_t, MaterialResources> material_resources;
+
+	/// @brief Key is node index
+	/// Value is ubos for frames
+	std::unordered_map<uint32_t, NodeResources> node_resources;
 
 	/// @brief Key is hash of node and material
 	/// Value is descriptor sets for this node and material

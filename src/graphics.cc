@@ -19,17 +19,6 @@ namespace spot::gfx
 {
 
 
-Rect::Rect( Dot bottom_left, Dot top_right )
-: dots {
-		bottom_left,
-		{ { top_right.p.x, bottom_left.p.y, 0.0f }, bottom_left.c },
-		top_right,
-		{ { bottom_left.p.x, top_right.p.y, 0.0f }, top_right.c }
-	}
-{
-}
-
-
 PhysicalDevice::PhysicalDevice( VkPhysicalDevice h )
 : handle { h }
 {
@@ -1005,52 +994,6 @@ void Graphics::render_end()
 	graphics_queue.submit( *current_command_buffer, { current_image_available->handle }, { image_drawn.handle }, current_frame_in_flight );
 
 	present_queue.present( { swapchain.handle }, { current_frame_index }, { image_drawn.handle } );
-}
-
-
-void Graphics::draw( Line& line )
-{
-	auto& resources = renderer.line_resources.find( &line )->second;
-
-	line.ubo.view = view;
-	line.ubo.proj = proj;
-
-	auto data = reinterpret_cast<const uint8_t*>( &line.ubo );
-	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
-	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
-
-	auto& pipeline = renderer.pipelines[resources.pipeline];
-
-	current_command_buffer->bind( pipeline );
-	current_command_buffer->bind_vertex_buffers( resources.vertex_buffer );
-	current_command_buffer->bind_index_buffer( resources.index_buffer );
-
-	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
-	current_command_buffer->bind_descriptor_sets( line_layout, descriptor_set );
-	current_command_buffer->draw_indexed( resources.index_buffer.count() );
-}
-
-
-void Graphics::draw( Rect& rect )
-{
-	auto& resources = renderer.rect_resources.find( &rect )->second;
-
-	rect.ubo.view = view;
-	rect.ubo.proj = proj;
-
-	auto data = reinterpret_cast<const uint8_t*>( &rect.ubo );
-	auto& uniform_buffer = resources.uniform_buffers[current_frame_index];
-	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
-
-	auto& pipeline = renderer.pipelines[resources.pipeline];
-
-	current_command_buffer->bind( pipeline );
-	current_command_buffer->bind_vertex_buffers( resources.vertex_buffer );
-	current_command_buffer->bind_index_buffer( resources.index_buffer );
-
-	auto& descriptor_set = resources.descriptor_sets[current_frame_index];
-	current_command_buffer->bind_descriptor_sets( line_layout, descriptor_set );
-	current_command_buffer->draw_indexed( resources.index_buffer.count() );
 }
 
 

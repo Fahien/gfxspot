@@ -13,7 +13,7 @@ class Device;
 class Buffer
 {
   public:
-	Buffer( Device& d, VkDeviceSize size, VkBufferUsageFlags usage );
+	Buffer( const Device& d, VkDeviceSize size, VkBufferUsageFlags usage );
 	~Buffer();
 
 	Buffer( Buffer&& o );
@@ -24,7 +24,7 @@ class Buffer
 
 	void upload( const uint8_t* data, VkDeviceSize size );
 
-	Device& device;
+	const Device& device;
 	VkBuffer handle = VK_NULL_HANDLE;
 	VkDeviceMemory memory = VK_NULL_HANDLE;
 };
