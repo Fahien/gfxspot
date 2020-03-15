@@ -57,6 +57,7 @@ class Glfw
 
 		mth::Vec2 cursor = {};
 		bool pressed = false;
+		bool click = false;
 
 		class Surface
 		{

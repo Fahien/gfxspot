@@ -161,6 +161,9 @@ class Models
 	/// @return The node at index i, null otherwhise
 	gltf::Node* get_node( int32_t i );
 
+	/// @return The list of materials
+	const std::vector<Material>& get_materials() const noexcept { return materials; }
+
 	/// @return A new material with a proper index
 	Material& create_material( Material&& m = {} );
 

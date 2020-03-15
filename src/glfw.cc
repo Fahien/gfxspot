@@ -80,6 +80,7 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 		{
 			window->cursor = window->get_cursor_position();
 			window->pressed = true;
+			window->click = true;
 		}
 		else if ( action == GLFW_RELEASE )
 		{
@@ -120,6 +121,7 @@ bool Glfw::Window::is_alive()
 {
 	// Reset internal state
 	scroll = {};
+	click = false;
 	return !glfwWindowShouldClose( handle );
 }
 
