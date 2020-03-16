@@ -148,11 +148,11 @@ Mesh Mesh::create_rect( const Vec3& a, const Vec3& b, const int32_t material )
 
 		if ( case1 || case2 )
 		{
-			indices = { 0, 2, 1, 0, 3, 2 };
+			indices = { 0, 1, 2, 0, 2, 3 };
 		}
 		else
 		{
-			indices = { 0, 1, 2, 0, 2, 3 };
+			indices = { 0, 2, 1, 0, 3, 2 };
 		}
 	}
 	else
