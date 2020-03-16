@@ -8,12 +8,14 @@ namespace spot::gfx
 const float unit = 0.125f;
 const float spacing = unit / 16.0f;
 
+
 uint32_t create_material( const Color& c, Graphics& gfx )
 {
 	auto& material = gfx.models.create_material();
 	material.ubo.color = c;
 	return material.index;
 }
+
 
 struct SolidMaterials
 {
@@ -34,10 +36,11 @@ SolidMaterials::SolidMaterials( Graphics& gfx )
 
 uint32_t create_mesh( uint32_t material, Graphics& gfx )
 {
+	auto hs = unit / 2.0f - spacing / 2.0f;
 	gfx.models.meshes.emplace_back(
 		Mesh::create_rect(
-			Vec3( -unit / 2.0f, -unit / 2.0f, 0.0f ),
-			Vec3( unit / 2.0f, unit / 2.0f, 0.0f ),
+			Vec3( -hs, -hs, 0.0f ),
+			Vec3( hs, hs, 0.0f ),
 			material
 		)
 	);
@@ -68,7 +71,9 @@ SolidMeshes::SolidMeshes( Graphics& gfx )
 // 2x2 block
 int create_tetris_el( const uint32_t mesh, Graphics& gfx )
 {
-	auto block_index = gfx.models.create_node().index;
+	auto& block = gfx.models.create_node();
+	block.translation.y = 2.0;
+	auto block_index = block.index;
 
 	auto add_child = [block_index, mesh, &gfx]( Vec3 translation ) {
 		auto& node = gfx.models.create_node();
@@ -80,16 +85,17 @@ int create_tetris_el( const uint32_t mesh, Graphics& gfx )
 		block->children.emplace_back( node.index );
 	};
 
-	auto hs = spacing / 2.0f;
-	add_child( Vec3( 0.0f, 2.0f * ( - unit - hs ) ) );
-	add_child( Vec3( 0.0f, -unit - hs ) );
+	add_child( Vec3( 0.0f, - 2.0f * unit ) );
+	add_child( Vec3( 0.0f, - unit ) );
 	add_child( Vec3( 0.0f, 0.0f ) );
-	add_child( Vec3( unit + hs, 0.0f ) );
+	add_child( Vec3( unit, 0.0f ) );
 
 	return block_index;
 }
 
+
 } // namespace spot::gfx
+
 
 int main()
 {
@@ -100,12 +106,15 @@ int main()
 
 	auto el = create_tetris_el( meshes.green, gfx );
 
-	auto eye = mth::Vec3( 0.0f, 0.0f, 1.0f ); // Out of the screen
+	auto eye = mth::Vec3( 0.0f, 0.0f, -1.0f ); // Out of the screen
 	auto origin = mth::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
 	auto up = mth::Vec3( 0.0f, 1.0f, 0.0f ); // Up is the sky
 	gfx.view = look_at( eye, origin, up );
 
-	gfx.proj = ortho( -1.0f, 1.0, -1.0, 1.0, 0.125f, 2.0 );
+	gfx.proj = ortho( -1.0f, 1.0, 0.0 + unit / 2.0f, -2.0 + unit / 2.0f, 0.125f, 2.0 );
+
+	double tick = 1.0;
+	double time = 0.0f;
 
 	while ( gfx.window.is_alive() )
 	{
@@ -113,6 +122,17 @@ int main()
 
 		const auto dt = gfx.glfw.get_delta();
 		gfx.window.update( dt );
+
+		time += dt;
+		if ( time >= tick )
+		{
+			auto node = gfx.models.get_node( el );
+			if ( node->translation.y > 0.0f )
+			{
+				node->translation.y -= unit;
+			}
+			time = 0.0;
+		}
 
 		if ( gfx.window.click )
 		{
