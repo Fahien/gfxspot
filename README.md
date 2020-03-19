@@ -8,4 +8,4 @@ GFXspot is a Vulkan graphics library.
 
 ## Licensing
 
-The source code is licensed under [GPL v3](LICENSE).
+The source code is licensed under [MIT](LICENSE).
