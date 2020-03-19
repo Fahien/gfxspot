@@ -6,27 +6,25 @@
 #include "spot/gfx/png.h"
 #include "spot/gfx/images.h"
 
-namespace gfx = spot::gfx;
-namespace gtf = spot::gltf;
-
-
-void update( const double dt, gtf::Node& node )
+namespace spot::gfx
 {
-	auto radians = mth::radians( dt * 128.0f );
-	auto z = mth::Vec3( 0.0f, 0.0f, 1.0f );
-	auto quat = mth::Quat( z, radians );
+
+
+void update( const double dt, Node& node )
+{
+	auto radians = math::radians( dt * 128.0f );
+	auto z = math::Vec3( 0.0f, 0.0f, 1.0f );
+	auto quat = math::Quat( z, radians );
 	node.rotation *= quat;
 
 	static float acc = 0;
 	acc += dt;
-	node.translation.z = std::cos( mth::radians( acc * 256.0f ) ) + 4.0f;
+	node.translation.z = std::cos( math::radians( acc * 256.0f ) ) + 4.0f;
 }
 
 
-int create_card( gfx::Graphics& graphics )
+int create_card( Graphics& graphics )
 {
-	using namespace gfx;
-
 	Mesh& card = graphics.models.meshes.emplace_back();
 
 	std::vector<Vertex> vertices = {
@@ -69,6 +67,9 @@ int create_card( gfx::Graphics& graphics )
 }
 
 
+} // namespace spot::gfx
+
+
 int main()
 {
 	using namespace spot::gfx;
@@ -97,6 +98,5 @@ int main()
 		}
 	}
 
-	graphics.device.wait_idle();
 	return EXIT_SUCCESS;
 }

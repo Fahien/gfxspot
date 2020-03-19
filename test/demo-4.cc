@@ -6,19 +6,18 @@
 #include "spot/gfx/png.h"
 #include "spot/gfx/images.h"
 
-namespace gfx = spot::gfx;
-namespace gtf = spot::gltf;
-
-
-void update( const double dt, gtf::Node& node )
+namespace spot::gfx
 {
-	auto matrix = mth::Mat4( node.rotation );
-	matrix.rotateZ( mth::radians( dt * 128.0f ) );
-	node.rotation = mth::Quat( matrix );
+
+void update( const double dt, Node& node )
+{
+	auto matrix = math::Mat4( node.rotation );
+	matrix.rotateZ( math::radians( dt * 128.0f ) );
+	node.rotation = math::Quat( matrix );
 
 	static float acc = 0;
 	acc += dt;
-	node.translation.z = std::cos( mth::radians( acc * 256.0f ) ) + 4.0f;
+	node.translation.z = std::cos( math::radians( acc * 256.0f ) ) + 4.0f;
 }
 
 
@@ -73,6 +72,9 @@ int create_card( gfx::Graphics& graphics )
 }
 
 
+} // namespace spot::gfx
+
+
 int main()
 {
 	using namespace spot::gfx;
@@ -81,9 +83,9 @@ int main()
 
 	auto& scene = graphics.models.load( "img/milktruck/CesiumMilkTruck.gltf" );
 
-	mth::Vec3 eye = {};
-	mth::Vec3 origin = {};
-	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	spot::math::Vec3 eye = {};
+	spot::math::Vec3 origin = {};
+	spot::math::Vec3 up = { 0.0f, 1.0f, 0.0f };
 
 	while ( graphics.window.is_alive() )
 	{
@@ -116,6 +118,5 @@ int main()
 		}
 	}
 
-	graphics.device.wait_idle();
 	return EXIT_SUCCESS;
 }

@@ -6,22 +6,19 @@
 #include "spot/gfx/png.h"
 #include "spot/gfx/images.h"
 
-namespace gfx = spot::gfx;
-namespace gtf = spot::gltf;
-
-
-void update( const double dt, gtf::Node& node )
+namespace spot::gfx
 {
-	static mth::Mat4 model = mth::Mat4::identity;
-	model.rotateZ( -mth::radians( dt * 16.0 ) );
-	node.rotation = model;
+
+
+void update( const double dt, Node& node )
+{
+	auto angle = -math::radians( dt * 16.0 );
+	node.rotation *= math::Quat( math::Vec3::Z, angle );
 }
 
 
-gfx::Mesh create_lenna( gfx::Graphics& graphics )
+Mesh create_lenna( Graphics& graphics )
 {
-	using namespace spot::gfx;
-
 	auto& material = graphics.models.create_material();
 	auto view = graphics.images.load( "img/lena.png" );
 	material.texture = view;
@@ -34,6 +31,9 @@ gfx::Mesh create_lenna( gfx::Graphics& graphics )
 
 	return quad;
 }
+
+
+} // namespace spot::gfx
 
 
 int main()
@@ -61,9 +61,9 @@ int main()
 		create_lenna( graphics )
 	).index;
 
-	mth::Vec3 eye = { 1.5f, 1.5f, -1.5f };
-	mth::Vec3 zero = {};
-	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	spot::math::Vec3 eye = { 1.5f, 1.5f, 1.5f };
+	spot::math::Vec3 zero = {};
+	spot::math::Vec3 up = { 0.0f, 1.0f, 0.0f };
 	graphics.view = look_at( eye, zero, up );
 
 	while ( graphics.window.is_alive() )
@@ -84,6 +84,5 @@ int main()
 		}
 	}
 
-	graphics.device.wait_idle();
 	return EXIT_SUCCESS;
 }

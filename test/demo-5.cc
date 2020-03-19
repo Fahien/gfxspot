@@ -1,14 +1,14 @@
 #include <cstdlib>
 #include <filesystem>
-#include <cmath>
+#include <spot/math/math.h>
 
 #include "spot/gfx/graphics.h"
 #include "spot/gfx/png.h"
 #include "spot/gfx/images.h"
 
-namespace gfx = spot::gfx;
-namespace gtf = spot::gltf;
 
+namespace spot::gfx
+{
 
 int create_line( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b )
 {
@@ -49,13 +49,14 @@ int create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c
 }
 
 
-void rotate( gtf::Node& n, float angle )
+void rotate( Node& n, float angle )
 {
-	const mth::Vec3 axis = { 0.0f, 0.0f, 1.0f };
-	auto rot_axis = mth::Quat( axis, angle );
+	const math::Vec3 axis = { 0.0f, 0.0f, 1.0f };
+	auto rot_axis = math::Quat( axis, angle );
 	n.rotation *= rot_axis;
 }
 
+} // namespace spot::gfx
 
 int main( const int argc, const char** argv )
 {
@@ -63,7 +64,7 @@ int main( const int argc, const char** argv )
 
 	auto graphics = Graphics();
 
-	gtf::Scene* scene = nullptr;
+	Scene* scene;
 	if ( argc > 1 )
 	{
 		auto path = std::string( argv[1] );
@@ -87,9 +88,9 @@ int main( const int argc, const char** argv )
 		Dot( Vec3( -0.5f, 0.0f, -1.0f ) ),
 		Dot( Vec3( 0.0f, 0.0f, 0.0f ) ) );
 	
-	mth::Vec3 eye = { 1.5f, 1.5f, 1.5f };
-	mth::Vec3 zero = {};
-	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	spot::math::Vec3 eye = { 1.5f, 1.5f, 1.5f };
+	spot::math::Vec3 zero = {};
+	spot::math::Vec3 up = { 0.0f, 1.0f, 0.0f };
 	graphics.view = look_at( eye, zero, up );
 
 	while ( graphics.window.is_alive() )
@@ -100,7 +101,7 @@ int main( const int argc, const char** argv )
 
 		if ( graphics.window.swipe.x != 0 )
 		{
-			auto angle = mth::radians( graphics.window.swipe.x );
+			auto angle = spot::math::radians( graphics.window.swipe.x );
 			rotate( *graphics.models.get_node( x ), angle );
 			rotate( *graphics.models.get_node( y ), angle );
 			rotate( *graphics.models.get_node( z ), angle );
@@ -130,6 +131,5 @@ int main( const int argc, const char** argv )
 		}
 	}
 
-	graphics.device.wait_idle();
 	return EXIT_SUCCESS;
 }

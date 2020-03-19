@@ -1,7 +1,6 @@
 #include "spot/gfx/renderer.h"
 
 #include <cassert>
-#include <spot/gltf/mesh.h>
 
 #include "spot/gfx/graphics.h"
 #include "spot/gfx/models.h"

@@ -16,11 +16,6 @@
 #include "spot/gfx/pipelines.h"
 
 
-namespace spot::gltf
-{
-class Scene;
-}
-
 namespace spot::gfx
 {
 
@@ -245,8 +240,8 @@ class Fence
 };
 
 
-mth::Mat4 look_at( const mth::Vec3& eye, const mth::Vec3& center, mth::Vec3 up );
-mth::Mat4 ortho( float left, float right, float bottom, float top, float near, float far );
+math::Mat4 look_at( const math::Vec3& eye, const math::Vec3& center, math::Vec3 up );
+math::Mat4 ortho( float left, float right, float bottom, float top, float near, float far );
 
 class Graphics
 {
@@ -256,12 +251,10 @@ class Graphics
 	bool render_begin();
 	void render_end();
 
-	void draw( uint32_t node, Mesh& mesh, const mth::Mat4& transform = math::Mat4::identity );
+	void draw( uint32_t node, Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
 	void draw( uint32_t node, Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
-
 	void draw( uint32_t node, const math::Mat4& transform = math::Mat4::identity );
-	void draw( const gltf::Scene& scene );
-
+	void draw( const Scene& scene, const math::Mat4& transform = math::Mat4::identity );
 
 	Glfw glfw;
 	Instance instance;
@@ -314,8 +307,8 @@ class Graphics
 	Models models;
 	Images images;
 
-	mth::Mat4 view = mth::Mat4::identity;
-	mth::Mat4 proj = mth::Mat4::identity;
+	math::Mat4 view = math::Mat4::identity;
+	math::Mat4 proj = math::Mat4::identity;
 };
 
 

@@ -106,9 +106,9 @@ int main()
 
 	auto el = create_tetris_el( meshes.green, gfx );
 
-	auto eye = mth::Vec3( 0.0f, 0.0f, -1.0f ); // Out of the screen
-	auto origin = mth::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
-	auto up = mth::Vec3( 0.0f, 1.0f, 0.0f ); // Up is the sky
+	auto eye = spot::math::Vec3( 0.0f, 0.0f, 1.0f ); // Out of the screen
+	auto origin = spot::math::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
+	auto up = spot::math::Vec3( 0.0f, 1.0f, 0.0f ); // Up is the sky
 	gfx.view = look_at( eye, origin, up );
 
 	gfx.proj = ortho( -1.0f, 1.0, 0.0 + unit / 2.0f, -2.0 + unit / 2.0f, 0.125f, 2.0 );

@@ -9,8 +9,6 @@
 #include "spot/gfx/images.h"
 #include "spot/gfx/pipelines.h"
 
-#include "spot/gltf/node.h"
-
 namespace spot::gfx
 {
 

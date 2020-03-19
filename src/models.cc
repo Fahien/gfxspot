@@ -6,10 +6,6 @@
 #include "spot/gfx/graphics.h"
 
 
-namespace mth = spot::math;
-namespace gtf = spot::gltf;
-
-
 namespace spot::gfx
 {
 
@@ -194,7 +190,7 @@ Models::Models( Graphics& g )
 {}
 
 
-gltf::Node& Models::create_node()
+Node& Models::create_node()
 {
 	auto& node = nodes.emplace_back();
 	node.index = nodes.size() - 1;
@@ -202,7 +198,7 @@ gltf::Node& Models::create_node()
 }
 
 
-gltf::Node& Models::create_node( Mesh&& mesh )
+Node& Models::create_node( Mesh&& mesh )
 {
 	auto& node = nodes.emplace_back();
 	node.index = nodes.size() - 1;
@@ -214,7 +210,7 @@ gltf::Node& Models::create_node( Mesh&& mesh )
 }
 
 
-gtf::Node* Models::get_node( const int32_t index )
+Node* Models::get_node( const int32_t index )
 {
 	assert( index >= 0 && index < nodes.size() && "Cannot get node out of bounds" );
 	return &nodes[index];
@@ -238,9 +234,9 @@ gfx::Material* Models::get_material( const int32_t index )
 }
 
 
-gtf::Scene& Models::load( const std::string& path )
+Scene& Models::load( const std::string& path )
 {
-	auto model = spot::gltf::Gltf::load( path );
+	auto model = gltf::Gltf::load( path );
 
 	// Load materials
 	for ( auto& m : model.materials )
@@ -278,8 +274,8 @@ gtf::Scene& Models::load( const std::string& path )
 				indices.resize( accessor->count );
 				std::memcpy( indices.data(), accessor->get_data(), accessor->get_size() );
 
-				assert( accessor->component_type == spot::gltf::Accessor::ComponentType::UNSIGNED_SHORT );
-				assert( accessor->type == spot::gltf::Accessor::Type::SCALAR );
+				assert( accessor->component_type == gltf::Accessor::ComponentType::UNSIGNED_SHORT );
+				assert( accessor->type == gltf::Accessor::Type::SCALAR );
 			}
 
 			// Vertex attributes
@@ -299,7 +295,7 @@ gtf::Scene& Models::load( const std::string& path )
 
 				switch ( semantic )
 				{
-				case gtf::Mesh::Primitive::Semantic::POSITION:
+				case gltf::Mesh::Primitive::Semantic::POSITION:
 				{
 					if ( stride == 0 )
 					{
@@ -313,11 +309,11 @@ gtf::Scene& Models::load( const std::string& path )
 						std::memcpy( &vert.p.x, vert_data, elem_size );
 					}
 
-					assert( accessor->component_type == spot::gltf::Accessor::ComponentType::FLOAT );
-					assert( accessor->type == spot::gltf::Accessor::Type::VEC3 );
+					assert( accessor->component_type == gltf::Accessor::ComponentType::FLOAT );
+					assert( accessor->type == gltf::Accessor::Type::VEC3 );
 					break;
 				}
-				case gtf::Mesh::Primitive::Semantic::NORMAL:
+				case gltf::Mesh::Primitive::Semantic::NORMAL:
 				{
 					if ( stride == 0 )
 					{
@@ -331,11 +327,11 @@ gtf::Scene& Models::load( const std::string& path )
 						std::memcpy( &vert.n.x, vert_data, elem_size );
 					}
 
-					assert( accessor->component_type == spot::gltf::Accessor::ComponentType::FLOAT );
-					assert( accessor->type == spot::gltf::Accessor::Type::VEC3 );
+					assert( accessor->component_type == gltf::Accessor::ComponentType::FLOAT );
+					assert( accessor->type == gltf::Accessor::Type::VEC3 );
 					break;
 				}
-				case gtf::Mesh::Primitive::Semantic::TEXCOORD_0:
+				case gltf::Mesh::Primitive::Semantic::TEXCOORD_0:
 				{
 					if ( stride == 0 )
 					{
@@ -349,11 +345,11 @@ gtf::Scene& Models::load( const std::string& path )
 						std::memcpy( &vert.t.x, vert_data, elem_size );
 					}
 
-					assert( accessor->component_type == spot::gltf::Accessor::ComponentType::FLOAT );
-					assert( accessor->type == spot::gltf::Accessor::Type::VEC2 );
+					assert( accessor->component_type == gltf::Accessor::ComponentType::FLOAT );
+					assert( accessor->type == gltf::Accessor::Type::VEC2 );
 					break;
 				}
-				case gtf::Mesh::Primitive::Semantic::COLOR_0:
+				case gltf::Mesh::Primitive::Semantic::COLOR_0:
 				{
 					if ( stride == 0 )
 					{
@@ -367,8 +363,8 @@ gtf::Scene& Models::load( const std::string& path )
 						std::memcpy( &vert.c.r, vert_data, elem_size );
 					}
 
-					assert( accessor->component_type == spot::gltf::Accessor::ComponentType::FLOAT );
-					assert( accessor->type == spot::gltf::Accessor::Type::VEC4 );
+					assert( accessor->component_type == gltf::Accessor::ComponentType::FLOAT );
+					assert( accessor->type == gltf::Accessor::Type::VEC4 );
 					break;
 				}
 				default:
@@ -389,8 +385,15 @@ gtf::Scene& Models::load( const std::string& path )
 		meshes.emplace_back( std::move( mesh ) );
 	}
 
-	nodes = std::move( model.nodes );
-	scene = *model.scene;
+	std::transform(
+		std::begin( model.nodes ),
+		std::end( model.nodes ),
+		std::back_inserter( nodes ), []( auto& node ) -> Node {
+			return Node{ node.index, node.mesh };
+		} );
+
+	scene.nodes = model.scene->nodes;
+	scene.name  = model.scene->name;
 
 	return scene;
 }

@@ -136,9 +136,9 @@ int main()
 	auto& node = graphics.models.create_node();
 	node.mesh = 0;
 
-	mth::Vec3 eye = { 0.0f, 0.0f, -2.0f };
-	mth::Vec3 zero = {};
-	mth::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	spot::math::Vec3 eye = { 0.0f, 0.0f, -2.0f };
+	spot::math::Vec3 zero = {};
+	spot::math::Vec3 up = { 0.0f, 1.0f, 0.0f };
 	graphics.view = look_at( eye, zero, up );
 
 	while ( graphics.window.is_alive() )
@@ -153,6 +153,5 @@ int main()
 		}
 	}
 
-	graphics.device.wait_idle();
 	return EXIT_SUCCESS;
 }

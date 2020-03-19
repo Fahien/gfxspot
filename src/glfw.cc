@@ -140,7 +140,7 @@ void Glfw::Window::update( const float dt )
 }
 
 
-mth::Vec2 Glfw::Window::get_cursor_position() const
+math::Vec2 Glfw::Window::get_cursor_position() const
 {
 	double x;
 	double y;

@@ -3,7 +3,6 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-#include <spot/gltf/gltf.h>
 #include <spot/math/math.h>
 
 #include "spot/gfx/images.h"
@@ -98,6 +97,42 @@ struct alignas(16) UniformBufferObject
 using Index = uint16_t;
 
 
+struct Node
+{
+	/// Index of this node within the nodes vector
+	int32_t index = -1;
+	
+	/// If not negative, index of mesh of the node
+	int32_t mesh = -1;
+
+	/// Floating-point 4x4 transformation matrix stored in column-major order
+	math::Mat4 matrix = math::Mat4::identity;
+
+	/// Unit quaternion
+	math::Quat rotation = math::Quat::identity;
+
+	/// Non-uniform scale
+	math::Vec3 scale = math::Vec3{ 1.0f, 1.0f, 1.0f };
+
+	/// Translation
+	math::Vec3 translation = math::Vec3{ 0.0f, 0.0f, 0.0f };
+
+	/// This node's children indices
+	std::vector<int32_t> children;
+};
+
+
+/// Root nodes of a scene
+struct Scene
+{
+	/// Indices of each root node
+	std::vector<int32_t> nodes;
+	
+	/// User-defined name of this object
+	std::string name = "default";
+};
+
+
 /// @brief A primitives has a central role in rendering
 /// as it stores vertices, indices, and its material
 class Primitive
@@ -150,21 +185,21 @@ class Models
   public:
 	Models( Graphics& g );
 
-	gltf::Scene& load( const std::string& path );
+	Scene& load( const std::string& path );
 
 	/// @brief Creates a node and assign it an index
 	/// @return The created node
-	gltf::Node& create_node();
+	Node& create_node();
 
 	/// @brief Creates a node with a new mesh
 	/// @return The index of the node
-	gltf::Node& create_node( Mesh&& m );
+	Node& create_node( Mesh&& m );
 
 	/// @brief Using a handle is the best way to avoid dangling pointers
 	/// Make sure you use the returned pointer in a short scope and
 	/// remember to not modify the list of nodes in the meanwhile
 	/// @return The node at index i, null otherwhise
-	gltf::Node* get_node( int32_t i );
+	Node* get_node( int32_t i );
 
 	/// @return The list of materials
 	const std::vector<Material>& get_materials() const noexcept { return materials; }
@@ -176,18 +211,18 @@ class Models
 	Material* get_material( int32_t i );
 
 	/// @return The list of nodes;
-	const std::vector<gltf::Node>& get_nodes() const { return nodes; };
+	const std::vector<Node>& get_nodes() const { return nodes; };
 
 	Graphics& graphics;
 
 	Images images;
 
-	gltf::Scene scene;
-
 	std::vector<Mesh> meshes;
 
+	Scene scene;
+
   private:
-	std::vector<gltf::Node> nodes;
+	std::vector<Node> nodes;
 
 	/// Materials can be referred by multiple primitives
 	std::vector<Material> materials;

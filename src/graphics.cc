@@ -8,8 +8,6 @@
 #include <cstring>
 #include <cmath>
 
-#include <spot/gltf/node.h>
-
 #include "spot/gfx/hash.h"
 
 namespace gtf = spot::gltf;
@@ -209,6 +207,7 @@ Device::~Device()
 {
 	if ( handle != VK_NULL_HANDLE )
 	{
+		wait_idle();
 		vkDestroyDevice( handle, nullptr );
 	}
 }
@@ -801,11 +800,11 @@ std::vector<VkDescriptorSetLayoutBinding> get_mesh_no_image_bindings()
 }
 
 
-mth::Mat4 perspective( const float a, const float y, const float f, const float n )
+math::Mat4 perspective( const float a, const float y, const float f, const float n )
 {
 	assert( f > n && "Far should be greater than near" );
 
-	mth::Mat4 proj = {};
+	math::Mat4 proj = {};
 
 	// Calculate projection matrix
 	float cotfov = 1.0f / std::tan( 0.5f * y );
@@ -819,31 +818,31 @@ mth::Mat4 perspective( const float a, const float y, const float f, const float 
 }
 
 
-mth::Mat4 look_at( const mth::Vec3& eye, const mth::Vec3& center, mth::Vec3 up )
+math::Mat4 look_at( const math::Vec3& eye, const math::Vec3& center, math::Vec3 up )
 {
-	mth::Vec3 forward = eye - center;
+	math::Vec3 forward = eye - center;
 	forward.normalize();
 
-	mth::Vec3 right = mth::Vec3::cross( up, forward );
+	math::Vec3 right = math::Vec3::cross( up, forward );
 	right.normalize();
 
-	up = mth::Vec3::cross( forward, right );
+	up = math::Vec3::cross( forward, right );
 	up.normalize();
 
-	mth::Mat4 matrix = {};
+	math::Mat4 matrix = {};
 
 	matrix( 0, 0 ) = right.x;
 	matrix( 0, 1 ) = right.y;
 	matrix( 0, 2 ) = right.z;
-	matrix( 0, 3 ) = -mth::Vec3::dot( right, eye );
+	matrix( 0, 3 ) = -math::Vec3::dot( right, eye );
 	matrix( 1, 0 ) = up.x;
 	matrix( 1, 1 ) = up.y;
 	matrix( 1, 2 ) = up.z;
-	matrix( 1, 3 ) = -mth::Vec3::dot( up, eye );
+	matrix( 1, 3 ) = -math::Vec3::dot( up, eye );
 	matrix( 2, 0 ) = forward.x;
 	matrix( 2, 1 ) = forward.y;
 	matrix( 2, 2 ) = forward.z;
-	matrix( 2, 3 ) = -mth::Vec3::dot( forward, eye );
+	matrix( 2, 3 ) = -math::Vec3::dot( forward, eye );
 	matrix( 3, 0 ) = 0.0f;
 	matrix( 3, 1 ) = 0.0f;
 	matrix( 3, 2 ) = 0.0f;
@@ -852,19 +851,19 @@ mth::Mat4 look_at( const mth::Vec3& eye, const mth::Vec3& center, mth::Vec3 up )
 	return matrix;
 }
 
-mth::Mat4 ortho( float left, float right, float bottom, float top, float near, float far )
+math::Mat4 ortho( float left, float right, float bottom, float top, float near, float far )
 {
-	mth::Vec3 mid;
+	math::Vec3 mid;
 	mid.x = ( left + right ) / ( right - left );
 	mid.y = ( bottom + top ) / ( bottom - top );
 	mid.z = near / ( near - far );
 
-	mth::Vec3 scale;
+	math::Vec3 scale;
 	scale.x = 2.0f / ( right - left );
 	scale.y = 2.0f / ( bottom - top );
 	scale.z = 1.0f / ( near - far );
 
-	mth::Mat4 mat = mth::Mat4::identity;
+	math::Mat4 mat = math::Mat4::identity;
 
 	mat.matrix[12] = -mid.x;
 	mat.matrix[13] = -mid.y;
@@ -905,10 +904,10 @@ Graphics::Graphics()
 , images { device }
 , models { *this }
 , view { look_at(
-	mth::Vec3( 0.0f, 0.0f, 0.0f ),
-	mth::Vec3( 0.0f, 0.0f, 0.0f ),
-	mth::Vec3( 0.0f, 1.0f, 0.0f ) ) }
-, proj { perspective( swapchain.extent.width / float(swapchain.extent.height), mth::radians( 60.0f ), 10000.0f, 0.125f ) }
+	math::Vec3( 0.0f, 0.0f, 0.0f ),
+	math::Vec3( 0.0f, 0.0f, 0.0f ),
+	math::Vec3( 0.0f, 1.0f, 0.0f ) ) }
+, proj { perspective( swapchain.extent.width / float(swapchain.extent.height), math::radians( 60.0f ), 10000.0f, 0.125f ) }
 {
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )
 	{
@@ -953,7 +952,7 @@ bool Graphics::render_begin()
 
 		//proj = perspective(
 		//	viewport.width / viewport.height,
-		//	mth::radians( 60.0f ),
+		//	math::radians( 60.0f ),
 		//	10000.0f,
 		//	0.125f );
 
@@ -997,7 +996,7 @@ void Graphics::render_end()
 }
 
 
-void Graphics::draw( const uint32_t node, Mesh& mesh, const mth::Mat4& transform )
+void Graphics::draw( const uint32_t node, Mesh& mesh, const math::Mat4& transform )
 {
 	for ( auto& prim : mesh.primitives )
 	{
@@ -1006,7 +1005,7 @@ void Graphics::draw( const uint32_t node, Mesh& mesh, const mth::Mat4& transform
 }
 
 
-void Graphics::draw( const uint32_t node, Primitive& primitive, const mth::Mat4& transform )
+void Graphics::draw( const uint32_t node, Primitive& primitive, const math::Mat4& transform )
 {
 	auto node_pair = renderer.node_resources.find( node );
 	if ( node_pair == std::end( renderer.node_resources ) )
@@ -1064,7 +1063,7 @@ void Graphics::draw( const uint32_t node, Primitive& primitive, const mth::Mat4&
 }
 
 
-void Graphics::draw( const uint32_t node_index, const mth::Mat4& transform )
+void Graphics::draw( const uint32_t node_index, const math::Mat4& transform )
 {
 	auto node = models.get_node( node_index );
 
@@ -1094,12 +1093,12 @@ void Graphics::draw( const uint32_t node_index, const mth::Mat4& transform )
 }
 
 
-void Graphics::draw( const gtf::Scene& scene )
+void Graphics::draw( const Scene& scene, const math::Mat4& transform )
 {
-	std::for_each(
-		std::begin( scene.nodes ),
-		std::end( scene.nodes ),
-		[this]( auto n ) { draw( n ); } );
+	for ( auto node : scene.nodes )
+	{
+		draw( node, transform );
+	}
 }
 
 
