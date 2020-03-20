@@ -7,3 +7,4 @@
 - [x] The renderer objects can be released when they are not needed anymore, for example when the current scene changes.
 - [x] A GLTF scene should be rendered.
 - [ ] Make a sphere programmatically.
+- [ ] Draw a fan of cards.

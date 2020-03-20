@@ -884,13 +884,13 @@ Graphics::Graphics()
 , swapchain { device }
 , frames { swapchain }
 , render_pass { swapchain }
-, line_vert { device, "test/shader/line.vert.spv" }
-, line_frag { device, "test/shader/line.frag.spv" }
+, line_vert { device, "shader/line.vert.spv" }
+, line_frag { device, "shader/line.frag.spv" }
 , line_layout { device, get_line_bindings() }
-, mesh_vert { device, "test/shader/mesh.vert.spv" }
-, mesh_frag { device, "test/shader/mesh.frag.spv" }
-, mesh_no_image_vert { device, "test/shader/mesh-no-image.vert.spv" }
-, mesh_no_image_frag { device, "test/shader/mesh-no-image.frag.spv" }
+, mesh_vert { device, "shader/mesh.vert.spv" }
+, mesh_frag { device, "shader/mesh.frag.spv" }
+, mesh_no_image_vert { device, "shader/mesh-no-image.vert.spv" }
+, mesh_no_image_frag { device, "shader/mesh-no-image.frag.spv" }
 , mesh_layout { device, get_mesh_bindings() }
 , mesh_no_image_layout { device, get_mesh_no_image_bindings() }
 , viewport { create_viewport( window ) }

@@ -12,23 +12,23 @@ function( compile_shader SHADER_NAME )
 	add_custom_command(
 		TARGET shaders
 		POST_BUILD
-		COMMAND ${GLSLV} ${SHADER_NAME} -V -o ${SHADER_NAME}.spv
+		COMMAND ${GLSLV} ${SHADER_NAME} -V -o ${CMAKE_CURRENT_BINARY_DIR}/${SHADER_NAME}.spv
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		COMMENT "Compiling ${SHADER_NAME}"
-	)
+		COMMENT "Compiling ${SHADER_NAME}" )
 endfunction()
 
 # List of shaders to compile
 set( SHADERS
-	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/line.vert
-	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/line.frag
-	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/mesh.vert
-	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/mesh.frag
-	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/mesh-no-image.vert
-	${CMAKE_CURRENT_SOURCE_DIR}/test/shader/mesh-no-image.frag
+	line.vert
+	line.frag
+	mesh.vert
+	mesh.frag
+	mesh-no-image.vert
+	mesh-no-image.frag
 )
 
 # Compile each shader
 foreach( SHADER ${SHADERS} )
 	compile_shader( ${SHADER} )
 endforeach()
+
