@@ -24,8 +24,8 @@ Mesh create_lenna( Graphics& graphics )
 	material.texture = view;
 
 	Mesh quad = Mesh::create_quad(
-			Vec3( -0.5f, -0.5f, 0.0f ),
-			Vec3( 0.5f, 0.5f, 0.0f ),
+			math::Vec3( -0.5f, -0.5f, 0.0f ),
+			math::Vec3( 0.5f, 0.5f, 0.0f ),
 			material.index
 	);
 
@@ -39,21 +39,22 @@ Mesh create_lenna( Graphics& graphics )
 int main()
 {
 	using namespace spot::gfx;
+	namespace math = spot::math;
 
 	auto graphics = Graphics();
 
 	auto square = graphics.models.create_node(
 		Mesh::create_rect(
-			Vec3( -0.5f, -0.5f ),
-			Vec3( 0.5f, 0.5f )
+			math::Vec3( -0.5f, -0.5f ),
+			math::Vec3( 0.5f, 0.5f )
 		)
 	).index;
 	
 	auto triangle = graphics.models.create_node(
 		Mesh::create_triangle(
-			Vec3( 0.5f, 0.0f, -1.0f ),
-			Vec3( -0.5f, 0.0f, -1.0f ),
-			Vec3( 0.0f, 0.0f, 0.0f )
+			math::Vec3( 0.5f, 0.0f, -1.0f ),
+			math::Vec3( -0.5f, 0.0f, -1.0f ),
+			math::Vec3( 0.0f, 0.0f, 0.0f )
 		)
 	).index;
 
@@ -61,9 +62,9 @@ int main()
 		create_lenna( graphics )
 	).index;
 
-	spot::math::Vec3 eye = { 1.5f, 1.5f, 1.5f };
-	spot::math::Vec3 zero = {};
-	spot::math::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	math::Vec3 eye = { 1.5f, 1.5f, 1.5f };
+	math::Vec3 zero = {};
+	math::Vec3 up = { 0.0f, 1.0f, 0.0f };
 	graphics.view = look_at( eye, zero, up );
 
 	while ( graphics.window.is_alive() )

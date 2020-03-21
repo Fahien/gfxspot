@@ -60,11 +60,11 @@ void rotate( Node& n, float angle )
 
 int main( const int argc, const char** argv )
 {
-	using namespace spot::gfx;
+	using namespace spot;
 
-	auto graphics = Graphics();
+	auto graphics = gfx::Graphics();
 
-	Scene* scene;
+	gfx::Scene* scene;
 	if ( argc > 1 )
 	{
 		auto path = std::string( argv[1] );
@@ -72,26 +72,26 @@ int main( const int argc, const char** argv )
 	}
 
 	auto x = create_line( graphics,
-		Dot( Vec3( 0.0f, 0.0f, 0.0f ), Color( 1.0f, 0.0f, 0.0f, 1.0f) ),
-		Dot( Vec3( 1.0f, 0.0f, 0.0f ), Color( 1.0f, 0.0f, 0.0f, 1.0f ) ) );
+		gfx::Dot( math::Vec3( 0.0f, 0.0f, 0.0f ), gfx::Color( 1.0f, 0.0f, 0.0f, 1.0f) ),
+		gfx::Dot( math::Vec3( 1.0f, 0.0f, 0.0f ), gfx::Color( 1.0f, 0.0f, 0.0f, 1.0f ) ) );
 	
 	auto y = create_line( graphics,
-		Dot( Vec3( 0.0f, 0.0f, 0.0f ), Color( 0.0f, 1.0f, 0.0f, 1.0f) ),
-		Dot( Vec3( 0.0f, 1.0f, 0.0f ), Color( 0.0f, 1.0f, 0.0f, 1.0f ) ) );
+		gfx::Dot( math::Vec3( 0.0f, 0.0f, 0.0f ), gfx::Color( 0.0f, 1.0f, 0.0f, 1.0f) ),
+		gfx::Dot( math::Vec3( 0.0f, 1.0f, 0.0f ), gfx::Color( 0.0f, 1.0f, 0.0f, 1.0f ) ) );
 
 	auto z = create_line( graphics,
-		Dot( Vec3( 0.0f, 0.0f, 0.0f ), Color( 0.0f, 0.0f, 1.0f, 1.0f ) ),
-		Dot( Vec3( 0.0f, 0.0f, 1.0f ), Color( 0.0f, 0.0f, 1.0f, 1.0f ) ) );
+		gfx::Dot( math::Vec3( 0.0f, 0.0f, 0.0f ), gfx::Color( 0.0f, 0.0f, 1.0f, 1.0f ) ),
+		gfx::Dot( math::Vec3( 0.0f, 0.0f, 1.0f ), gfx::Color( 0.0f, 0.0f, 1.0f, 1.0f ) ) );
 
 	auto triangle = create_triangle( graphics,
-		Dot( Vec3( 0.5f, 0.0f, -1.0f ) ),
-		Dot( Vec3( -0.5f, 0.0f, -1.0f ) ),
-		Dot( Vec3( 0.0f, 0.0f, 0.0f ) ) );
+		gfx::Dot( math::Vec3( 0.5f, 0.0f, -1.0f ) ),
+		gfx::Dot( math::Vec3( -0.5f, 0.0f, -1.0f ) ),
+		gfx::Dot( math::Vec3( 0.0f, 0.0f, 0.0f ) ) );
 	
-	spot::math::Vec3 eye = { 1.5f, 1.5f, 1.5f };
-	spot::math::Vec3 zero = {};
-	spot::math::Vec3 up = { 0.0f, 1.0f, 0.0f };
-	graphics.view = look_at( eye, zero, up );
+	math::Vec3 eye = { 1.5f, 1.5f, 1.5f };
+	math::Vec3 zero = {};
+	math::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	graphics.view = gfx::look_at( eye, zero, up );
 
 	while ( graphics.window.is_alive() )
 	{
@@ -101,7 +101,7 @@ int main( const int argc, const char** argv )
 
 		if ( graphics.window.swipe.x != 0 )
 		{
-			auto angle = spot::math::radians( graphics.window.swipe.x );
+			auto angle = math::radians( graphics.window.swipe.x );
 			rotate( *graphics.models.get_node( x ), angle );
 			rotate( *graphics.models.get_node( y ), angle );
 			rotate( *graphics.models.get_node( z ), angle );

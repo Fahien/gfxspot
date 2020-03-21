@@ -29,24 +29,24 @@ int create_card( gfx::Graphics& graphics )
 
 	std::vector<Vertex> vertices = {
 		Vertex(
-			Vec3( -1.25f, -1.75f, 0.0f ),
+			math::Vec3( -1.25f, -1.75f, 0.0f ),
 			Color( 0.3f, 0.0f, 0.0f, 0.5f ),
-			Vec2( 0.0f, 0.0 ) // a
+			math::Vec2( 0.0f, 0.0 ) // a
 		),
 		Vertex(
-			Vec3( 1.25f, -1.75f, 0.0f ),
+			math::Vec3( 1.25f, -1.75f, 0.0f ),
 			Color( 0.0f, 0.3f, 0.0f, 0.5f ),
-			Vec2( 1.0f, 0.0 ) // b
+			math::Vec2( 1.0f, 0.0 ) // b
 		),
 		Vertex(
-			Vec3( -1.25f, 1.75f, 0.0f ),
+			math::Vec3( -1.25f, 1.75f, 0.0f ),
 			Color( 0.3f, 0.0f, 0.3f, 0.5f ),
-			Vec2( 0.0f, 1.0 ) // d
+			math::Vec2( 0.0f, 1.0 ) // d
 		),
 		Vertex(
-			Vec3( 1.25f, 1.75f, 0.0f ),
+			math::Vec3( 1.25f, 1.75f, 0.0f ),
 			Color( 0.0f, 0.0f, 0.3f, 0.5f ),
-			Vec2( 1.0f, 1.0 ) // c
+			math::Vec2( 1.0f, 1.0 ) // c
 		),
 	};
 
@@ -78,14 +78,15 @@ int create_card( gfx::Graphics& graphics )
 int main()
 {
 	using namespace spot::gfx;
+	namespace math = spot::math;
 
 	auto graphics = Graphics();
 
 	auto& scene = graphics.models.load( "img/milktruck/CesiumMilkTruck.gltf" );
 
-	spot::math::Vec3 eye = {};
-	spot::math::Vec3 origin = {};
-	spot::math::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	math::Vec3 eye = {};
+	math::Vec3 origin = {};
+	math::Vec3 up = { 0.0f, 1.0f, 0.0f };
 
 	while ( graphics.window.is_alive() )
 	{

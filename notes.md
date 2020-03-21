@@ -6,5 +6,6 @@
 - [x] The draw functions will find vulkan resources associated with each argument to be rendered in their specific Renderer objects.
 - [x] The renderer objects can be released when they are not needed anymore, for example when the current scene changes.
 - [x] A GLTF scene should be rendered.
+- [ ] Draw some text.
 - [ ] Make a sphere programmatically.
 - [ ] Draw a fan of cards.

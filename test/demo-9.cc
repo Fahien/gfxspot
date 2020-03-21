@@ -43,8 +43,8 @@ uint32_t create_mesh( uint32_t material, Graphics& gfx )
 	auto hs = unit / 2.0f - spacing / 2.0f;
 	gfx.models.meshes.emplace_back(
 		Mesh::create_rect(
-			Vec3( -hs, -hs, 0.0f ),
-			Vec3( hs, hs, 0.0f ),
+			math::Vec3( -hs, -hs, 0.0f ),
+			math::Vec3( hs, hs, 0.0f ),
 			material
 		)
 	);
@@ -82,7 +82,7 @@ int create_chess_board( Graphics& gfx )
 	auto& block = gfx.models.create_node();
 	auto block_index = block.index;
 
-	auto add_child = [block_index, &gfx]( uint32_t mesh, Vec3 translation ) {
+	auto add_child = [block_index, &gfx]( uint32_t mesh, math::Vec3 translation ) {
 		auto& node = gfx.models.create_node();
 		node.mesh = mesh;
 		node.translation.x = translation.x;
@@ -100,7 +100,7 @@ int create_chess_board( Graphics& gfx )
 		{
 			uint32_t color = ( row + offset ) % 2;
 			add_child( color,
-				Vec3(
+				math::Vec3(
 					-1.0f + unit / 2.0f + unit * row,
 					0.0f + unit * col
 				)

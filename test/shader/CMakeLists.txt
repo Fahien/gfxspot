@@ -5,7 +5,6 @@ if( NOT GLSLV )
 endif()
 
 add_custom_target( shaders )
-add_dependencies( ${PROJECT_NAME}-demo-1 shaders )
 
 # Helper function to compile a shader
 function( compile_shader SHADER_NAME )

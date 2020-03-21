@@ -39,8 +39,8 @@ uint32_t create_mesh( uint32_t material, Graphics& gfx )
 	auto hs = unit / 2.0f - spacing / 2.0f;
 	gfx.models.meshes.emplace_back(
 		Mesh::create_rect(
-			Vec3( -hs, -hs, 0.0f ),
-			Vec3( hs, hs, 0.0f ),
+			math::Vec3( -hs, -hs, 0.0f ),
+			math::Vec3( hs, hs, 0.0f ),
 			material
 		)
 	);
@@ -75,7 +75,7 @@ int create_tetris_el( const uint32_t mesh, Graphics& gfx )
 	block.translation.y = 2.0;
 	auto block_index = block.index;
 
-	auto add_child = [block_index, mesh, &gfx]( Vec3 translation ) {
+	auto add_child = [block_index, mesh, &gfx]( math::Vec3 translation ) {
 		auto& node = gfx.models.create_node();
 		node.mesh = mesh;
 		node.translation.x = translation.x;
@@ -85,33 +85,33 @@ int create_tetris_el( const uint32_t mesh, Graphics& gfx )
 		block->children.emplace_back( node.index );
 	};
 
-	add_child( Vec3( 0.0f, - 2.0f * unit ) );
-	add_child( Vec3( 0.0f, - unit ) );
-	add_child( Vec3( 0.0f, 0.0f ) );
-	add_child( Vec3( unit, 0.0f ) );
+	add_child( math::Vec3( 0.0f, - 2.0f * unit ) );
+	add_child( math::Vec3( 0.0f, - unit ) );
+	add_child( math::Vec3( 0.0f, 0.0f ) );
+	add_child( math::Vec3( unit, 0.0f ) );
 
 	return block_index;
 }
 
 
-} // namespace spot::gfx
+} // namespace spot
 
 
 int main()
 {
-	using namespace spot::gfx;
+	using namespace spot;
 
-	auto gfx = Graphics();
-	auto meshes = SolidMeshes( gfx );
+	auto gfx = gfx::Graphics();
+	auto meshes = gfx::SolidMeshes( gfx );
 
 	auto el = create_tetris_el( meshes.green, gfx );
 
-	auto eye = spot::math::Vec3( 0.0f, 0.0f, 1.0f ); // Out of the screen
-	auto origin = spot::math::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
-	auto up = spot::math::Vec3( 0.0f, 1.0f, 0.0f ); // Up is the sky
-	gfx.view = look_at( eye, origin, up );
+	auto eye = math::Vec3( 0.0f, 0.0f, 1.0f ); // Out of the screen
+	auto origin = math::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
+	auto up = math::Vec3( 0.0f, 1.0f, 0.0f ); // Up is the sky
+	gfx.view = gfx::look_at( eye, origin, up );
 
-	gfx.proj = ortho( -1.0f, 1.0, 0.0 + unit / 2.0f, -2.0 + unit / 2.0f, 0.125f, 2.0 );
+	gfx.proj = gfx::ortho( -1.0f, 1.0, 0.0 + gfx::unit / 2.0f, -2.0 + gfx::unit / 2.0f, 0.125f, 2.0 );
 
 	double tick = 1.0;
 	double time = 0.0f;
@@ -129,7 +129,7 @@ int main()
 			auto node = gfx.models.get_node( el );
 			if ( node->translation.y > 0.0f )
 			{
-				node->translation.y -= unit;
+				node->translation.y -= gfx::unit;
 			}
 			time = 0.0;
 		}
@@ -137,8 +137,8 @@ int main()
 		if ( gfx.window.click )
 		{
 			auto node = gfx.models.get_node( el );
-			auto z = spot::math::Vec3( 0.0f, 0.0f, 1.0f );
-			node->rotation *= spot::math::Quat( z, spot::math::radians( 90.0f ) );
+			auto z = math::Vec3( 0.0f, 0.0f, 1.0f );
+			node->rotation *= math::Quat( z, math::radians( 90.0f ) );
 		}
 
 		if ( gfx.window.scroll.y != 0 )

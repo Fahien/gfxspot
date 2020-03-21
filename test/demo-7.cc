@@ -60,9 +60,9 @@ uint32_t create_lines( const Colors& colors, Graphics& gfx )
 	for ( float x = -1.0f; x < 0.0f; x += step )
 	{
 		// Top left
-		auto a = Vec3( x, -1.0f, 0.0f );
+		auto a = math::Vec3( x, -1.0f, 0.0f );
 		// Bottom right
-		auto b = Vec3( x + width, 1.0f, 0.0f );
+		auto b = math::Vec3( x + width, 1.0f, 0.0f );
 
 		auto line = Mesh::create_rect( a, b, colors.white );
 
@@ -72,8 +72,8 @@ uint32_t create_lines( const Colors& colors, Graphics& gfx )
 	}
 	// + black background
 	{
-		auto a = Vec3( -1.0f, -1.0f, -0.1f );
-		auto b = Vec3( 0.0f, 1.0f, -0.1f );
+		auto a = math::Vec3( -1.0f, -1.0f, -0.1f );
+		auto b = math::Vec3( 0.0f, 1.0f, -0.1f );
 		auto line = Mesh::create_rect( a, b, colors.black );
 		
 		auto& node = gfx.models.create_node( std::move( line ) );
@@ -85,8 +85,8 @@ uint32_t create_lines( const Colors& colors, Graphics& gfx )
 	// Yellow lines
 	for ( float y = -1.0f; y < 0.0f; y += step )
 	{
-		auto a = Vec3( 0.0, y, 0.0f );
-		auto b = Vec3( 1.0f, y + width, 0.0f );
+		auto a = math::Vec3( 0.0, y, 0.0f );
+		auto b = math::Vec3( 1.0f, y + width, 0.0f );
 
 		auto line = Mesh::create_rect( a, b, colors.yellow );
 		
@@ -96,8 +96,8 @@ uint32_t create_lines( const Colors& colors, Graphics& gfx )
 	}
 	// + white background
 	{
-		auto a = Vec3( 0.0f, 0.0f - width, -0.1f );
-		auto b = Vec3( 1.0f, -1.0f, -0.1f );
+		auto a = math::Vec3( 0.0f, 0.0f - width, -0.1f );
+		auto b = math::Vec3( 1.0f, -1.0f, -0.1f );
 		auto line = Mesh::create_rect( a, b, colors.white );
 		auto& node = gfx.models.create_node( std::move( line ) );
 		auto root = gfx.models.get_node( root_index );
@@ -105,8 +105,8 @@ uint32_t create_lines( const Colors& colors, Graphics& gfx )
 	}
 	// Black delimitator
 	{
-		auto a = Vec3( 0.0f, 0.0f, -0.1f );
-		auto b = Vec3( 1.0f, -width, -0.1f );
+		auto a = math::Vec3( 0.0f, 0.0f, -0.1f );
+		auto b = math::Vec3( 1.0f, -width, -0.1f );
 		auto line = Mesh::create_rect( a, b, colors.black );
 		auto& node = gfx.models.create_node( std::move( line ) );
 		auto root = gfx.models.get_node( root_index );
@@ -129,9 +129,9 @@ int32_t create_red_lines( const Colors& colors, Graphics& gfx )
 	for ( float x = 0.0f; x < sqrtf( 2.0f ); x += step )
 	{
 		// Bottom left
-		auto a = Vec3( x, -1.0f, -0.2f );
+		auto a = math::Vec3( x, -1.0f, -0.2f );
 		// Top right
-		auto b = Vec3( x + red_width, 1.0f, -0.2f );
+		auto b = math::Vec3( x + red_width, 1.0f, -0.2f );
 
 		auto line = Mesh::create_rect( a, b, colors.red );
 
@@ -140,8 +140,8 @@ int32_t create_red_lines( const Colors& colors, Graphics& gfx )
 	}
 	// + black background
 	{
-		auto a = Vec3( 0.0f, -1.0f, -0.3f );
-		auto b = Vec3( 2.0f, 1.0f, -0.3f );
+		auto a = math::Vec3( 0.0f, -1.0f, -0.3f );
+		auto b = math::Vec3( 2.0f, 1.0f, -0.3f );
 		auto line = Mesh::create_rect( a, b, colors.white );
 		auto& node = gfx.models.create_node( std::move( line ) );
 		root.children.emplace_back( node.index );
@@ -158,6 +158,7 @@ int32_t create_red_lines( const Colors& colors, Graphics& gfx )
 int main()
 {
 	using namespace spot::gfx;
+	namespace math = spot::math;
 
 	auto gfx = Graphics();
 
@@ -166,14 +167,14 @@ int main()
 	auto lines = create_lines( colors , gfx );
 	auto red_lines = create_red_lines( colors , gfx );
 
-	auto eye = spot::math::Vec3( 0.0f, 0.0f, -1.0f ); // Out of the screen
-	auto origin = spot::math::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
-	auto up = spot::math::Vec3( 0.0f, 1.0f, 0.0f ); // Up is the sky
+	auto eye = math::Vec3( 0.0f, 0.0f, -1.0f ); // Out of the screen
+	auto origin = math::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
+	auto up = math::Vec3( 0.0f, 1.0f, 0.0f ); // Up is the sky
 	gfx.view = look_at( eye, origin, up );
 
 	gfx.proj = ortho( -1.0f, 1.0, -1.0, 1.0, 0.125f, 2.0 );
 
-	const auto rot45 = spot::math::Mat4::identity.rotateZ( spot::math::radians( 45.0f ) );
+	const auto rot45 = math::Mat4::identity.rotateZ( math::radians( 45.0f ) );
 
 	while ( gfx.window.is_alive() )
 	{
