@@ -166,11 +166,13 @@ class Models
   public:
 	Models( Graphics& g );
 
+	/// @brief Loads a gltf file
+	/// @return A reference to the first scene
 	Scene& load( const std::string& path );
 
 	/// @brief Creates a node and assign it an index
 	/// @return The created node
-	Node& create_node();
+	Node& create_node( int32_t parent = -1 );
 
 	/// @brief Creates a node with a new mesh
 	/// @return The index of the node
@@ -187,6 +189,9 @@ class Models
 
 	/// @return A new material with a proper index
 	Material& create_material( Material&& m = {} );
+
+	/// @brief Creates a material with a texture
+	/// @return A new material with a proper index
 	Material& create_material( VkImageView texture );
 
 	/// @return The material at index i, null otherwhise
@@ -194,6 +199,9 @@ class Models
 
 	/// @return The list of nodes;
 	const std::vector<Node>& get_nodes() const { return nodes; };
+
+	/// @return A node index for the text
+	int32_t create_text( const std::string& text );
 
 	Graphics& graphics;
 

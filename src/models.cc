@@ -190,10 +190,15 @@ Models::Models( Graphics& g )
 {}
 
 
-Node& Models::create_node()
+Node& Models::create_node( const int32_t parent_index )
 {
 	auto& node = nodes.emplace_back();
 	node.index = nodes.size() - 1;
+
+	if ( auto parent = get_node( parent_index ) )
+	{
+		parent->children.emplace_back( node.index );
+	}
 	return node;
 }
 
@@ -239,6 +244,24 @@ gfx::Material* Models::get_material( const int32_t index )
 		return &materials[index];
 	}
 	return nullptr;
+}
+
+
+/// @todo Implement
+int32_t Models::create_text( const std::string& text )
+{
+	int32_t group = create_node().index;
+	// For each character in the text
+	for ( auto c : text )
+	{
+		// We need to create a node
+		auto& node = create_node( group );
+		// Its mesh will be a quad
+		// Quad's material will be the same for each character
+		// Material will have a texture to the bitmap font
+		// Only texture coordinates will change between each different character
+	}
+	return group;
 }
 
 
