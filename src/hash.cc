@@ -55,14 +55,14 @@ size_t hash( uint64_t h )
 }
 
 
-size_t hash( const Vec2& vec )
+size_t hash( const math::Vec2& vec )
 {
 	auto h = std::hash<float>();
 	return hash( vec.x, vec.y );
 }
 
 
-size_t hash( const Vec3& vec )
+size_t hash( const math::Vec3& vec )
 {
 	auto h = std::hash<float>();
 	return hash( vec.x, vec.y, vec.z );

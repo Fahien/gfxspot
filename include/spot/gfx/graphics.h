@@ -22,9 +22,9 @@ namespace spot::gfx
 
 struct alignas(16) Dot
 {
-	Dot( Vec3 pp = {}, Color cc = { 1.0f } ) : p { pp }, c { cc } {}
+	Dot( math::Vec3 pp = {}, Color cc = { 1.0f } ) : p { pp }, c { cc } {}
 
-	Vec3  p = {};
+	math::Vec3  p = {};
 	Color c = {};
 };
 

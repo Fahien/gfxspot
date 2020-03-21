@@ -55,33 +55,14 @@ struct Material
 };
 
 
-struct Vec2
-{
-	Vec2( float xx = 0.0f, float yy = 0.0f ) : x { xx }, y { yy } {}
-
-	float x = 0.0f;
-	float y = 0.0f;
-};
-
-struct Vec3
-{
-	Vec3( float xx = 0.0f, float yy = 0.0f, float zz = 0.0f )
-	: x { xx }, y { yy }, z { zz } {}
-
-	float x = 0.0f;
-	float y = 0.0f;
-	float z = 0.0f;
-};
-
-
 struct alignas(16) Vertex
 {
-	Vertex( Vec3 pp = {}, Color cc = { 1.0f, 1.0f, 1.0f, 1.0f }, Vec2 tc = {} ) : p { pp }, c { cc }, t { tc } {}
+	Vertex( math::Vec3 pp = {}, Color cc = { 1.0f, 1.0f, 1.0f, 1.0f }, math::Vec2 tc = {} ) : p { pp }, c { cc }, t { tc } {}
 
-	Vec3  p = {};
-	Vec3  n = { 1.0f, 1.0f, 1.0f };
+	math::Vec3  p = {};
+	math::Vec3  n = { 1.0f, 1.0f, 1.0f };
 	Color c = {};
-	Vec2  t = {};
+	math::Vec2  t = {};
 };
 
 
@@ -164,13 +145,13 @@ private:
 /// @brief A mesh is just a collection of primitives
 struct Mesh
 {
-	static Mesh create_line( const Vec3& a, const Vec3& b, const Color& c = Color::white, float line_width = 1.0f );
-	static Mesh create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, int32_t material = -1 );
-	static Mesh create_rect( const Vec3& a, const Vec3& b, int32_t material = -1 );
+	static Mesh create_line( const math::Vec3& a, const math::Vec3& b, const Color& c = Color::white, float line_width = 1.0f );
+	static Mesh create_triangle( const math::Vec3& a, const math::Vec3& b, const math::Vec3& c, int32_t material = -1 );
+	static Mesh create_rect( const math::Vec3& a, const math::Vec3& b, int32_t material = -1 );
 
 	static Mesh create_quad(
-		const Vec3& a = { -1.0, -1.0, 0.0f },
-		const Vec3& b = { 1.0f, 1.0f, 0.0f },
+		const math::Vec3& a = { -1.0, -1.0, 0.0f },
+		const math::Vec3& b = { 1.0f, 1.0f, 0.0f },
 		int32_t material = -1
 	);
 
@@ -206,6 +187,7 @@ class Models
 
 	/// @return A new material with a proper index
 	Material& create_material( Material&& m = {} );
+	Material& create_material( VkImageView texture );
 
 	/// @return The material at index i, null otherwhise
 	Material* get_material( int32_t i );

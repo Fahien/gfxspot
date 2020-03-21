@@ -29,24 +29,24 @@ int create_card( Graphics& graphics )
 
 	std::vector<Vertex> vertices = {
 		Vertex(
-			Vec3( -1.25f, -1.75f, 0.0f ),
+			math::Vec3( -1.25f, -1.75f, 0.0f ),
 			Color( 0.3f, 0.0f, 0.0f, 0.5f ),
-			Vec2( 0.0f, 0.0 ) // a
+			math::Vec2( 0.0f, 0.0 ) // a
 		),
 		Vertex(
-			Vec3( 1.25f, -1.75f, 0.0f ),
+			math::Vec3( 1.25f, -1.75f, 0.0f ),
 			Color( 0.0f, 0.3f, 0.0f, 0.5f ),
-			Vec2( 1.0f, 0.0 ) // b
+			math::Vec2( 1.0f, 0.0 ) // b
 		),
 		Vertex(
-			Vec3( -1.25f, 1.75f, 0.0f ),
+			math::Vec3( -1.25f, 1.75f, 0.0f ),
 			Color( 0.3f, 0.0f, 0.3f, 0.5f ),
-			Vec2( 0.0f, 1.0 ) // d
+			math::Vec2( 0.0f, 1.0 ) // d
 		),
 		Vertex(
-			Vec3( 1.25f, 1.75f, 0.0f ),
+			math::Vec3( 1.25f, 1.75f, 0.0f ),
 			Color( 0.0f, 0.0f, 0.3f, 0.5f ),
-			Vec2( 1.0f, 1.0 ) // c
+			math::Vec2( 1.0f, 1.0 ) // c
 		),
 	};
 

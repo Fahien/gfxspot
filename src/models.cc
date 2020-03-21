@@ -67,7 +67,7 @@ Primitive::Primitive(
 {
 }
 
-Mesh Mesh::create_line( const Vec3& a, const Vec3& b, const Color& c, const float line_width )
+Mesh Mesh::create_line( const math::Vec3& a, const math::Vec3& b, const Color& c, const float line_width )
 {
 	Mesh ret;
 
@@ -89,7 +89,7 @@ Mesh Mesh::create_line( const Vec3& a, const Vec3& b, const Color& c, const floa
 }
 
 
-Mesh Mesh::create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, const int32_t material )
+Mesh Mesh::create_triangle( const math::Vec3& a, const math::Vec3& b, const math::Vec3& c, const int32_t material )
 {
 	Mesh ret;
 
@@ -120,16 +120,16 @@ Mesh Mesh::create_triangle( const Vec3& a, const Vec3& b, const Vec3& c, const i
 }
 
 
-Mesh Mesh::create_rect( const Vec3& a, const Vec3& b, const int32_t material )
+Mesh Mesh::create_rect( const math::Vec3& a, const math::Vec3& b, const int32_t material )
 {
 	Mesh ret;
 
 	std::vector<Vertex> vertices;
 	vertices.resize( 4 );
 	vertices[0].p = a;
-	vertices[1].p = Vec3( b.x, a.y, a.z );
+	vertices[1].p = math::Vec3( b.x, a.y, a.z );
 	vertices[2].p = b;
-	vertices[3].p = Vec3( a.x, b.y, a.z );
+	vertices[3].p = math::Vec3( a.x, b.y, a.z );
 
 	std::vector<Index> indices;
 	if ( material >= 0 )
@@ -168,17 +168,17 @@ Mesh Mesh::create_rect( const Vec3& a, const Vec3& b, const int32_t material )
 }
 
 
-Mesh Mesh::create_quad( const Vec3& a, const Vec3& b, const int32_t material )
+Mesh Mesh::create_quad( const math::Vec3& a, const math::Vec3& b, const int32_t material )
 {
 	Mesh ret = create_rect( a, b, material );
 
 	auto& vertices = ret.primitives[0].vertices;
 
 	// Text coords
-	vertices[0].t = Vec2( 0.0f, 0.0 ); // a
-	vertices[1].t = Vec2( 1.0f, 0.0 ); // b
-	vertices[2].t = Vec2( 1.0f, 1.0 ); // c
-	vertices[3].t = Vec2( 0.0f, 1.0 ); // d
+	vertices[0].t = math::Vec2( 1.0f, 0.0 ); // a
+	vertices[1].t = math::Vec2( 0.0f, 0.0 ); // b
+	vertices[2].t = math::Vec2( 0.0f, 1.0 ); // c
+	vertices[3].t = math::Vec2( 1.0f, 1.0 ); // d
 
 	return ret;
 }
@@ -221,6 +221,14 @@ Material& Models::create_material( Material&& material )
 {
 	material.index = materials.size();
 	return materials.emplace_back( std::move( material ) );
+}
+
+
+Material& Models::create_material( VkImageView texture )
+{
+	auto& material = create_material();
+	material.texture = texture;
+	return material;
 }
 
 
@@ -299,7 +307,7 @@ Scene& Models::load( const std::string& path )
 				{
 					if ( stride == 0 )
 					{
-						stride = sizeof( Vec3 );
+						stride = sizeof( math::Vec3 );
 					}
 				
 					for ( size_t i = 0; i < accessor->count; ++i )
@@ -317,7 +325,7 @@ Scene& Models::load( const std::string& path )
 				{
 					if ( stride == 0 )
 					{
-						stride = sizeof( Vec3 );
+						stride = sizeof( math::Vec3 );
 					}
 
 					for ( size_t i = 0; i < accessor->count; ++i )
@@ -335,7 +343,7 @@ Scene& Models::load( const std::string& path )
 				{
 					if ( stride == 0 )
 					{
-						stride = sizeof( Vec2 );
+						stride = sizeof( math::Vec2 );
 					}
 
 					for ( size_t i = 0; i < accessor->count; ++i )
