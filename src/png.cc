@@ -105,6 +105,71 @@ Png::Png( const std::string& path )
 }
 
 
+void read_data( png_structp png_ptr, png_bytep dst, png_size_t length )
+{
+	png_voidp io_ptr = png_get_io_ptr( png_ptr );
+	assert( io_ptr && "Invalid png io_ptr" );
+	auto mem = reinterpret_cast<std::vector<uint8_t>*>( io_ptr );
+
+	std::memcpy( dst, mem->data(), length );
+	mem->erase( std::begin( *mem ), std::begin( *mem ) + length );
+}
+
+
+Png::Png( std::vector<uint8_t>& mem )
+{
+	png = png_create_read_struct( PNG_LIBPNG_VER_STRING, this, handle_error, handle_warning );
+	assert( png && "Cannot create PNG read" );
+
+	info = png_create_info_struct( png );
+	assert( info && "Cannot create PNG info" );
+	
+	end = png_create_info_struct( png );
+	assert( end && "Cannot create PNG end info" );
+
+	auto res = setjmp( png_jmpbuf( png ) );
+	assert( !res && "Cannot set PNG jump" );
+
+	assert( mem.size() && "Cannot load png from empy memory" );
+
+	png_set_read_fn( png, &mem, read_data );
+
+	// Meter
+	png_set_read_status_fn( png, read_status );
+
+	png_read_info( png, info );
+
+	png_get_IHDR( png, info, &width, &height, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method );
+
+	/// Some graphics card only support sampling from RGBA, therefore we are forcing RGBA
+	/// @todo Improve by querying capabilities of the GPU before adjusting png info
+	if ( color_type == PNG_COLOR_TYPE_PALETTE || color_type == PNG_COLOR_TYPE_GRAY )
+	{
+		if ( color_type == PNG_COLOR_TYPE_PALETTE )
+		{
+			png_set_palette_to_rgb( png );
+		}
+		else if ( color_type == PNG_COLOR_TYPE_GRAY )
+		{
+			png_set_gray_to_rgb( png );
+		}
+		png_set_add_alpha( png, 255, PNG_FILLER_AFTER );
+		png_read_update_info( png, info );
+		color_type = png_get_color_type( png, info );
+	}
+	else if ( color_type == PNG_COLOR_TYPE_RGB )
+	{
+		png_set_add_alpha( png, 255, PNG_FILLER_AFTER );
+		png_read_update_info( png, info );
+		color_type = png_get_color_type( png, info );
+	}
+
+	assert( bit_depth == 8 && "PNG bit depth not supported" );
+	channels = png_get_channels( png, info );
+	print_info();
+}
+
+
 size_t Png::get_size() const
 {
 	return width * height * channels;

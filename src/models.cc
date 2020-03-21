@@ -144,11 +144,11 @@ Mesh Mesh::create_rect( const math::Vec3& a, const math::Vec3& b, const int32_t 
 
 		if ( case1 || case2 )
 		{
-			indices = { 0, 1, 2, 0, 2, 3 };
+			indices = { 0, 2, 1, 0, 3, 2 };
 		}
 		else
 		{
-			indices = { 0, 2, 1, 0, 3, 2 };
+			indices = { 0, 1, 2, 0, 2, 3 };
 		}
 	}
 	else
@@ -168,7 +168,7 @@ Mesh Mesh::create_rect( const math::Vec3& a, const math::Vec3& b, const int32_t 
 }
 
 
-Mesh Mesh::create_quad( const math::Vec3& a, const math::Vec3& b, const int32_t material )
+Mesh Mesh::create_quad( const int32_t material, const math::Vec3& a, const math::Vec3& b )
 {
 	Mesh ret = create_rect( a, b, material );
 
@@ -203,10 +203,9 @@ Node& Models::create_node( const int32_t parent_index )
 }
 
 
-Node& Models::create_node( Mesh&& mesh )
+Node& Models::create_node( Mesh&& mesh, const int32_t parent )
 {
-	auto& node = nodes.emplace_back();
-	node.index = nodes.size() - 1;
+	auto& node = create_node( parent );
 
 	meshes.emplace_back( std::move( mesh ) );
 	node.mesh = meshes.size() - 1;
@@ -217,8 +216,11 @@ Node& Models::create_node( Mesh&& mesh )
 
 Node* Models::get_node( const int32_t index )
 {
-	assert( index >= 0 && index < nodes.size() && "Cannot get node out of bounds" );
-	return &nodes[index];
+	if ( index >= 0 && index < nodes.size() )
+	{
+		return &nodes[index];
+	}
+	return nullptr;
 }
 
 

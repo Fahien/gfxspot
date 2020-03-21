@@ -74,9 +74,13 @@ class Images
   public:
 	Images( Device& d );
 
-	/// @brief Loads an image
+	/// @brief Loads an image from file
 	/// @return an image view to that image
 	VkImageView load( const char* path );
+
+	/// @brief Loads an image from memory
+	/// @return An image view to that image
+	VkImageView load( const char* name, std::vector<uint8_t>& mem );
 
 	/// Map of paths and Vulkan images and image views
 	std::unordered_map<const char*, std::pair<Image, ImageView>> images = {};

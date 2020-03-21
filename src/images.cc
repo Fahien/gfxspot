@@ -296,6 +296,38 @@ Images::Images( Device& d )
 {}
 
 
+VkImageView Images::load( const char* name, std::vector<uint8_t>& mem )
+{
+	VkImageView ret = VK_NULL_HANDLE;
+
+	auto it = images.find( name );
+	if ( it == std::end( images ) )
+	{
+		auto png = Png( mem );
+		auto png_size = png.get_size();
+		auto staging_buffer = Buffer( device, png_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT );
+		auto mem = reinterpret_cast<png_byte*>( staging_buffer.map( png_size ) );
+		png.load( mem );
+		staging_buffer.unmap();
+
+		auto image = Image( device, png );
+		image.upload( staging_buffer );
+		auto view = ImageView( image );
+		ret = view.handle;
+
+		auto pair = std::make_pair( std::move( image ), std::move( view ) );
+		auto[res, ok] = images.emplace( name, std::move( pair ) );
+		assert( ok && "Cannot store image" );
+	}
+	else
+	{
+		ret = it->second.second.handle;
+	}
+
+	return ret;
+}
+
+
 VkImageView Images::load( const char* path )
 {
 	VkImageView ret = VK_NULL_HANDLE;

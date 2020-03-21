@@ -150,9 +150,9 @@ struct Mesh
 	static Mesh create_rect( const math::Vec3& a, const math::Vec3& b, int32_t material = -1 );
 
 	static Mesh create_quad(
+		int32_t material,
 		const math::Vec3& a = { -1.0, -1.0, 0.0f },
-		const math::Vec3& b = { 1.0f, 1.0f, 0.0f },
-		int32_t material = -1
+		const math::Vec3& b = { 1.0f, 1.0f, 0.0f }
 	);
 
 	std::vector<Primitive> primitives;
@@ -175,8 +175,8 @@ class Models
 	Node& create_node( int32_t parent = -1 );
 
 	/// @brief Creates a node with a new mesh
-	/// @return The index of the node
-	Node& create_node( Mesh&& m );
+	/// @return The new created node
+	Node& create_node( Mesh&& m, int32_t parent = -1 );
 
 	/// @brief Using a handle is the best way to avoid dangling pointers
 	/// Make sure you use the returned pointer in a short scope and

@@ -12,7 +12,12 @@ class Device;
 class Png
 {
   public:
+	/// @brief Loads a png from file
 	Png( const std::string& path );
+
+	/// @brief Loads a png from memory consuming that memory
+	Png( std::vector<uint8_t>& mem );
+
 	~Png();
 
 	void print_info();
