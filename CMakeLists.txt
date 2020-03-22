@@ -9,6 +9,7 @@ list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 find_package( Vulkan )
 find_package( GLFW )
 find_package( PNG )
+find_package( fmt )
 include( AddMathSpot )
 include( AddGltfSpot )
 include( doxygen )
@@ -26,12 +27,13 @@ set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/models.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/graphics.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/viewport.cc
 )
 add_library( ${PROJECT_NAME} ${SOURCES} )
 target_include_directories( ${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${Vulkan_INCLUDE_DIRS} )
-target_link_libraries( ${PROJECT_NAME} ${Vulkan_LIBRARIES} ${GLFW_LIBRARY} PNG::PNG mathspot gltfspot )
+target_link_libraries( ${PROJECT_NAME} ${Vulkan_LIBRARIES} ${GLFW_LIBRARY} PNG::PNG mathspot gltfspot fmt::fmt )
 target_compile_features( ${PROJECT_NAME} PUBLIC cxx_std_17 )
 
 add_subdirectory( test )

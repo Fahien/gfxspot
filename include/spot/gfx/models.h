@@ -80,6 +80,8 @@ using Index = uint16_t;
 
 struct Node
 {
+	bool contains( const math::Vec2& point ) const;
+
 	/// Index of this node within the nodes vector
 	int32_t index = -1;
 	

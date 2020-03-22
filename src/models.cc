@@ -16,6 +16,23 @@ const Color Color::green = { 0.0f, 1.0f, 0.0f };
 const Color Color::blue = { 0.0f, 0.0f, 1.0f };
 const Color Color::yellow = { 1.0f, 1.0f, 0.0f };
 
+
+bool Node::contains( const math::Vec2& point ) const
+{
+	/// @todo Make this a bounding box and store an handle to it into a node
+	auto rect = math::Rectangle();
+	rect.width = 1.0f;
+	rect.height = 1.0f;
+	rect.x = -rect.width / 2.0f;
+	rect.y = -rect.height / 2.0f;
+
+	rect.x += translation.x;
+	rect.y += translation.y;
+
+	return rect.contains( point.x, point.y );
+}
+
+
 Material& Material::get_black()
 {
 	static Material black {

@@ -1,12 +1,14 @@
 #include <cstdlib>
 
 #include <spot/gfx/graphics.h>
+#include <spot/gfx/viewport.h>
+#include <fmt/format.h>
 
 namespace spot::gfx
 {
 
-const float unit = 0.125f;
-const math::Vec2 viewport = { unit * 16.0f, unit * 16.0f };
+const float unit = 1.0f;
+const Viewport viewport = Viewport( math::Vec2::zero, { unit * 16.0f, unit * 16.0f } );
 const float spacing = unit / 16.0f;
 
 
@@ -129,8 +131,8 @@ int main()
 	gfx.view = look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
 
 	gfx.proj = ortho(
-		0.0f, viewport.x,
-		0.0f, viewport.y,
+		viewport.offset.x, viewport.extent.x,
+		viewport.offset.y, viewport.extent.y,
 		0.125f, 2.0 );
 
 	double tick = 1.0;
@@ -143,23 +145,18 @@ int main()
 		const auto dt = gfx.glfw.get_delta();
 		gfx.window.update( dt );
 
-		if ( gfx.window.scroll.y != 0 )
-		{
-			auto node = gfx.models.get_node( chess_board );
-			for ( auto child : node->children )
-			{
-				auto child_node = gfx.models.get_node( child );
-				auto& mesh = gfx.models.meshes[child_node->mesh];
-				for ( auto& primitive : mesh.primitives )
-				{
-					primitive.set_material( ( primitive.get_material() + 1 ) % 3 );
-				}
-			}
-		}
-
 		if ( gfx.window.click )
 		{
-			gfx.window.cursor;
+			auto coords = window_to_viewport( gfx.window.extent, gfx.window.cursor, viewport );
+
+			for ( auto child_index : gfx.models.get_node( chess_board )->children )
+			{
+				auto child = gfx.models.get_node( child_index );
+				if ( child->contains( coords ) )
+				{
+					child->mesh = ( child->mesh + 1 ) % 5;
+				}
+			}
 		}
 
 		if ( gfx.render_begin() )
