@@ -6,6 +6,7 @@ namespace spot::gfx
 {
 
 const float unit = 0.125f;
+const math::Vec2 viewport = { unit * 16.0f, unit * 16.0f };
 const float spacing = unit / 16.0f;
 
 
@@ -101,8 +102,8 @@ int create_chess_board( Graphics& gfx )
 			uint32_t color = ( row + offset ) % 2;
 			add_child( color,
 				math::Vec3(
-					-1.0f + unit / 2.0f + unit * row,
-					0.0f + unit * col
+					0.0f + unit / 2.0f + unit * row,
+					0.0f + unit / 2.0f + unit * col
 				)
 			);
 		}
@@ -125,9 +126,12 @@ int main()
 
 	auto chess_board = create_chess_board( gfx );
 
-	gfx.view = look_at( -math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
+	gfx.view = look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
 
-	gfx.proj = ortho( -1.0f, 1.0, 0.0 + unit / 2.0f, -2.0 + unit / 2.0f, 0.125f, 2.0 );
+	gfx.proj = ortho(
+		0.0f, viewport.x,
+		0.0f, viewport.y,
+		0.125f, 2.0 );
 
 	double tick = 1.0;
 	double time = 0.0f;
@@ -141,7 +145,6 @@ int main()
 
 		if ( gfx.window.scroll.y != 0 )
 		{
-			/// @todo Unify gltf and gfx
 			auto node = gfx.models.get_node( chess_board );
 			for ( auto child : node->children )
 			{
@@ -152,6 +155,11 @@ int main()
 					primitive.set_material( ( primitive.get_material() + 1 ) % 3 );
 				}
 			}
+		}
+
+		if ( gfx.window.click )
+		{
+			gfx.window.cursor;
 		}
 
 		if ( gfx.render_begin() )

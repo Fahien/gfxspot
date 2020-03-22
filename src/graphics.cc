@@ -870,7 +870,7 @@ math::Mat4 ortho( float left, float right, float bottom, float top, float near, 
 	mat.matrix[14] = mid.z;
 
 	mat.matrix[0] = scale.x;
-	mat.matrix[5] = -scale.y;
+	mat.matrix[5] = scale.y;
 	mat.matrix[10] = scale.z;
 
 	return mat;
