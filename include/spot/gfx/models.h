@@ -145,14 +145,20 @@ private:
 /// @brief A mesh is just a collection of primitives
 struct Mesh
 {
+	/// @return A colored line mesh
 	static Mesh create_line( const math::Vec3& a, const math::Vec3& b, const Color& c = Color::white, float line_width = 1.0f );
+
+	/// @return A triangle mesh; material is optional
 	static Mesh create_triangle( const math::Vec3& a, const math::Vec3& b, const math::Vec3& c, int32_t material = -1 );
+
+	/// @return A rectangle mesh; material is optional
 	static Mesh create_rect( const math::Vec3& a, const math::Vec3& b, int32_t material = -1 );
 
+	/// @return A quad mesh, which is a unit square with a material
 	static Mesh create_quad(
 		int32_t material,
-		const math::Vec3& a = { -1.0, -1.0, 0.0f },
-		const math::Vec3& b = { 1.0f, 1.0f, 0.0f }
+		const math::Vec3& a = { -0.5f, -0.5f, 0.0f },
+		const math::Vec3& b = { 0.5f, 0.5f, 0.0f }
 	);
 
 	std::vector<Primitive> primitives;

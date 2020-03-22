@@ -73,15 +73,16 @@ int create_card( Graphics& graphics )
 int main()
 {
 	using namespace spot::gfx;
+	namespace math = spot::math;
 
 	auto graphics = Graphics();
 
 	auto card = create_card( graphics );
 
 	graphics.view = look_at(
-		{ 0.0f, 0.0f, -2.0f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 1.0f, 0.0f }
+		math::Vec3::Z * -2.0f,
+		math::Vec3::Zero,
+		math::Vec3::Y
 	);
 
 	while ( graphics.window.is_alive() )
@@ -97,6 +98,8 @@ int main()
 			graphics.render_end();
 		}
 	}
+
+	graphics.device.wait_idle();
 
 	return EXIT_SUCCESS;
 }

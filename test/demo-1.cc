@@ -12,24 +12,16 @@ namespace spot::gfx
 
 void update( const double dt, Node& node )
 {
-	auto angle = -math::radians( dt * 16.0 );
+	auto angle = -math::radians( dt * 16.0f );
 	node.rotation *= math::Quat( math::Vec3::Z, angle );
 }
 
 
 Mesh create_lenna( Graphics& graphics )
 {
-	auto& material = graphics.models.create_material();
 	auto view = graphics.images.load( "img/lena.png" );
-	material.texture = view;
-
-	Mesh quad = Mesh::create_quad(
-			math::Vec3( -0.5f, -0.5f, 0.0f ),
-			math::Vec3( 0.5f, 0.5f, 0.0f ),
-			material.index
-	);
-
-	return quad;
+	auto& material = graphics.models.create_material( view );
+	return Mesh::create_quad( material.index );
 }
 
 
@@ -62,10 +54,7 @@ int main()
 		create_lenna( graphics )
 	).index;
 
-	math::Vec3 eye = { 1.5f, 1.5f, 1.5f };
-	math::Vec3 zero = {};
-	math::Vec3 up = { 0.0f, 1.0f, 0.0f };
-	graphics.view = look_at( eye, zero, up );
+	graphics.view = look_at( math::Vec3::One * 1.5f, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( graphics.window.is_alive() )
 	{
@@ -84,6 +73,8 @@ int main()
 			graphics.render_end();
 		}
 	}
+
+	graphics.device.wait_idle();
 
 	return EXIT_SUCCESS;
 }

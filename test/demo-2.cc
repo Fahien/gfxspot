@@ -126,6 +126,7 @@ gfx::Mesh create_bugart( spot::gfx::Graphics& gfx )
 int main()
 {
 	using namespace spot::gfx;
+	namespace math = spot::math;
 
 	auto graphics = Graphics();
 
@@ -136,10 +137,7 @@ int main()
 	auto& node = graphics.models.create_node();
 	node.mesh = 0;
 
-	spot::math::Vec3 eye = { 0.0f, 0.0f, -2.0f };
-	spot::math::Vec3 zero = {};
-	spot::math::Vec3 up = { 0.0f, 1.0f, 0.0f };
-	graphics.view = look_at( eye, zero, up );
+	graphics.view = look_at( math::Vec3::Z * -2.0f, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( graphics.window.is_alive() )
 	{

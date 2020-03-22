@@ -45,8 +45,8 @@ class Glfw
 
 		GLFWwindow* handle = nullptr;
 
-		VkExtent2D extent = { 600, 600 };
-		VkExtent2D frame = { 600, 600 };
+		VkExtent2D extent = { 512, 512 };
+		VkExtent2D frame = extent;
 
 		math::Vec2 scroll = {};
 

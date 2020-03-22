@@ -35,5 +35,7 @@ int main()
 		}
 	}
 
+	gfx.device.wait_idle();
+
 	return EXIT_SUCCESS;
 }

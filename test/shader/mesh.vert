@@ -22,6 +22,7 @@ void main()
 	out_position = vec3( ubo.model * vec4( in_position, 1.0 ) );
 	out_normal = in_normal;
 	out_color = in_color;
-	out_texcoord = in_texcoord;
+	out_texcoord.x = in_texcoord.x;
+	out_texcoord.y = -in_texcoord.y;
 	gl_Position = ubo.proj * ubo.view * ubo.model * vec4( in_position, 1.0 );
 }

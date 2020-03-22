@@ -118,16 +118,14 @@ int create_chess_board( Graphics& gfx )
 int main()
 {
 	using namespace spot::gfx;
+	namespace math = spot::math;
 
 	auto gfx = Graphics();
 	auto meshes = SolidMeshes( gfx );
 
 	auto chess_board = create_chess_board( gfx );
 
-	auto eye = spot::math::Vec3( 0.0f, 0.0f, 1.0f ); // Out of the screen
-	auto origin = spot::math::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
-	auto up = spot::math::Vec3( 0.0f, 1.0f, 0.0f ); // Up is the sky
-	gfx.view = look_at( eye, origin, up );
+	gfx.view = look_at( -math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
 
 	gfx.proj = ortho( -1.0f, 1.0, 0.0 + unit / 2.0f, -2.0 + unit / 2.0f, 0.125f, 2.0 );
 

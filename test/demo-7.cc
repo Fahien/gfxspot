@@ -167,11 +167,7 @@ int main()
 	auto lines = create_lines( colors , gfx );
 	auto red_lines = create_red_lines( colors , gfx );
 
-	auto eye = math::Vec3( 0.0f, 0.0f, -1.0f ); // Out of the screen
-	auto origin = math::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
-	auto up = math::Vec3( 0.0f, 1.0f, 0.0f ); // Up is the sky
-	gfx.view = look_at( eye, origin, up );
-
+	gfx.view = look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
 	gfx.proj = ortho( -1.0f, 1.0, -1.0, 1.0, 0.125f, 2.0 );
 
 	const auto rot45 = math::Mat4::identity.rotateZ( math::radians( 45.0f ) );

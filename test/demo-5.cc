@@ -29,21 +29,15 @@ int create_line( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b )
 }
 
 
-int create_triangle( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b, gfx::Dot c )
+int32_t create_lena( gfx::Graphics& graphics )
 {
-	auto& node = graphics.models.create_node();
-
-	auto& mesh = graphics.models.meshes.emplace_back();
-	node.mesh = graphics.models.meshes.size() - 1;
-
-	auto& primitive = mesh.primitives.emplace_back();
-	primitive.vertices = {
-		gfx::Vertex( a.p, a.c ),
-		gfx::Vertex( b.p, b.c ),
-		gfx::Vertex( c.p, c.c )
-	};
-
-	primitive.indices = { 0, 1, 1, 2, 2, 0 };
+	auto& node = graphics.models.create_node(
+		Mesh::create_quad(
+			graphics.models.create_material(
+				graphics.images.load( "img/lena.png" )
+			).index
+		)
+	);
 
 	return node.index;
 }
@@ -83,15 +77,9 @@ int main( const int argc, const char** argv )
 		gfx::Dot( math::Vec3( 0.0f, 0.0f, 0.0f ), gfx::Color( 0.0f, 0.0f, 1.0f, 1.0f ) ),
 		gfx::Dot( math::Vec3( 0.0f, 0.0f, 1.0f ), gfx::Color( 0.0f, 0.0f, 1.0f, 1.0f ) ) );
 
-	auto triangle = create_triangle( graphics,
-		gfx::Dot( math::Vec3( 0.5f, 0.0f, -1.0f ) ),
-		gfx::Dot( math::Vec3( -0.5f, 0.0f, -1.0f ) ),
-		gfx::Dot( math::Vec3( 0.0f, 0.0f, 0.0f ) ) );
+	auto triangle = create_lena( graphics );
 	
-	math::Vec3 eye = { 1.5f, 1.5f, 1.5f };
-	math::Vec3 zero = {};
-	math::Vec3 up = { 0.0f, 1.0f, 0.0f };
-	graphics.view = gfx::look_at( eye, zero, up );
+	graphics.view = gfx::look_at( math::Vec3::One, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( graphics.window.is_alive() )
 	{
@@ -130,6 +118,8 @@ int main( const int argc, const char** argv )
 			graphics.render_end();
 		}
 	}
+
+	graphics.device.wait_idle();
 
 	return EXIT_SUCCESS;
 }
