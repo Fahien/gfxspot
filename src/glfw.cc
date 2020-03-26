@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include "spot/gfx/graphics.h"
+#include "spot/gfx/viewport.h"
 
 namespace spot::gfx
 {
@@ -114,6 +115,18 @@ Glfw::Window::Window()
 Glfw::Window::~Window()
 {
 	glfwDestroyWindow( handle );
+}
+
+
+math::Vec2 Glfw::Window::cursor_to( const Viewport& viewport ) const
+{
+	math::Vec2 viewport_coords;
+
+	// In window space (0,0) is up left. Increments right and down.
+	viewport_coords.x = cursor.x / extent.width * viewport.extent.x + viewport.offset.x;
+	viewport_coords.y = ( -cursor.y + extent.height ) / extent.height * viewport.extent.y + viewport.offset.y;
+
+	return viewport_coords;
 }
 
 

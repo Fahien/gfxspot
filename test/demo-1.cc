@@ -10,7 +10,7 @@ namespace spot::gfx
 {
 
 
-void update( const double dt, Node& node )
+void update( const double dt, gltf::Node& node )
 {
 	auto angle = -math::radians( dt * 16.0f );
 	node.rotation *= math::Quat( math::Vec3::Z, angle );
@@ -50,7 +50,7 @@ int main()
 		)
 	).index;
 
-	auto& quad = graphics.models.create_node(
+	auto quad = graphics.models.create_node(
 		create_lenna( graphics )
 	).index;
 

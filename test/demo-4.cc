@@ -9,7 +9,8 @@
 namespace spot::gfx
 {
 
-void update( const double dt, Node& node )
+
+void update( const double dt, gltf::Node& node )
 {
 	auto matrix = math::Mat4( node.rotation );
 	matrix.rotateZ( math::radians( dt * 128.0f ) );
@@ -63,10 +64,8 @@ int create_card( gfx::Graphics& graphics )
 			material.index )
 	);
 
-	auto& node = graphics.models.create_node();
+	auto& node = graphics.models.gltf.scene->create_node();
 	node.mesh = 0;
-
-	graphics.models.scene.nodes.emplace_back( node.index );
 
 	return node.index;
 }

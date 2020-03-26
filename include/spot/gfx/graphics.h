@@ -254,7 +254,7 @@ class Graphics
 	void draw( uint32_t node, Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
 	void draw( uint32_t node, Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
 	void draw( uint32_t node, const math::Mat4& transform = math::Mat4::identity );
-	void draw( const Scene& scene, const math::Mat4& transform = math::Mat4::identity );
+	void draw( const gltf::Scene& scene, const math::Mat4& transform = math::Mat4::identity );
 
 	Glfw glfw;
 	Instance instance;

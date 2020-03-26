@@ -4,54 +4,47 @@
 #include <spot/gfx/viewport.h>
 #include <fmt/format.h>
 
+#define NODE( index ) ( gfx.models.get_node( index ) )
+
 namespace spot::gfx
 {
 
 const float unit = 1.0f;
-const Viewport viewport = Viewport( math::Vec2::zero, { unit * 16.0f, unit * 16.0f } );
+const Viewport viewport = Viewport( math::Vec2::zero, math::Vec2( unit * 16.0f, unit * 16.0f ) );
 const float spacing = unit / 16.0f;
-
-
-uint32_t create_material( const Color& c, Graphics& gfx )
-{
-	auto& material = gfx.models.create_material();
-	material.ubo.color = c;
-	return material.index;
-}
 
 
 struct SolidMaterials
 {
 	SolidMaterials( Graphics& gfx );
 
-	const uint32_t black;
-	const uint32_t white;
-	const uint32_t red;
-	const uint32_t green;
-	const uint32_t blue;
+	const int32_t black;
+	const int32_t white;
+	const int32_t red;
+	const int32_t green;
+	const int32_t blue;
 };
 
 
 SolidMaterials::SolidMaterials( Graphics& gfx )
-: white { create_material( Color::white, gfx ) }
-, black { create_material( Color::black, gfx ) }
-, red   { create_material( Color::red,   gfx ) }
-, green { create_material( Color::green, gfx ) }
-, blue  { create_material( Color::blue , gfx ) }
+: white { gfx.models.create_material( Color::white ).index }
+, black { gfx.models.create_material( Color::black ).index }
+, red   { gfx.models.create_material( Color::red  ).index }
+, green { gfx.models.create_material( Color::green ).index }
+, blue  { gfx.models.create_material( Color::blue  ).index }
 {}
 
 
-uint32_t create_mesh( uint32_t material, Graphics& gfx )
+int32_t create_mesh( uint32_t material, Graphics& gfx )
 {
 	auto hs = unit / 2.0f - spacing / 2.0f;
-	gfx.models.meshes.emplace_back(
+	return gfx.models.create_mesh(
 		Mesh::create_rect(
 			math::Vec3( -hs, -hs, 0.0f ),
 			math::Vec3( hs, hs, 0.0f ),
 			material
 		)
-	);
-	return gfx.models.meshes.size() - 1;
+	).index;
 }
 
 
@@ -61,11 +54,11 @@ struct SolidMeshes
 
 	const SolidMaterials materials;
 
-	const uint32_t black;
-	const uint32_t white;
-	const uint32_t red;
-	const uint32_t green;
-	const uint32_t blue;
+	const int32_t black;
+	const int32_t white;
+	const int32_t red;
+	const int32_t green;
+	const int32_t blue;
 };
 
 
@@ -82,17 +75,13 @@ SolidMeshes::SolidMeshes( Graphics& gfx )
 // 2x2 block
 int create_chess_board( Graphics& gfx )
 {
-	auto& block = gfx.models.create_node();
-	auto block_index = block.index;
+	auto block = gfx.models.create_node().index;
 
-	auto add_child = [block_index, &gfx]( uint32_t mesh, math::Vec3 translation ) {
-		auto& node = gfx.models.create_node();
+	auto add_child = [block, &gfx]( uint32_t mesh, math::Vec3 translation ) {
+		auto& node = gfx.models.create_node( block );
 		node.mesh = mesh;
 		node.translation.x = translation.x;
 		node.translation.y = translation.y;
-
-		auto block = gfx.models.get_node( block_index );
-		block->children.emplace_back( node.index );
 	};
 
 	size_t n = 16;
@@ -111,7 +100,7 @@ int create_chess_board( Graphics& gfx )
 		}
 	}
 
-	return block_index;
+	return block;
 }
 
 
@@ -147,11 +136,11 @@ int main()
 
 		if ( gfx.window.click )
 		{
-			auto coords = window_to_viewport( gfx.window.extent, gfx.window.cursor, viewport );
+			auto coords = gfx.window.cursor_to( viewport );
 
-			for ( auto child_index : gfx.models.get_node( chess_board )->children )
+			for ( auto child : NODE( chess_board )->get_children() )
 			{
-				auto child = gfx.models.get_node( child_index );
+				/// @todo Implement some sort of contains
 				if ( child->contains( coords ) )
 				{
 					child->mesh = ( child->mesh + 1 ) % 5;

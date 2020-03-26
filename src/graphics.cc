@@ -1093,7 +1093,7 @@ void Graphics::draw( const uint32_t node_index, const math::Mat4& transform )
 }
 
 
-void Graphics::draw( const Scene& scene, const math::Mat4& transform )
+void Graphics::draw( const gltf::Scene& scene, const math::Mat4& transform )
 {
 	for ( auto node : scene.nodes )
 	{

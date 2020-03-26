@@ -43,14 +43,16 @@ int32_t create_lena( gfx::Graphics& graphics )
 }
 
 
-void rotate( Node& n, float angle )
+void rotate( gltf::Node& n, float angle )
 {
 	const math::Vec3 axis = { 0.0f, 0.0f, 1.0f };
 	auto rot_axis = math::Quat( axis, angle );
 	n.rotation *= rot_axis;
 }
 
+
 } // namespace spot::gfx
+
 
 int main( const int argc, const char** argv )
 {
@@ -58,7 +60,7 @@ int main( const int argc, const char** argv )
 
 	auto graphics = gfx::Graphics();
 
-	gfx::Scene* scene;
+	gltf::Scene* scene;
 	if ( argc > 1 )
 	{
 		auto path = std::string( argv[1] );
@@ -90,10 +92,10 @@ int main( const int argc, const char** argv )
 		if ( graphics.window.swipe.x != 0 )
 		{
 			auto angle = math::radians( graphics.window.swipe.x );
-			rotate( *graphics.models.get_node( x ), angle );
-			rotate( *graphics.models.get_node( y ), angle );
-			rotate( *graphics.models.get_node( z ), angle );
-			rotate( *graphics.models.get_node( triangle ), angle );
+			gfx::rotate( *graphics.models.get_node( x ), angle );
+			gfx::rotate( *graphics.models.get_node( y ), angle );
+			gfx::rotate( *graphics.models.get_node( z ), angle );
+			gfx::rotate( *graphics.models.get_node( triangle ), angle );
 		}
 
 		if ( graphics.window.scroll.y != 0 )

@@ -4,22 +4,18 @@
 /// Draw a rectangle
 int main()
 {
-	using namespace spot::gfx;
-	namespace math = spot::math;
+	using namespace spot;
 
-	auto gfx = Graphics();
+	auto gfx = gfx::Graphics();
 
-	auto a = math::Vec3(); // ( x=0.0f, y=0.0f, z=0.0f )
+	auto a = math::Vec3::Zero;
 	auto b = math::Vec3( 4.5f, 2.0f ); // ( x=4.5f, y=2.0f, z=0.0f )
 
 	auto& root = gfx.models.create_node(
-		Mesh::create_rect( a, b )
+		gfx::Mesh::create_rect( a, b )
 	);
 
-	auto eye = math::Vec3( 0.0f, 0.0f, 8.0f ); // Out of the screen
-	auto origin = math::Vec3( 0.0f, 0.0f, 0.0f ); // Look at origin
-	auto up = math::Vec3( 0.0f, 1.0f, 0.0f ); // Up is the sky
-	gfx.view = look_at( eye, origin, up );
+	gfx.view = gfx::look_at( math::Vec3::Z * 8.0f, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( gfx.window.is_alive() )
 	{

@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <spot/gfx/graphics.h>
 
+#define NODE( index ) ( gfx.models.get_node( index ) )
+
 namespace spot::gfx
 {
 
@@ -67,7 +69,7 @@ uint32_t create_lines( const Colors& colors, Graphics& gfx )
 		auto line = Mesh::create_rect( a, b, colors.white );
 
 		auto& node = gfx.models.create_node( std::move( line ) );
-		auto root = gfx.models.get_node( root_index );
+		auto root = NODE( root_index );
 		root->children.push_back( node.index );
 	}
 	// + black background
@@ -77,7 +79,7 @@ uint32_t create_lines( const Colors& colors, Graphics& gfx )
 		auto line = Mesh::create_rect( a, b, colors.black );
 		
 		auto& node = gfx.models.create_node( std::move( line ) );
-		auto root = gfx.models.get_node( root_index );
+		auto root = NODE( root_index );
 		root->children.push_back( node.index );
 	}
 
@@ -91,7 +93,7 @@ uint32_t create_lines( const Colors& colors, Graphics& gfx )
 		auto line = Mesh::create_rect( a, b, colors.yellow );
 		
 		auto& node = gfx.models.create_node( std::move( line ) );
-		auto root = gfx.models.get_node( root_index );
+		auto root = NODE( root_index );
 		root->children.push_back( node.index );
 	}
 	// + white background
@@ -100,7 +102,7 @@ uint32_t create_lines( const Colors& colors, Graphics& gfx )
 		auto b = math::Vec3( 1.0f, -1.0f, -0.1f );
 		auto line = Mesh::create_rect( a, b, colors.white );
 		auto& node = gfx.models.create_node( std::move( line ) );
-		auto root = gfx.models.get_node( root_index );
+		auto root = NODE( root_index );
 		root->children.push_back( node.index );
 	}
 	// Black delimitator
@@ -109,7 +111,7 @@ uint32_t create_lines( const Colors& colors, Graphics& gfx )
 		auto b = math::Vec3( 1.0f, -width, -0.1f );
 		auto line = Mesh::create_rect( a, b, colors.black );
 		auto& node = gfx.models.create_node( std::move( line ) );
-		auto root = gfx.models.get_node( root_index );
+		auto root = NODE( root_index );
 		root->children.push_back( node.index );
 	}
 

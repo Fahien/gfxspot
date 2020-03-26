@@ -6,6 +6,9 @@
 #include "spot/gfx/models.h"
 #include "spot/gfx/hash.h"
 
+#define NODE( index ) ( gfx.models.get_node( index ) )
+#define FIND( container, object ) ( container.find( object ) != std::end( container ) )
+
 namespace gtf = spot::gltf;
 
 namespace spot::gfx
@@ -72,7 +75,7 @@ std::vector<VkVertexInputAttributeDescription> get_attributes<Vertex>()
 
 
 Renderer::Renderer( Graphics& g )
-: graphics { g }
+: gfx { g }
 {
 	recreate_pipelines();
 }
@@ -85,36 +88,36 @@ void Renderer::recreate_pipelines()
 	auto mesh_pipeline = GraphicsPipeline(
 		get_bindings<Vertex>(),
 		get_attributes<Vertex>(),
-		graphics.mesh_layout,
-		graphics.mesh_vert,
-		graphics.mesh_frag,
-		graphics.render_pass,
-		graphics.viewport,
-		graphics.scissor );
+		gfx.mesh_layout,
+		gfx.mesh_vert,
+		gfx.mesh_frag,
+		gfx.render_pass,
+		gfx.viewport,
+		gfx.scissor );
 	mesh_pipeline.index = 0;
 	pipelines.emplace_back( std::move( mesh_pipeline ) );
 
 	auto mesh_no_image_pipeline = GraphicsPipeline(
 		get_bindings<Vertex>(),
 		get_attributes<Vertex>(),
-		graphics.mesh_no_image_layout,
-		graphics.mesh_no_image_vert,
-		graphics.mesh_no_image_frag,
-		graphics.render_pass,
-		graphics.viewport,
-		graphics.scissor );
+		gfx.mesh_no_image_layout,
+		gfx.mesh_no_image_vert,
+		gfx.mesh_no_image_frag,
+		gfx.render_pass,
+		gfx.viewport,
+		gfx.scissor );
 	mesh_no_image_pipeline.index = 1;
 	pipelines.emplace_back( std::move( mesh_no_image_pipeline ) );
 
 	auto line_pipeline = GraphicsPipeline(
 		get_bindings<Dot>(),
 		get_attributes<Dot>(),
-		graphics.line_layout,
-		graphics.line_vert,
-		graphics.line_frag,
-		graphics.render_pass,
-		graphics.viewport,
-		graphics.scissor,
+		gfx.line_layout,
+		gfx.line_vert,
+		gfx.line_frag,
+		gfx.render_pass,
+		gfx.viewport,
+		gfx.scissor,
 		VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
 	line_pipeline.index = 2;
 	pipelines.emplace_back( std::move( line_pipeline ) );
@@ -261,21 +264,21 @@ PrimitiveResources::PrimitiveResources( const Device& device, const Primitive& p
 DescriptorResources::DescriptorResources( const Renderer& renderer, const GraphicsPipeline& pipel, const uint64_t node, const Material* material )
 : pipeline { pipel.index }
 , descriptor_pool {
-		renderer.graphics.swapchain.device,
-		get_mesh_pool_size( renderer.graphics.swapchain.images.size() * 2 ),
-		uint32_t( renderer.graphics.swapchain.images.size() * 2 )
+		renderer.gfx.swapchain.device,
+		get_mesh_pool_size( renderer.gfx.swapchain.images.size() * 2 ),
+		uint32_t( renderer.gfx.swapchain.images.size() * 2 )
 	}
 , descriptor_sets {
 		descriptor_pool.allocate(
 			pipel.layout.descriptor_set_layout,
-			renderer.graphics.swapchain.images.size()
+			renderer.gfx.swapchain.images.size()
 		)
 	}
 {
 	assert( renderer.node_resources.count( node ) && "Node resources were not created" );
 	const auto& node_res = renderer.node_resources.at( node );
 
-	for ( size_t i = 0; i < renderer.graphics.swapchain.images.size(); ++i )
+	for ( size_t i = 0; i < renderer.gfx.swapchain.images.size(); ++i )
 	{
 		std::vector<VkWriteDescriptorSet> writes = {};
 
@@ -384,7 +387,7 @@ uint64_t select_pipeline( Material* material )
 
 void Renderer::add( const uint32_t node_index )
 {
-	auto node = graphics.models.get_node( node_index );
+	auto node = NODE( node_index );
 	if ( node->mesh < 0 )
 	{
 		return; // no mesh to add
@@ -392,26 +395,27 @@ void Renderer::add( const uint32_t node_index )
 
 	// The node has a mesh, therefore we need UBOs for the MVP matrix
 	// MVP ubos are store in node resources
-	if ( node_resources.find( node_index ) == std::end( node_resources ) )
+	if ( !FIND( node_resources, node_index ) )
 	{
-		node_resources.emplace( node_index, NodeResources( graphics.swapchain ) );
+		node_resources.emplace( node_index, NodeResources( gfx.swapchain ) );
 	}
 
 	// Now get the mesh, and its primitives
-	auto mesh = graphics.models.meshes[node->mesh];
+	auto mesh = gfx.models.meshes[node->mesh];
 	for ( auto& prim : mesh.primitives )
 	{
 		// We need vertex and index buffers. These are stored in primitive resources
 		auto hash_prim = hash( prim );
 		// Avoid duplication of primitive resources
-		if ( primitive_resources.find( hash_prim ) == std::end( primitive_resources ) )
+		if ( !FIND( primitive_resources, hash_prim ) )
 		{
-			primitive_resources.emplace( hash_prim, PrimitiveResources( graphics.device, prim ) );
+			primitive_resources.emplace( hash_prim, PrimitiveResources( gfx.device, prim ) );
 		}
 
 		add_descriptors( node_index, prim.get_material() );
 	}
 }
+
 
 std::unordered_map<size_t, DescriptorResources>::iterator
 Renderer::add_descriptors( const uint32_t node_index, const int32_t material_index )
@@ -428,13 +432,13 @@ Renderer::add_descriptors( const uint32_t node_index, const int32_t material_ind
 		return it;
 	}
 
-	auto material = graphics.models.get_material( material_index );
+	auto material = gfx.models.get_material( material_index );
 	if ( material )
 	{
 		// Add ubo for this material
 		if ( material_resources.find( material_index ) == std::end( material_resources ) )
 		{
-			material_resources.emplace( material_index, graphics.swapchain );
+			material_resources.emplace( material_index, gfx.swapchain );
 		}
 	}
 

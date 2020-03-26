@@ -3,11 +3,13 @@
 #include <unordered_map>
 
 #include <spot/math/math.h>
+#include <spot/gltf/mesh.h>
 
 #include "spot/gfx/buffers.h"
 #include "spot/gfx/descriptors.h"
 #include "spot/gfx/images.h"
 #include "spot/gfx/pipelines.h"
+
 
 namespace spot::gfx
 {
@@ -102,7 +104,7 @@ class Renderer
 	void add( uint32_t node );
 	std::unordered_map<size_t, DescriptorResources>::iterator add_descriptors( uint32_t node, int32_t material );
 
-	Graphics& graphics;
+	Graphics& gfx;
 
 	/// @brief Collection of pipelines
 	std::vector<GraphicsPipeline> pipelines;

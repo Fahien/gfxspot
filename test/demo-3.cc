@@ -10,7 +10,7 @@ namespace spot::gfx
 {
 
 
-void update( const double dt, Node& node )
+void update( const double dt, gltf::Node& node )
 {
 	auto radians = math::radians( dt * 128.0f );
 	auto z = math::Vec3( 0.0f, 0.0f, 1.0f );
@@ -23,10 +23,8 @@ void update( const double dt, Node& node )
 }
 
 
-int create_card( Graphics& graphics )
+int32_t create_card( Graphics& gfx )
 {
-	Mesh& card = graphics.models.meshes.emplace_back();
-
 	std::vector<Vertex> vertices = {
 		Vertex(
 			math::Vec3( -1.25f, -1.75f, 0.0f ),
@@ -53,15 +51,13 @@ int create_card( Graphics& graphics )
 	// Currently, counterclockwise?
 	std::vector<Index> indices = { 0, 2, 1, 1, 2, 3 };
 
-	auto& material = graphics.models.create_material();
-	material.texture = graphics.images.load( "img/card.png" );
+	auto& material = gfx.models.create_material();
+	material.texture = gfx.images.load( "img/card.png" );
 
-	card.primitives.emplace_back( Primitive( std::move( vertices ), std::move( indices ), material.index ) );
-
-	auto& node = graphics.models.create_node();
-	node.mesh = 0;
-
-	graphics.models.scene.nodes.emplace_back( node.index );
+	auto card = Mesh({
+		Primitive( std::move( vertices ), std::move( indices ), material.index )
+	});
+	auto& node = gfx.models.create_node( std::move( card ) );
 
 	return node.index;
 }
@@ -75,31 +71,31 @@ int main()
 	using namespace spot::gfx;
 	namespace math = spot::math;
 
-	auto graphics = Graphics();
+	auto gfx = Graphics();
 
-	auto card = create_card( graphics );
+	auto card = create_card( gfx );
 
-	graphics.view = look_at(
+	gfx.view = look_at(
 		math::Vec3::Z * -2.0f,
 		math::Vec3::Zero,
 		math::Vec3::Y
 	);
 
-	while ( graphics.window.is_alive() )
+	while ( gfx.window.is_alive() )
 	{
-		graphics.glfw.poll();
-		auto dt = graphics.glfw.get_delta();
+		gfx.glfw.poll();
+		auto dt = gfx.glfw.get_delta();
 
-		update( dt, *graphics.models.get_node( card ) );
+		update( dt, *gfx.models.get_node( card ) );
 
-		if ( graphics.render_begin() )
+		if ( gfx.render_begin() )
 		{
-			graphics.draw( card );
-			graphics.render_end();
+			gfx.draw( card );
+			gfx.render_end();
 		}
 	}
 
-	graphics.device.wait_idle();
+	gfx.device.wait_idle();
 
 	return EXIT_SUCCESS;
 }

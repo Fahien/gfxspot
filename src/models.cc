@@ -17,22 +17,6 @@ const Color Color::blue = { 0.0f, 0.0f, 1.0f };
 const Color Color::yellow = { 1.0f, 1.0f, 0.0f };
 
 
-bool Node::contains( const math::Vec2& point ) const
-{
-	/// @todo Make this a bounding box and store an handle to it into a node
-	auto rect = math::Rectangle();
-	rect.width = 1.0f;
-	rect.height = 1.0f;
-	rect.x = -rect.width / 2.0f;
-	rect.y = -rect.height / 2.0f;
-
-	rect.x += translation.x;
-	rect.y += translation.y;
-
-	return rect.contains( point.x, point.y );
-}
-
-
 Material& Material::get_black()
 {
 	static Material black {
@@ -43,6 +27,7 @@ Material& Material::get_black()
 	return black;
 };
 
+
 Material& Material::get_white()
 {
 	static Material white {
@@ -52,6 +37,7 @@ Material& Material::get_white()
 	};
 	return white;
 };
+
 
 Material& Material::get_red()
 {
@@ -74,6 +60,7 @@ Material& Material::get_yellow()
 	return yellow;
 }
 
+
 Primitive::Primitive(
 	const std::vector<Vertex>& vv,
 	const std::vector<Index>& ii,
@@ -83,6 +70,7 @@ Primitive::Primitive(
 , material { mat }
 {
 }
+
 
 Mesh Mesh::create_line( const math::Vec3& a, const math::Vec3& b, const Color& c, const float line_width )
 {
@@ -207,22 +195,15 @@ Models::Models( Graphics& g )
 {}
 
 
-Node& Models::create_node( const int32_t parent_index )
+gltf::Node& Models::create_node( const int32_t parent )
 {
-	auto& node = nodes.emplace_back();
-	node.index = nodes.size() - 1;
-
-	if ( auto parent = get_node( parent_index ) )
-	{
-		parent->children.emplace_back( node.index );
-	}
-	return node;
+	return gltf.create_node( parent );
 }
 
 
-Node& Models::create_node( Mesh&& mesh, const int32_t parent )
+gltf::Node& Models::create_node( Mesh&& mesh, const int32_t parent )
 {
-	auto& node = create_node( parent );
+	auto& node = gltf.create_node( parent );
 
 	meshes.emplace_back( std::move( mesh ) );
 	node.mesh = meshes.size() - 1;
@@ -231,13 +212,17 @@ Node& Models::create_node( Mesh&& mesh, const int32_t parent )
 }
 
 
-Node* Models::get_node( const int32_t index )
+gltf::Node* Models::get_node( const int32_t node )
 {
-	if ( index >= 0 && index < nodes.size() )
-	{
-		return &nodes[index];
-	}
-	return nullptr;
+	return gltf.get_node( node );
+}
+
+
+Material& Models::create_material( const Color& c )
+{
+	auto& material = create_material();
+	material.ubo.color = c;
+	return material;
 }
 
 
@@ -256,7 +241,7 @@ Material& Models::create_material( VkImageView texture )
 }
 
 
-gfx::Material* Models::get_material( const int32_t index )
+Material* Models::get_material( const int32_t index )
 {
 	if ( index >= 0 && index < materials.size() )
 	{
@@ -266,15 +251,23 @@ gfx::Material* Models::get_material( const int32_t index )
 }
 
 
+Mesh& Models::create_mesh( Mesh&& mesh )
+{
+	mesh.index = meshes.size();
+	auto& ret = meshes.emplace_back( std::move( mesh ) );
+	return ret;
+}
+
+
 /// @todo Implement
 int32_t Models::create_text( const std::string& text )
 {
-	int32_t group = create_node().index;
+	int32_t group = gltf.create_node().index;
 	// For each character in the text
 	for ( auto c : text )
 	{
 		// We need to create a node
-		auto& node = create_node( group );
+		auto& node = gltf.create_node( group );
 		// Its mesh will be a quad
 		// Quad's material will be the same for each character
 		// Material will have a texture to the bitmap font
@@ -284,12 +277,12 @@ int32_t Models::create_text( const std::string& text )
 }
 
 
-Scene& Models::load( const std::string& path )
+gltf::Scene& Models::load( const std::string& path )
 {
-	auto model = gltf::Gltf::load( path );
+	gltf = gltf::Gltf::load( path );
 
 	// Load materials
-	for ( auto& m : model.materials )
+	for ( auto& m : gltf.materials )
 	{
 		gfx::Material material;
 
@@ -310,7 +303,7 @@ Scene& Models::load( const std::string& path )
 	}
 
 	// Load meshes
-	for ( auto& m : model.meshes )
+	for ( auto& m : gltf.meshes )
 	{
 		gfx::Mesh mesh;
 
@@ -435,17 +428,7 @@ Scene& Models::load( const std::string& path )
 		meshes.emplace_back( std::move( mesh ) );
 	}
 
-	std::transform(
-		std::begin( model.nodes ),
-		std::end( model.nodes ),
-		std::back_inserter( nodes ), []( auto& node ) -> Node {
-			return Node{ node.index, node.mesh };
-		} );
-
-	scene.nodes = model.scene->nodes;
-	scene.name  = model.scene->name;
-
-	return scene;
+	return *gltf.scene;
 }
 
 

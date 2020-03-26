@@ -19,6 +19,7 @@ struct RequiredExtensions
 };
 
 class Instance;
+class Viewport;
 
 class Glfw
 {
@@ -42,6 +43,9 @@ class Glfw
 		void update( float dt );
 
 		math::Vec2 get_cursor_position() const;
+
+		/// @return Window space cursor coordinates converted to viewport space coordinates
+		math::Vec2 cursor_to( const Viewport& vp ) const;
 
 		GLFWwindow* handle = nullptr;
 

@@ -19,8 +19,5 @@ class Viewport
 };
 
 
-/// @brief Transform window space coordinates to viewport space coordinates
-math::Vec2 window_to_viewport( const VkExtent2D window_extent, const math::Vec2& window_coords, const Viewport& viewport );
-
 
 } // namespace spot::gfx
