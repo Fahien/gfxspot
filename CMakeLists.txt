@@ -27,6 +27,7 @@ set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/models.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/graphics.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/animations.cc
 )
 add_library( ${PROJECT_NAME} ${SOURCES} )
 target_include_directories( ${PROJECT_NAME} PUBLIC

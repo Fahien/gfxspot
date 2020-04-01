@@ -5,6 +5,7 @@
 #include "spot/gfx/graphics.h"
 #include "spot/gfx/png.h"
 #include "spot/gfx/images.h"
+#include "spot/gfx/animations.h"
 
 namespace spot::gfx
 {
@@ -74,42 +75,30 @@ int create_card( gfx::Graphics& graphics )
 } // namespace spot::gfx
 
 
-int main()
+int main( const int argc, const char** argv )
 {
 	using namespace spot::gfx;
 	namespace math = spot::math;
 
+	if ( argc < 2 )
+	{
+		fprintf( stderr, "Usage: %s <gltf>\n", argv[0] );
+		return EXIT_FAILURE;
+	}
+	
 	auto graphics = Graphics();
 
-	auto& scene = graphics.models.load( "img/milktruck/CesiumMilkTruck.gltf" );
+	auto path = std::string( argv[1] );
+	auto& scene = graphics.models.load( path );
 
-	math::Vec3 eye = {};
-	math::Vec3 origin = {};
-	math::Vec3 up = { 0.0f, 1.0f, 0.0f };
+	auto eye = math::Vec3( 4.0f, 4.0f, 5.0f );
+	graphics.view = look_at( eye, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( graphics.window.is_alive() )
 	{
 		graphics.glfw.poll();
 		auto dt = graphics.glfw.get_delta();
-
-		if ( graphics.window.scroll.y > 0 )
-		{
-			eye.x -= dt * 400.0f;
-			eye.y -= dt * 400.0f;
-			eye.z += dt * 400.0f;
-			graphics.view = look_at(
-				eye, origin, up
-			);
-		}
-		else if ( graphics.window.scroll.y < 0 )
-		{
-			eye.x += dt * 400.0f;
-			eye.y += dt * 400.0f;
-			eye.z -= dt * 400.0f;
-			graphics.view = look_at(
-				eye, origin, up
-			);
-		}
+		Animations::update( dt, graphics.models.gltf );
 
 		if ( graphics.render_begin() )
 		{
@@ -118,5 +107,6 @@ int main()
 		}
 	}
 
+	graphics.device.wait_idle();
 	return EXIT_SUCCESS;
 }

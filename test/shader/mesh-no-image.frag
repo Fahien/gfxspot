@@ -18,5 +18,5 @@ layout( location = 0 ) out vec4 out_color;
 
 void main()
 {
-	out_color = material.color * vec4(in_normal, 1.0);
+	out_color = material.color * vec4( in_color );
 }

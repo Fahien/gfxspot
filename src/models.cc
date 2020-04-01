@@ -284,7 +284,7 @@ gltf::Scene& Models::load( const std::string& path )
 	// Load materials
 	for ( auto& m : gltf.materials )
 	{
-		gfx::Material material;
+		Material material;
 
 		material.ubo.color.r = m.pbr.base_color_factor[0];
 		material.ubo.color.g = m.pbr.base_color_factor[1];
@@ -296,19 +296,32 @@ gltf::Scene& Models::load( const std::string& path )
 
 		if ( auto texture = m.get_texture() )
 		{
-			material.texture = images.load( texture->get_source()->uri.c_str() );
+			auto source = texture->get_source();
+			assert( source && "Texture has no source" );
+			material.texture = images.load( source->uri.c_str() );
 		}
 
-		materials.emplace_back( std::move( material ) );
+		create_material( std::move( material ) );
 	}
+
+	// A primitive without material does not exist in gltf
+	// Therefore we a white material at the endMaterial white {
+	
+	auto& white = create_material( Material{ Material::Ubo{ Color::white } } );
 
 	// Load meshes
 	for ( auto& m : gltf.meshes )
 	{
-		gfx::Mesh mesh;
+		Mesh mesh;
 
 		for ( auto& p : m.primitives )
 		{
+			// Check valid material
+			if ( p.material < 0 )
+			{
+				p.material = white.index;
+			}
+
 			std::vector<Index> indices;
 
 			// Indices

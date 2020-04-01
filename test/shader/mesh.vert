@@ -1,6 +1,6 @@
 #version 450
 
-layout( binding = 0 ) uniform UniformBufferObject {
+layout( binding = 0 ) uniform Mvp {
 	mat4 model;
 	mat4 view;
 	mat4 proj;
@@ -23,6 +23,6 @@ void main()
 	out_normal = in_normal;
 	out_color = in_color;
 	out_texcoord.x = in_texcoord.x;
-	out_texcoord.y = -in_texcoord.y;
+	out_texcoord.y = in_texcoord.y;
 	gl_Position = ubo.proj * ubo.view * ubo.model * vec4( in_position, 1.0 );
 }
