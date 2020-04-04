@@ -8,21 +8,21 @@ list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
 # Conan
 # Download automatically, you can also just copy the conan.cmake file
-if ( NOT TARGET CONAN_PKG::fmt )
-	if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
-		message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
-		file( DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
-			"${CMAKE_BINARY_DIR}/conan.cmake" )
-	endif()
-
-	include( ${CMAKE_BINARY_DIR}/conan.cmake )
-
-	conan_cmake_run( REQUIRES fmt/6.1.2 BASIC_SETUP CMAKE_TARGETS BUILD missing )
+if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
+message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
+file( DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
+"${CMAKE_BINARY_DIR}/conan.cmake" )
 endif()
 
+include( ${CMAKE_BINARY_DIR}/conan.cmake )
+
+if ( NOT TARGET CONAN_PKG::fmt )
+	conan_cmake_run( REQUIRES fmt/6.1.2 BASIC_SETUP CMAKE_TARGETS BUILD missing )
+endif()
+conan_cmake_run( REQUIRES glfw/3.3.2@bincrafters/stable libpng/1.6.37 BASIC_SETUP CMAKE_TARGETS BUILD missing )
+
 find_package( Vulkan )
-find_package( GLFW )
-find_package( PNG )
+
 include( AddMathSpot )
 include( AddGltfSpot )
 #include( doxygen )
@@ -46,7 +46,7 @@ add_library( ${PROJECT_NAME} ${SOURCES} )
 target_include_directories( ${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${Vulkan_INCLUDE_DIRS} )
-target_link_libraries( ${PROJECT_NAME} ${Vulkan_LIBRARIES} ${GLFW_LIBRARY} PNG::PNG mathspot gltfspot CONAN_PKG::fmt )
+target_link_libraries( ${PROJECT_NAME} ${Vulkan_LIBRARIES} CONAN_PKG::glfw CONAN_PKG::libpng mathspot gltfspot CONAN_PKG::fmt )
 target_compile_features( ${PROJECT_NAME} PUBLIC cxx_std_17 )
 
 add_subdirectory( test )
