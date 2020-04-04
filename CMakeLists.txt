@@ -26,7 +26,7 @@ find_package( GLFW )
 find_package( PNG )
 include( AddMathSpot )
 include( AddGltfSpot )
-include( doxygen )
+#include( doxygen )
 
 # Lib
 set( SOURCES
