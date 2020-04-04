@@ -8,18 +8,17 @@ list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
 # Conan
 # Download automatically, you can also just copy the conan.cmake file
-if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
-	message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
-	file( DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
-		"${CMAKE_BINARY_DIR}/conan.cmake" )
+if ( NOT TARGET CONAN_PKG::fmt )
+	if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
+		message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
+		file( DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
+			"${CMAKE_BINARY_DIR}/conan.cmake" )
+	endif()
+
+	include( ${CMAKE_BINARY_DIR}/conan.cmake )
+
+	conan_cmake_run( REQUIRES fmt/6.1.2 BASIC_SETUP CMAKE_TARGETS BUILD missing )
 endif()
-
-include( ${CMAKE_BINARY_DIR}/conan.cmake )
-
-conan_cmake_run(
-	REQUIRES fmt/6.1.2
-	BASIC_SETUP CMAKE_TARGETS
-	BUILD missing )
 
 find_package( Vulkan )
 find_package( GLFW )
