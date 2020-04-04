@@ -4,11 +4,13 @@
 namespace spot::gfx
 {
 
-
+// Skip this when compiling on Windows
+#ifndef _WIN32
 size_t hash( size_t h )
 {
 	return h;
 }
+#endif
 
 
 size_t hash( int16_t h )
