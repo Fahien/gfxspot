@@ -713,7 +713,7 @@ ShaderModule& ShaderModule::operator=( ShaderModule&& other )
 ValidationLayers get_validation_layers()
 {
 	static std::vector<const char*> layer_names = {
-		"VK_LAYER_KHRONOS_validation"
+		//"VK_LAYER_KHRONOS_validation"
 	};
 
 	ValidationLayers layers = {};
