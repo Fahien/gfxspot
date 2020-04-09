@@ -39,6 +39,7 @@ set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/animations.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/camera.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/viewport.cc
 )
 add_library( ${PROJECT_NAME} ${SOURCES} )
 target_include_directories( ${PROJECT_NAME} PUBLIC

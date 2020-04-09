@@ -713,7 +713,7 @@ ShaderModule& ShaderModule::operator=( ShaderModule&& other )
 ValidationLayers get_validation_layers()
 {
 	static std::vector<const char*> layer_names = {
-		//"VK_LAYER_KHRONOS_validation"
+		"VK_LAYER_KHRONOS_validation"
 	};
 
 	ValidationLayers layers = {};
@@ -724,20 +724,7 @@ ValidationLayers get_validation_layers()
 }
 
 
-VkViewport create_viewport( const Glfw::Window& window )
-{
-	VkViewport viewport = {};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = window.frame.width;
-	viewport.height = window.frame.height;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-	return viewport;
-}
-
-
-VkRect2D create_scissor( const Glfw::Window& window )
+VkRect2D create_scissor( const Window& window )
 {
 	VkRect2D scissor = {};
 	scissor.offset = {0, 0};
@@ -816,7 +803,7 @@ Graphics::Graphics()
 , mesh_no_image_frag { device, "shader/mesh-no-image.frag.spv" }
 , mesh_layout { device, get_mesh_bindings() }
 , mesh_no_image_layout { device, get_mesh_no_image_bindings() }
-, viewport { create_viewport( window ) }
+, viewport { window }
 , scissor { create_scissor( window ) }
 , renderer { *this }
 , command_pool { device }
@@ -826,6 +813,7 @@ Graphics::Graphics()
 , present_queue { device.find_present_queue( surface.handle ) }
 , images { device }
 , models { *this }
+, camera { viewport.abstract }
 {
 	camera.perspective( swapchain.extent.width / float(swapchain.extent.height), math::radians( 60.0f ), 10000.0f, 0.125f );
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )
@@ -850,8 +838,8 @@ bool Graphics::render_begin()
 		VK_NULL_HANDLE,
 		&image_index );
 	if ( res == VK_ERROR_OUT_OF_DATE_KHR ||
-		viewport.width != window.frame.width ||
-		viewport.height != window.frame.height )
+		viewport.viewport.width != window.frame.width ||
+		viewport.viewport.height != window.frame.height )
 	{
 		// Recreate current semaphore
 		images_available.back() = Semaphore( device );
@@ -860,8 +848,8 @@ bool Graphics::render_begin()
 		render_pass = RenderPass( swapchain );
 
 		// Update viewport and scissor
-		viewport.width = window.frame.width;
-		viewport.height = window.frame.height;
+		viewport.viewport.width = window.frame.width;
+		viewport.viewport.height = window.frame.height;
 		scissor.extent = window.frame;
 
 		renderer.recreate_pipelines();

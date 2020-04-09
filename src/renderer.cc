@@ -92,7 +92,7 @@ void Renderer::recreate_pipelines()
 		gfx.mesh_vert,
 		gfx.mesh_frag,
 		gfx.render_pass,
-		gfx.viewport,
+		gfx.viewport.viewport,
 		gfx.scissor );
 	mesh_pipeline.index = 0;
 	pipelines.emplace_back( std::move( mesh_pipeline ) );
@@ -104,7 +104,7 @@ void Renderer::recreate_pipelines()
 		gfx.mesh_no_image_vert,
 		gfx.mesh_no_image_frag,
 		gfx.render_pass,
-		gfx.viewport,
+		gfx.viewport.viewport,
 		gfx.scissor );
 	mesh_no_image_pipeline.index = 1;
 	pipelines.emplace_back( std::move( mesh_no_image_pipeline ) );
@@ -116,7 +116,7 @@ void Renderer::recreate_pipelines()
 		gfx.line_vert,
 		gfx.line_frag,
 		gfx.render_pass,
-		gfx.viewport,
+		gfx.viewport.viewport,
 		gfx.scissor,
 		VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
 	line_pipeline.index = 2;

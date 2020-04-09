@@ -46,7 +46,7 @@ double Glfw::get_delta()
 
 void set_window_size( GLFWwindow* handle, const int width, const int height )
 {
-	auto window = reinterpret_cast<Glfw::Window*>( glfwGetWindowUserPointer( handle ) );
+	auto window = reinterpret_cast<Window*>( glfwGetWindowUserPointer( handle ) );
 	window->extent.width  = width;
 	window->extent.height = height;
 }
@@ -54,7 +54,7 @@ void set_window_size( GLFWwindow* handle, const int width, const int height )
 
 void set_framebuffer_size( GLFWwindow* handle, const int width, const int height )
 {
-	auto window = reinterpret_cast<Glfw::Window*>( glfwGetWindowUserPointer( handle ) );
+	auto window = reinterpret_cast<Window*>( glfwGetWindowUserPointer( handle ) );
 	window->frame.width  = width;
 	window->frame.height = height;
 }
@@ -62,7 +62,7 @@ void set_framebuffer_size( GLFWwindow* handle, const int width, const int height
 
 void scroll_callback( GLFWwindow* handle, double xoffset, double yoffset )
 {
-	auto window = reinterpret_cast<Glfw::Window*>( glfwGetWindowUserPointer( handle ) );
+	auto window = reinterpret_cast<Window*>( glfwGetWindowUserPointer( handle ) );
 	window->scroll.x = xoffset;
 	window->scroll.y = yoffset;
 }
@@ -73,7 +73,7 @@ void scroll_callback( GLFWwindow* handle, double xoffset, double yoffset )
 /// @param mods Bit field describing which modifier keys were held down
 void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 {
-	auto window = reinterpret_cast<Glfw::Window*>( glfwGetWindowUserPointer( handle ) );
+	auto window = reinterpret_cast<Window*>( glfwGetWindowUserPointer( handle ) );
 
 	if ( button == GLFW_MOUSE_BUTTON_1 )
 	{
@@ -101,7 +101,7 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 }
 
 
-Glfw::Window::Window()
+Window::Window()
 {
 	glfwWindowHint( GLFW_CLIENT_API, GLFW_NO_API );
 	handle = glfwCreateWindow( extent.width, extent.height, "Graphics", nullptr, nullptr );
@@ -120,25 +120,25 @@ Glfw::Window::Window()
 }
 
 
-Glfw::Window::~Window()
+Window::~Window()
 {
 	glfwDestroyWindow( handle );
 }
 
 
-math::Vec2 Glfw::Window::cursor_to( const Viewport& viewport ) const
+math::Vec2 Window::cursor_to( const VkViewport& viewport ) const
 {
 	math::Vec2 viewport_coords;
 
 	// In window space (0,0) is up left. Increments right and down.
-	viewport_coords.x = cursor.x / extent.width * viewport.extent.x + viewport.offset.x;
-	viewport_coords.y = ( -cursor.y + extent.height ) / extent.height * viewport.extent.y + viewport.offset.y;
+	viewport_coords.x = cursor.x / extent.width * viewport.width + viewport.x;
+	viewport_coords.y = ( -cursor.y + extent.height ) / extent.height * viewport.height + viewport.y;
 
 	return viewport_coords;
 }
 
 
-bool Glfw::Window::is_alive()
+bool Window::is_alive()
 {
 	// Reset internal state
 	scroll = {};
@@ -148,7 +148,7 @@ bool Glfw::Window::is_alive()
 }
 
 
-void Glfw::Window::update( const float dt )
+void Window::update( const float dt )
 {
 	if ( pressed )
 	{
@@ -162,7 +162,7 @@ void Glfw::Window::update( const float dt )
 }
 
 
-math::Vec2 Glfw::Window::get_cursor_position() const
+math::Vec2 Window::get_cursor_position() const
 {
 	double x;
 	double y;
@@ -171,7 +171,7 @@ math::Vec2 Glfw::Window::get_cursor_position() const
 }
 
 
-Glfw::Window::Surface::Surface( Instance& i, Glfw::Window& window )
+Window::Surface::Surface( Instance& i, Window& window )
 : instance { i }
 {
 	auto err = glfwCreateWindowSurface( instance.handle, window.handle, nullptr, &handle );
@@ -180,7 +180,7 @@ Glfw::Window::Surface::Surface( Instance& i, Glfw::Window& window )
 }
 
 
-Glfw::Window::Surface::~Surface()
+Window::Surface::~Surface()
 {
 	if ( handle != VK_NULL_HANDLE )
 	{

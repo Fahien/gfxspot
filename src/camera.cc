@@ -6,18 +6,18 @@ namespace spot::gfx
 {
 
 
-Camera::Camera( const Viewport& viewport )
+Camera::Camera( const VkViewport& viewport )
 {
 	look_at( math::Vec3::Zero, math::Vec3::Zero, math::Vec3::Y );
 	orthographic( viewport, 0.125f, 2.0f );
 }
 
 
-void Camera::orthographic( const Viewport& viewport, float near, float far )
+void Camera::orthographic( const VkViewport& viewport, float near, float far )
 {
 	orthographic(
-		viewport.offset.x, viewport.extent.x,
-		viewport.offset.y, viewport.extent.y,
+		viewport.x, viewport.width,
+		viewport.y, viewport.height,
 		near, far );
 }
 

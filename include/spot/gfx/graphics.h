@@ -15,6 +15,7 @@
 #include "spot/gfx/models.h"
 #include "spot/gfx/pipelines.h"
 #include "spot/gfx/camera.h"
+#include "spot/gfx/viewport.h"
 
 
 namespace spot::gfx
@@ -256,8 +257,8 @@ class Graphics
 
 	Glfw glfw;
 	Instance instance;
-	Glfw::Window window;
-	Glfw::Window::Surface surface;
+	Window window;
+	Window::Surface surface;
 	const char* swapchain_extension_name = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 	RequiredExtensions device_required_extensions = { 1, &swapchain_extension_name };
 	Device device;
@@ -278,9 +279,8 @@ class Graphics
 	PipelineLayout mesh_layout;
 	PipelineLayout mesh_no_image_layout;
 
-	/// @todo Move this under class Viewport
-	VkViewport viewport = {};
-	VkRect2D   scissor  = {};
+	Viewport viewport;
+	VkRect2D scissor = {};
 
 	Renderer renderer;
 
