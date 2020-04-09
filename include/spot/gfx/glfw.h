@@ -58,7 +58,13 @@ class Glfw
 
 		math::Vec2 cursor = {};
 		bool pressed = false;
-		bool click = false;
+		
+		struct Click
+		{
+			bool left = false;
+			bool middle = false;
+			bool right = false;
+		} click;
 
 		class Surface
 		{
