@@ -117,12 +117,8 @@ int main()
 
 	auto chess_board = create_chess_board( gfx );
 
-	gfx.view = look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
-
-	gfx.proj = ortho(
-		viewport.offset.x, viewport.extent.x,
-		viewport.offset.y, viewport.extent.y,
-		0.125f, 2.0 );
+	gfx.camera.look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
+	gfx.camera.orthographic( viewport, 0.125f, 2.0 );
 
 	double tick = 1.0;
 	double time = 0.0f;
@@ -134,7 +130,7 @@ int main()
 		const auto dt = gfx.glfw.get_delta();
 		gfx.window.update( dt );
 
-		if ( gfx.window.click )
+		if ( gfx.window.click.left )
 		{
 			auto coords = gfx.window.cursor_to( viewport );
 

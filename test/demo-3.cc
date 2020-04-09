@@ -75,11 +75,7 @@ int main()
 
 	auto card = create_card( gfx );
 
-	gfx.view = look_at(
-		math::Vec3::Z * -2.0f,
-		math::Vec3::Zero,
-		math::Vec3::Y
-	);
+	gfx.camera.look_at( math::Vec3::Z * -2.0f, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( gfx.window.is_alive() )
 	{

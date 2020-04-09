@@ -10,12 +10,12 @@
 namespace spot::gfx
 {
 
-int create_line( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b )
+int create_line( gfx::Graphics& gfx, gfx::Dot a, gfx::Dot b )
 {
-	auto& node = graphics.models.create_node();
+	auto& node = gfx.models.create_node();
 
-	auto& mesh = graphics.models.meshes.emplace_back();
-	node.mesh = graphics.models.meshes.size() - 1;
+	auto& mesh = gfx.models.meshes.emplace_back();
+	node.mesh = gfx.models.meshes.size() - 1;
 
 	auto& primitive = mesh.primitives.emplace_back();
 	primitive.vertices = {
@@ -29,12 +29,12 @@ int create_line( gfx::Graphics& graphics, gfx::Dot a, gfx::Dot b )
 }
 
 
-int32_t create_lena( gfx::Graphics& graphics )
+int32_t create_lena( gfx::Graphics& gfx )
 {
-	auto& node = graphics.models.create_node(
+	auto& node = gfx.models.create_node(
 		Mesh::create_quad(
-			graphics.models.create_material(
-				graphics.images.load( "img/lena.png" )
+			gfx.models.create_material(
+				gfx.images.load( "img/lena.png" )
 			).index
 		)
 	);
@@ -58,70 +58,70 @@ int main( const int argc, const char** argv )
 {
 	using namespace spot;
 
-	auto graphics = gfx::Graphics();
+	auto gfx = gfx::Graphics();
 
 	gltf::Scene* scene;
 	if ( argc > 1 )
 	{
 		auto path = std::string( argv[1] );
-		scene = &graphics.models.load( path );
+		scene = &gfx.models.load( path );
 	}
 
-	auto x = create_line( graphics,
+	auto x = create_line( gfx,
 		gfx::Dot( math::Vec3( 0.0f, 0.0f, 0.0f ), gfx::Color( 1.0f, 0.0f, 0.0f, 1.0f) ),
 		gfx::Dot( math::Vec3( 1.0f, 0.0f, 0.0f ), gfx::Color( 1.0f, 0.0f, 0.0f, 1.0f ) ) );
 	
-	auto y = create_line( graphics,
+	auto y = create_line( gfx,
 		gfx::Dot( math::Vec3( 0.0f, 0.0f, 0.0f ), gfx::Color( 0.0f, 1.0f, 0.0f, 1.0f) ),
 		gfx::Dot( math::Vec3( 0.0f, 1.0f, 0.0f ), gfx::Color( 0.0f, 1.0f, 0.0f, 1.0f ) ) );
 
-	auto z = create_line( graphics,
+	auto z = create_line( gfx,
 		gfx::Dot( math::Vec3( 0.0f, 0.0f, 0.0f ), gfx::Color( 0.0f, 0.0f, 1.0f, 1.0f ) ),
 		gfx::Dot( math::Vec3( 0.0f, 0.0f, 1.0f ), gfx::Color( 0.0f, 0.0f, 1.0f, 1.0f ) ) );
 
-	auto triangle = create_lena( graphics );
+	auto triangle = create_lena( gfx );
 	
-	graphics.view = gfx::look_at( math::Vec3::One, math::Vec3::Zero, math::Vec3::Y );
+	gfx.camera.look_at( math::Vec3::One, math::Vec3::Zero, math::Vec3::Y );
 
-	while ( graphics.window.is_alive() )
+	while ( gfx.window.is_alive() )
 	{
-		graphics.glfw.poll();
-		auto dt = graphics.glfw.get_delta();
-		graphics.window.update( dt );
+		gfx.glfw.poll();
+		auto dt = gfx.glfw.get_delta();
+		gfx.window.update( dt );
 
-		if ( graphics.window.swipe.x != 0 )
+		if ( gfx.window.swipe.x != 0 )
 		{
-			auto angle = math::radians( graphics.window.swipe.x );
-			gfx::rotate( *graphics.models.get_node( x ), angle );
-			gfx::rotate( *graphics.models.get_node( y ), angle );
-			gfx::rotate( *graphics.models.get_node( z ), angle );
-			gfx::rotate( *graphics.models.get_node( triangle ), angle );
+			auto angle = math::radians( gfx.window.swipe.x );
+			gfx::rotate( *gfx.models.get_node( x ), angle );
+			gfx::rotate( *gfx.models.get_node( y ), angle );
+			gfx::rotate( *gfx.models.get_node( z ), angle );
+			gfx::rotate( *gfx.models.get_node( triangle ), angle );
 		}
 
-		if ( graphics.window.scroll.y != 0 )
+		if ( gfx.window.scroll.y != 0 )
 		{
-			graphics.models.get_node( 2 )->translation.y += graphics.window.scroll.y;
+			gfx.models.get_node( 2 )->translation.y += gfx.window.scroll.y;
 		}
 
-		if ( graphics.render_begin() )
+		if ( gfx.render_begin() )
 		{
-			graphics.draw( x );
-			graphics.draw( y );
-			graphics.draw( z );
+			gfx.draw( x );
+			gfx.draw( y );
+			gfx.draw( z );
 			if ( scene )
 			{
-				graphics.draw( *scene );
+				gfx.draw( *scene );
 			}
 			else
 			{
-				graphics.draw( triangle );
+				gfx.draw( triangle );
 			}
 
-			graphics.render_end();
+			gfx.render_end();
 		}
 	}
 
-	graphics.device.wait_idle();
+	gfx.device.wait_idle();
 
 	return EXIT_SUCCESS;
 }

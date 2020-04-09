@@ -8,7 +8,7 @@ int main()
 
 	auto gfx = gfx::Graphics();
 
-	uint32_t text = gfx.models.create_text( "Hello" );
+	auto text = gfx.models.create_text( "Hello" );
 
 	while ( gfx.window.is_alive() )
 	{

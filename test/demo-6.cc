@@ -15,7 +15,7 @@ int main()
 		gfx::Mesh::create_rect( a, b )
 	);
 
-	gfx.view = gfx::look_at( math::Vec3::Z * 8.0f, math::Vec3::Zero, math::Vec3::Y );
+	gfx.camera.look_at( math::Vec3::Z * 8.0f, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( gfx.window.is_alive() )
 	{

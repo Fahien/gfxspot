@@ -17,10 +17,10 @@ void update( const double dt, gltf::Node& node )
 }
 
 
-Mesh create_lenna( Graphics& graphics )
+Mesh create_lenna( Graphics& gfx )
 {
-	auto view = graphics.images.load( "img/lena.png" );
-	auto& material = graphics.models.create_material( view );
+	auto view = gfx.images.load( "img/lena.png" );
+	auto& material = gfx.models.create_material( view );
 	return Mesh::create_quad( material.index );
 }
 
@@ -33,16 +33,16 @@ int main()
 	using namespace spot::gfx;
 	namespace math = spot::math;
 
-	auto graphics = Graphics();
+	auto gfx = Graphics();
 
-	auto square = graphics.models.create_node(
+	auto square = gfx.models.create_node(
 		Mesh::create_rect(
 			math::Vec3( -0.5f, -0.5f ),
 			math::Vec3( 0.5f, 0.5f )
 		)
 	).index;
 	
-	auto triangle = graphics.models.create_node(
+	auto triangle = gfx.models.create_node(
 		Mesh::create_triangle(
 			math::Vec3( 0.5f, 0.0f, -1.0f ),
 			math::Vec3( -0.5f, 0.0f, -1.0f ),
@@ -50,31 +50,31 @@ int main()
 		)
 	).index;
 
-	auto quad = graphics.models.create_node(
-		create_lenna( graphics )
+	auto quad = gfx.models.create_node(
+		create_lenna( gfx )
 	).index;
 
-	graphics.view = look_at( math::Vec3::One * 1.5f, math::Vec3::Zero, math::Vec3::Y );
+	gfx.camera.look_at( math::Vec3::One * 1.5f, math::Vec3::Zero, math::Vec3::Y );
 
-	while ( graphics.window.is_alive() )
+	while ( gfx.window.is_alive() )
 	{
-		graphics.glfw.poll();
-		auto dt = graphics.glfw.get_delta();
+		gfx.glfw.poll();
+		auto dt = gfx.glfw.get_delta();
 
-		update( dt, *graphics.models.get_node( triangle ) );
-		update( dt, *graphics.models.get_node( square ) );
-		update( dt, *graphics.models.get_node( quad ) );
+		update( dt, *gfx.models.get_node( triangle ) );
+		update( dt, *gfx.models.get_node( square ) );
+		update( dt, *gfx.models.get_node( quad ) );
 
-		if ( graphics.render_begin() )
+		if ( gfx.render_begin() )
 		{
-			graphics.draw( quad );
-			graphics.draw( square );
-			graphics.draw( triangle );
-			graphics.render_end();
+			gfx.draw( quad );
+			gfx.draw( square );
+			gfx.draw( triangle );
+			gfx.render_end();
 		}
 	}
 
-	graphics.device.wait_idle();
+	gfx.device.wait_idle();
 
 	return EXIT_SUCCESS;
 }

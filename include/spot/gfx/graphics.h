@@ -14,6 +14,7 @@
 #include "spot/gfx/images.h"
 #include "spot/gfx/models.h"
 #include "spot/gfx/pipelines.h"
+#include "spot/gfx/camera.h"
 
 
 namespace spot::gfx
@@ -240,9 +241,6 @@ class Fence
 };
 
 
-math::Mat4 look_at( const math::Vec3& eye, const math::Vec3& center, math::Vec3 up );
-math::Mat4 ortho( float left, float right, float bottom, float top, float near, float far );
-
 class Graphics
 {
   public:
@@ -280,6 +278,7 @@ class Graphics
 	PipelineLayout mesh_layout;
 	PipelineLayout mesh_no_image_layout;
 
+	/// @todo Move this under class Viewport
 	VkViewport viewport = {};
 	VkRect2D   scissor  = {};
 
@@ -307,8 +306,7 @@ class Graphics
 	Models models;
 	Images images;
 
-	math::Mat4 view = math::Mat4::identity;
-	math::Mat4 proj = math::Mat4::identity;
+	Camera camera;
 };
 
 

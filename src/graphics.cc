@@ -800,83 +800,6 @@ std::vector<VkDescriptorSetLayoutBinding> get_mesh_no_image_bindings()
 }
 
 
-math::Mat4 perspective( const float a, const float y, const float f, const float n )
-{
-	assert( f > n && "Far should be greater than near" );
-
-	math::Mat4 proj = {};
-
-	// Calculate projection matrix
-	float cotfov = 1.0f / std::tan( 0.5f * y );
-	proj.matrix[0] = cotfov / a;
-	proj.matrix[5] = -cotfov;
-	proj.matrix[10] = f / ( ( n - f ) * 2.0f );
-	proj.matrix[11] = -1.0f;
-	proj.matrix[14] = n * f / ( ( n - f ) * 2.0f );
-
-	return proj;
-}
-
-
-math::Mat4 look_at( const math::Vec3& eye, const math::Vec3& center, math::Vec3 up )
-{
-	math::Vec3 forward = eye - center;
-	forward.normalize();
-
-	math::Vec3 right = math::Vec3::cross( up, forward );
-	right.normalize();
-
-	up = math::Vec3::cross( forward, right );
-	up.normalize();
-
-	math::Mat4 matrix = {};
-
-	matrix( 0, 0 ) = right.x;
-	matrix( 0, 1 ) = right.y;
-	matrix( 0, 2 ) = right.z;
-	matrix( 0, 3 ) = -math::Vec3::dot( right, eye );
-	matrix( 1, 0 ) = up.x;
-	matrix( 1, 1 ) = up.y;
-	matrix( 1, 2 ) = up.z;
-	matrix( 1, 3 ) = -math::Vec3::dot( up, eye );
-	matrix( 2, 0 ) = forward.x;
-	matrix( 2, 1 ) = forward.y;
-	matrix( 2, 2 ) = forward.z;
-	matrix( 2, 3 ) = -math::Vec3::dot( forward, eye );
-	matrix( 3, 0 ) = 0.0f;
-	matrix( 3, 1 ) = 0.0f;
-	matrix( 3, 2 ) = 0.0f;
-	matrix( 3, 3 ) = 1.0f;
-
-	return matrix;
-}
-
-math::Mat4 ortho( float left, float right, float bottom, float top, float near, float far )
-{
-	math::Vec3 mid;
-	mid.x = ( left + right ) / ( right - left );
-	mid.y = ( bottom + top ) / ( bottom - top );
-	mid.z = near / ( near - far );
-
-	math::Vec3 scale;
-	scale.x = 2.0f / ( right - left );
-	scale.y = 2.0f / ( bottom - top );
-	scale.z = 1.0f / ( near - far );
-
-	math::Mat4 mat = math::Mat4::identity;
-
-	mat.matrix[12] = -mid.x;
-	mat.matrix[13] = -mid.y;
-	mat.matrix[14] = mid.z;
-
-	mat.matrix[0] = scale.x;
-	mat.matrix[5] = scale.y;
-	mat.matrix[10] = scale.z;
-
-	return mat;
-}
-
-
 Graphics::Graphics()
 : instance { glfw.required_extensions, get_validation_layers() }
 , surface { instance, window }
@@ -903,12 +826,8 @@ Graphics::Graphics()
 , present_queue { device.find_present_queue( surface.handle ) }
 , images { device }
 , models { *this }
-, view { look_at(
-	math::Vec3( 0.0f, 0.0f, 0.0f ),
-	math::Vec3( 0.0f, 0.0f, 0.0f ),
-	math::Vec3( 0.0f, 1.0f, 0.0f ) ) }
-, proj { perspective( swapchain.extent.width / float(swapchain.extent.height), math::radians( 60.0f ), 10000.0f, 0.125f ) }
 {
+	camera.perspective( swapchain.extent.width / float(swapchain.extent.height), math::radians( 60.0f ), 10000.0f, 0.125f );
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )
 	{
 		images_available.emplace_back( device );
@@ -950,6 +869,7 @@ bool Graphics::render_begin()
 		frames = Frames( swapchain );
 		framebuffers = frames.create_framebuffers( render_pass );
 
+		/// @todo How to handle this?
 		//proj = perspective(
 		//	viewport.width / viewport.height,
 		//	math::radians( 60.0f ),
@@ -1019,8 +939,8 @@ void Graphics::draw( const uint32_t node, Primitive& primitive, const math::Mat4
 
 	UniformBufferObject ubo;
 	ubo.model = transform;
-	ubo.view  = view;
-	ubo.proj  = proj;
+	ubo.view  = camera.view;
+	ubo.proj  = camera.proj;
 
 	auto data = reinterpret_cast<const uint8_t*>( &ubo );
 

@@ -128,26 +128,26 @@ int main()
 	using namespace spot::gfx;
 	namespace math = spot::math;
 
-	auto graphics = Graphics();
+	auto gfx = Graphics();
 
-	auto bugart = create_bugart( graphics );
+	auto bugart = create_bugart( gfx );
 
-	graphics.models.meshes.emplace_back( std::move( bugart ) );
+	gfx.models.meshes.emplace_back( std::move( bugart ) );
 
-	auto& node = graphics.models.create_node();
+	auto& node = gfx.models.create_node();
 	node.mesh = 0;
 
-	graphics.view = look_at( math::Vec3::Z * -2.0f, math::Vec3::Zero, math::Vec3::Y );
+	gfx.camera.look_at( math::Vec3::Z * -2.0f, math::Vec3::Zero, math::Vec3::Y );
 
-	while ( graphics.window.is_alive() )
+	while ( gfx.window.is_alive() )
 	{
-		graphics.glfw.poll();
-		auto dt = graphics.glfw.get_delta();
+		gfx.glfw.poll();
+		auto dt = gfx.glfw.get_delta();
 
-		if ( graphics.render_begin() )
+		if ( gfx.render_begin() )
 		{
-			graphics.draw( node.index );
-			graphics.render_end();
+			gfx.draw( node.index );
+			gfx.render_end();
 		}
 	}
 

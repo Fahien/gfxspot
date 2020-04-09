@@ -23,11 +23,11 @@ void update( const double dt, gltf::Node& node )
 }
 
 
-int create_card( gfx::Graphics& graphics )
+int create_card( gfx::Graphics& gfx )
 {
 	using namespace gfx;
 
-	Mesh& card = graphics.models.meshes.emplace_back();
+	Mesh& card = gfx.models.meshes.emplace_back();
 
 	std::vector<Vertex> vertices = {
 		Vertex(
@@ -55,8 +55,8 @@ int create_card( gfx::Graphics& graphics )
 	// Currently, counterclockwise?
 	std::vector<Index> indices = { 0, 2, 1, 1, 2, 3 };
 
-	auto& material = graphics.models.create_material();
-	material.texture = graphics.images.load( "img/card.png" );
+	auto& material = gfx.models.create_material();
+	material.texture = gfx.images.load( "img/card.png" );
 
 	card.primitives.emplace_back(
 		Primitive(
@@ -65,7 +65,7 @@ int create_card( gfx::Graphics& graphics )
 			material.index )
 	);
 
-	auto& node = graphics.models.gltf.scene->create_node();
+	auto& node = gfx.models.gltf.scene->create_node();
 	node.mesh = 0;
 
 	return node.index;
@@ -86,27 +86,27 @@ int main( const int argc, const char** argv )
 		return EXIT_FAILURE;
 	}
 	
-	auto graphics = Graphics();
+	auto gfx = Graphics();
 
 	auto path = std::string( argv[1] );
-	auto& scene = graphics.models.load( path );
+	auto& scene = gfx.models.load( path );
 
 	auto eye = math::Vec3( 4.0f, 4.0f, 5.0f );
-	graphics.view = look_at( eye, math::Vec3::Zero, math::Vec3::Y );
+	gfx.camera.look_at( eye, math::Vec3::Zero, math::Vec3::Y );
 
-	while ( graphics.window.is_alive() )
+	while ( gfx.window.is_alive() )
 	{
-		graphics.glfw.poll();
-		auto dt = graphics.glfw.get_delta();
-		Animations::update( dt, graphics.models.gltf );
+		gfx.glfw.poll();
+		auto dt = gfx.glfw.get_delta();
+		Animations::update( dt, gfx.models.gltf );
 
-		if ( graphics.render_begin() )
+		if ( gfx.render_begin() )
 		{
-			graphics.draw( scene );
-			graphics.render_end();
+			gfx.draw( scene );
+			gfx.render_end();
 		}
 	}
 
-	graphics.device.wait_idle();
+	gfx.device.wait_idle();
 	return EXIT_SUCCESS;
 }
