@@ -60,33 +60,45 @@ void Camera::perspective( const float a, const float y, const float f, const flo
 }
 
 
-void Camera::look_at( const math::Vec3& eye, const math::Vec3& center, math::Vec3 up )
+void Camera::look_at( const math::Vec3& eye, const math::Vec3& center, const math::Vec3& up_arg )
 {
-	math::Vec3 forward = eye - center;
+	node.translation = eye;
+
+	up = up_arg;
+
+	forward = eye - center;
 	forward.normalize();
 
-	math::Vec3 right = math::Vec3::cross( up, forward );
+	right = math::Vec3::cross( up, forward );
 	right.normalize();
 
 	up = math::Vec3::cross( forward, right );
 	up.normalize();
+}
+
+
+math::Mat4 Camera::get_view() const
+{
+	math::Mat4 view;
 
 	view( 0, 0 ) = right.x;
 	view( 0, 1 ) = right.y;
 	view( 0, 2 ) = right.z;
-	view( 0, 3 ) = -math::Vec3::dot( right, eye );
+	view( 0, 3 ) = -math::Vec3::dot( right, node.translation );
 	view( 1, 0 ) = up.x;
 	view( 1, 1 ) = up.y;
 	view( 1, 2 ) = up.z;
-	view( 1, 3 ) = -math::Vec3::dot( up, eye );
+	view( 1, 3 ) = -math::Vec3::dot( up, node.translation );
 	view( 2, 0 ) = forward.x;
 	view( 2, 1 ) = forward.y;
 	view( 2, 2 ) = forward.z;
-	view( 2, 3 ) = -math::Vec3::dot( forward, eye );
+	view( 2, 3 ) = -math::Vec3::dot( forward, node.translation );
 	view( 3, 0 ) = 0.0f;
 	view( 3, 1 ) = 0.0f;
 	view( 3, 2 ) = 0.0f;
 	view( 3, 3 ) = 1.0f;
+
+	return view;
 }
 
 

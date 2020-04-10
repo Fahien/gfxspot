@@ -926,8 +926,8 @@ void Graphics::draw( const uint32_t node, Primitive& primitive, const math::Mat4
 
 	UniformBufferObject ubo;
 	ubo.model = transform;
-	ubo.view  = camera.view;
-	ubo.proj  = camera.proj;
+	ubo.view  = camera.get_view();
+	ubo.proj  = camera.get_proj();
 
 	auto data = reinterpret_cast<const uint8_t*>( &ubo );
 
