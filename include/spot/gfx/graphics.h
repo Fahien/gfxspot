@@ -279,6 +279,7 @@ class Graphics
 	PipelineLayout mesh_layout;
 	PipelineLayout mesh_no_image_layout;
 
+	Camera camera;
 	Viewport viewport;
 	VkRect2D scissor = {};
 
@@ -305,8 +306,6 @@ class Graphics
 
 	Models models;
 	Images images;
-
-	Camera camera;
 };
 
 

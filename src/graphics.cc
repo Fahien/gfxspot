@@ -803,7 +803,7 @@ Graphics::Graphics()
 , mesh_no_image_frag { device, "shader/mesh-no-image.frag.spv" }
 , mesh_layout { device, get_mesh_bindings() }
 , mesh_no_image_layout { device, get_mesh_no_image_bindings() }
-, viewport { window }
+, viewport { window, camera }
 , scissor { create_scissor( window ) }
 , renderer { *this }
 , command_pool { device }
@@ -813,9 +813,8 @@ Graphics::Graphics()
 , present_queue { device.find_present_queue( surface.handle ) }
 , images { device }
 , models { *this }
-, camera { viewport.abstract }
 {
-	camera.perspective( swapchain.extent.width / float(swapchain.extent.height), math::radians( 60.0f ), 10000.0f, 0.125f );
+	//camera.perspective( swapchain.extent.width / float(swapchain.extent.height), math::radians( 60.0f ), 10000.0f, 0.125f );
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )
 	{
 		images_available.emplace_back( device );
@@ -838,8 +837,8 @@ bool Graphics::render_begin()
 		VK_NULL_HANDLE,
 		&image_index );
 	if ( res == VK_ERROR_OUT_OF_DATE_KHR ||
-		viewport.viewport.width != window.frame.width ||
-		viewport.viewport.height != window.frame.height )
+		viewport.get_viewport().width != window.frame.width ||
+		viewport.get_viewport().height != window.frame.height )
 	{
 		// Recreate current semaphore
 		images_available.back() = Semaphore( device );
@@ -848,8 +847,8 @@ bool Graphics::render_begin()
 		render_pass = RenderPass( swapchain );
 
 		// Update viewport and scissor
-		viewport.viewport.width = window.frame.width;
-		viewport.viewport.height = window.frame.height;
+		viewport.get_viewport().width = window.frame.width;
+		viewport.get_viewport().height = window.frame.height;
 		scissor.extent = window.frame;
 
 		renderer.recreate_pipelines();

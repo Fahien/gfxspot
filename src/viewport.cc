@@ -2,6 +2,8 @@
 
 #include "spot/gfx/glfw.h"
 
+#include "spot/gfx/camera.h"
+
 namespace spot::gfx
 {
 
@@ -27,15 +29,36 @@ VkViewport create_abstract( const math::Vec2& off, const math::Vec2& ext )
 	abstract.width = ext.x;
 	abstract.height = ext.y;
 	abstract.minDepth = 0.125f;
-	abstract.maxDepth = 2.0f;
+	abstract.maxDepth = 16.0f;
 	return abstract;
 }
 
 
-Viewport::Viewport( const Window& window, const math::Vec2& off, const math::Vec2& ext )
+Viewport::Viewport( const Window& window, Camera& cam, const math::Vec2& off, const math::Vec2& ext )
 : viewport { create_viewport( window ) }
+, camera { cam }
 , abstract { create_abstract( off, ext ) }
 {}
+
+
+void Viewport::set_offset( const float x, const float y )
+{
+	abstract.x = x;
+	abstract.y = y;
+
+	/// @todo Handle different types of camera
+	camera.orthographic( abstract );
+}
+
+
+void Viewport::set_extent( const float width, const float height )
+{
+	abstract.width = width;
+	abstract.height = height;
+
+	/// @todo Handle different types of camera
+	camera.orthographic( abstract );
+}
 
 
 } // namespace spot::gfx
