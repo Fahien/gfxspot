@@ -385,6 +385,22 @@ uint64_t select_pipeline( Material* material )
 }
 
 
+void Renderer::add( const uint32_t node_index, const Primitive& prim )
+{
+	assert( NODE( node_index ) && "Node should be valid" );
+
+	// We need vertex and index buffers. These are stored in primitive resources
+	auto hash_prim = hash( prim );
+	// Avoid duplication of primitive resources
+	if ( !FIND( primitive_resources, hash_prim ) )
+	{
+		primitive_resources.emplace( hash_prim, PrimitiveResources( gfx.device, prim ) );
+	}
+
+	add_descriptors( node_index, prim.get_material() );
+}
+
+
 void Renderer::add( const uint32_t node_index )
 {
 	auto node = NODE( node_index );
@@ -404,15 +420,7 @@ void Renderer::add( const uint32_t node_index )
 	auto mesh = gfx.models.meshes[node->mesh];
 	for ( auto& prim : mesh.primitives )
 	{
-		// We need vertex and index buffers. These are stored in primitive resources
-		auto hash_prim = hash( prim );
-		// Avoid duplication of primitive resources
-		if ( !FIND( primitive_resources, hash_prim ) )
-		{
-			primitive_resources.emplace( hash_prim, PrimitiveResources( gfx.device, prim ) );
-		}
-
-		add_descriptors( node_index, prim.get_material() );
+		add( node_index, prim );
 	}
 }
 

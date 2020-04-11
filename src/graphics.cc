@@ -903,7 +903,7 @@ void Graphics::render_end()
 }
 
 
-void Graphics::draw( const uint32_t node, Mesh& mesh, const math::Mat4& transform )
+void Graphics::draw( const uint32_t node, const Mesh& mesh, const math::Mat4& transform )
 {
 	for ( auto& prim : mesh.primitives )
 	{
@@ -912,7 +912,7 @@ void Graphics::draw( const uint32_t node, Mesh& mesh, const math::Mat4& transfor
 }
 
 
-void Graphics::draw( const uint32_t node, Primitive& primitive, const math::Mat4& transform )
+void Graphics::draw( const uint32_t node, const Primitive& primitive, const math::Mat4& transform )
 {
 	auto node_pair = renderer.node_resources.find( node );
 	if ( node_pair == std::end( renderer.node_resources ) )
@@ -975,16 +975,13 @@ void Graphics::draw( const uint32_t node_index, const math::Mat4& transform )
 	auto node = models.get_node( node_index );
 
 	// Current transform
-	auto temp_transform = node->matrix;
-	temp_transform.scale( node->scale );
-	temp_transform.rotate( node->rotation );
-	temp_transform.translate( node->translation );
+	auto temp_transform = node->get_matrix();
 	temp_transform = transform * temp_transform;
 
 	// Render its children
-	for ( auto index : node->children )
+	for ( auto child : node->get_children() )
 	{
-		draw( index, temp_transform );
+		draw( child->index, temp_transform );
 	}
 
 	// Render the node

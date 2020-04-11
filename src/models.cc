@@ -125,6 +125,14 @@ Mesh Mesh::create_triangle( const math::Vec3& a, const math::Vec3& b, const math
 }
 
 
+Mesh Mesh::create_rect( const math::Rect& r, int32_t material )
+{
+	auto a = math::Vec3( r.offset.x, r.offset.y );
+	auto b = math::Vec3( r.extent.x + r.offset.x, r.extent.y + r.offset.y );
+	return create_rect( a, b, material );
+}
+
+
 Mesh Mesh::create_rect( const math::Vec3& a, const math::Vec3& b, const int32_t material )
 {
 	Mesh ret;
@@ -170,6 +178,28 @@ Mesh Mesh::create_rect( const math::Vec3& a, const math::Vec3& b, const int32_t 
 	);
 
 	return ret;
+}
+
+
+Mesh Mesh::create_rect( const math::Vec3& a, const math::Vec3& b, const Color& color )
+{
+	auto mesh = create_rect( a, b, -1 );
+	for ( auto& prim : mesh.primitives )
+	{
+		for ( auto& vert : prim.vertices )
+		{
+			vert.c = color;
+		}
+	}
+	return mesh;
+}
+
+
+Mesh Mesh::create_rect( const math::Rect& r, const Color& color )
+{
+	auto a = math::Vec3( r.offset.x, r.offset.y );
+	auto b = math::Vec3( r.extent.x + r.offset.x, r.extent.y + r.offset.y );
+	return create_rect( a, b, color );
 }
 
 

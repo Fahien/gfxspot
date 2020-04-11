@@ -68,6 +68,9 @@ class Window
 		bool left = false;
 		bool middle = false;
 		bool right = false;
+
+		/// Origin of click
+		math::Vec2 pos = {};
 	} click;
 
 	class Surface

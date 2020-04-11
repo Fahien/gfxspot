@@ -1,7 +1,5 @@
 #include "spot/gfx/viewport.h"
-
 #include "spot/gfx/glfw.h"
-
 #include "spot/gfx/camera.h"
 
 namespace spot::gfx
@@ -34,8 +32,9 @@ VkViewport create_abstract( const math::Vec2& off, const math::Vec2& ext )
 }
 
 
-Viewport::Viewport( const Window& window, Camera& cam, const math::Vec2& off, const math::Vec2& ext )
-: viewport { create_viewport( window ) }
+Viewport::Viewport( const Window& win, Camera& cam, const math::Vec2& off, const math::Vec2& ext )
+: window { win }
+, viewport { create_viewport( window ) }
 , camera { cam }
 , abstract { create_abstract( off, ext ) }
 {}
@@ -58,6 +57,29 @@ void Viewport::set_extent( const float width, const float height )
 
 	/// @todo Handle different types of camera
 	camera.orthographic( abstract );
+}
+
+
+math::Vec2 Viewport::from_window( const math::Vec2& coords )
+{
+	math::Vec2 viewport_coords;
+
+	// In window space (0,0) is up left. Increments right and down.
+	viewport_coords.x = coords.x / window.extent.width * abstract.width + abstract.x;
+	viewport_coords.y = ( -coords.y + window.extent.height ) / window.extent.height * abstract.height + abstract.y;
+
+	return viewport_coords;
+}
+
+
+math::Vec2 Viewport::win_ratio() const
+{
+	math::Vec2 ratio;
+
+	ratio.x = abstract.width / window.extent.width;
+	ratio.y = abstract.height / window.extent.height;
+
+	return ratio;
 }
 
 

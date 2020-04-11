@@ -16,6 +16,7 @@ int main()
 	);
 
 	gfx.camera.look_at( math::Vec3::Z * 8.0f, math::Vec3::Zero, math::Vec3::Y );
+	gfx.viewport.set_extent( 8.0f, 8.0f );
 
 	while ( gfx.window.is_alive() )
 	{

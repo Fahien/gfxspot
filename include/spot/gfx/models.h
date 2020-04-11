@@ -4,6 +4,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include <spot/math/math.h>
+#include <spot/math/shape.h>
 #include <spot/gltf/gltf.h>
 
 #include "spot/gfx/images.h"
@@ -116,8 +117,13 @@ struct Mesh
 	/// @return A triangle mesh; material is optional
 	static Mesh create_triangle( const math::Vec3& a, const math::Vec3& b, const math::Vec3& c, int32_t material = -1 );
 
-	/// @return A rectangle mesh; material is optional
-	static Mesh create_rect( const math::Vec3& a, const math::Vec3& b, int32_t material = -1 );
+	/// @return A rectangle mesh with a material
+	static Mesh create_rect( const math::Vec3& a, const math::Vec3& b, int32_t material );
+	static Mesh create_rect( const math::Rect& r, int32_t material );
+
+	/// @return A colored rectangle mesh without material
+	static Mesh create_rect( const math::Vec3& a, const math::Vec3& b, const Color& c = Color::white );
+	static Mesh create_rect( const math::Rect& r, const Color& c = Color::white );
 
 	/// @return A quad mesh, which is a unit square with a material
 	static Mesh create_quad(

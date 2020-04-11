@@ -250,8 +250,8 @@ class Graphics
 	bool render_begin();
 	void render_end();
 
-	void draw( uint32_t node, Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
-	void draw( uint32_t node, Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
+	void draw( uint32_t node, const Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
+	void draw( uint32_t node, const Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
 	void draw( uint32_t node, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const gltf::Scene& scene, const math::Mat4& transform = math::Mat4::identity );
 

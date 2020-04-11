@@ -79,13 +79,12 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 	{
 		if ( action == GLFW_PRESS )
 		{
-			window->cursor = window->get_cursor_position();
+			window->click.pos = window->get_cursor_position();
 			window->pressed = true;
 			window->click.left = true;
 		}
 		else if ( action == GLFW_RELEASE )
 		{
-			window->cursor = window->get_cursor_position();
 			window->pressed = false;
 			window->swipe = {};
 		}
@@ -95,6 +94,7 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 	{
 		if ( action == GLFW_PRESS )
 		{
+			window->click.pos = window->get_cursor_position();
 			window->click.right = true;
 		}
 	}
@@ -142,6 +142,7 @@ bool Window::is_alive()
 {
 	// Reset internal state
 	scroll = {};
+	swipe = {};
 	click = Click();
 
 	return !glfwWindowShouldClose( handle );
@@ -150,11 +151,12 @@ bool Window::is_alive()
 
 void Window::update( const float dt )
 {
+	auto current = get_cursor_position();
+
 	if ( pressed )
 	{
-		auto current = get_cursor_position();
 		swipe.x = current.x - cursor.x;
-		swipe.y = current.y - cursor.y;
+		swipe.y = -(current.y - cursor.y);
 	}
 
 	// Then update cursor position

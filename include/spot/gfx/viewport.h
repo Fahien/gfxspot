@@ -34,7 +34,16 @@ class Viewport
 	/// reflecting changes to the associated camera
 	void set_extent( float width, float height );
 
+	/// @brief Converts window coordinates to virtual viewport coordinates
+	math::Vec2 from_window( const math::Vec2& coords );
+
+	/// @return Ratio window over viewport
+	math::Vec2 win_ratio() const;
+
   private:
+	/// Associated window
+	const Window& window;
+
 	/// The graphics viewport is used by Vulkan to specify the area on which to draw
 	VkViewport viewport;
 
