@@ -19,46 +19,41 @@ const Color Color::yellow = { 1.0f, 1.0f, 0.0f };
 
 Material& Material::get_black()
 {
-	static Material black {
-		Ubo{
-			Color::black
-		}
-	};
+	static Material black = Material( Color::black );
 	return black;
 };
 
 
 Material& Material::get_white()
 {
-	static Material white {
-		Ubo{
-			Color::white
-		}
-	};
+	static Material white = Material( Color::white );
 	return white;
 };
 
 
 Material& Material::get_red()
 {
-	static Material red = Material{
-		Material::Ubo {
-			Color::red
-		}
-	};
+	static Material red = Material( Color::red );
 	return red;
 }
 
 
 Material& Material::get_yellow()
 {
-	static Material yellow = Material{
-		Material::Ubo {
-			Color::yellow
-		}
-	};
+	static Material yellow = Material( Color::yellow );
 	return yellow;
 }
+
+
+Material::Material( const Color& c )
+: ubo { c }
+{}
+
+
+
+Material::Material( const VkImageView t )
+: texture { t }
+{}
 
 
 Primitive::Primitive(
@@ -205,6 +200,7 @@ Mesh Mesh::create_rect( const math::Rect& r, const Color& color )
 
 Mesh Mesh::create_quad( const int32_t material, const math::Vec3& a, const math::Vec3& b )
 {
+	assert( material >= 0 && "Cannot create a quad with invalid material" );
 	Mesh ret = create_rect( a, b, material );
 
 	auto& vertices = ret.primitives[0].vertices;
@@ -216,6 +212,12 @@ Mesh Mesh::create_quad( const int32_t material, const math::Vec3& a, const math:
 	vertices[3].t = math::Vec2( 1.0f, 1.0 ); // d
 
 	return ret;
+}
+
+
+Mesh Mesh::create_quad( const Material& material, const math::Vec3& a, const math::Vec3& b )
+{
+	return create_quad( material.index, a, b );
 }
 
 
@@ -337,7 +339,7 @@ gltf::Scene& Models::load( const std::string& path )
 	// A primitive without material does not exist in gltf
 	// Therefore we a white material at the endMaterial white {
 	
-	auto& white = create_material( Material{ Material::Ubo{ Color::white } } );
+	auto& white = create_material( Material( Color::white ) );
 
 	// Load meshes
 	for ( auto& m : gltf.meshes )

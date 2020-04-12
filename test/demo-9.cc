@@ -10,7 +10,6 @@ namespace spot::gfx
 {
 
 const float unit = 1.0f;
-const Viewport viewport = Viewport( math::Vec2::zero, math::Vec2( unit * 16.0f, unit * 16.0f ) );
 const float spacing = unit / 16.0f;
 
 
@@ -117,8 +116,9 @@ int main()
 
 	auto chess_board = create_chess_board( gfx );
 
+	gfx.viewport.set_offset( math::Vec2::Zero );
+	gfx.viewport.set_extent( math::Vec2::One * 16.0f );
 	gfx.camera.look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
-	gfx.camera.orthographic( viewport, 0.125f, 2.0 );
 
 	double tick = 1.0;
 	double time = 0.0f;
@@ -132,7 +132,7 @@ int main()
 
 		if ( gfx.window.click.left )
 		{
-			auto coords = gfx.window.cursor_to( viewport );
+			auto coords = gfx.viewport.from_window( gfx.window.cursor );
 
 			for ( auto child : NODE( chess_board )->get_children() )
 			{

@@ -43,6 +43,9 @@ struct Material
 	static Material& get_yellow();
 	static Material& get_red();
 
+	Material( const Color& c = Color::white );
+	Material( VkImageView texture );
+
 	struct alignas(16) Ubo
 	{
 		Color color;
@@ -128,6 +131,11 @@ struct Mesh
 	/// @return A quad mesh, which is a unit square with a material
 	static Mesh create_quad(
 		int32_t material,
+		const math::Vec3& a = { -0.5f, -0.5f, 0.0f },
+		const math::Vec3& b = { 0.5f, 0.5f, 0.0f }
+	);
+	static Mesh create_quad(
+		const Material& material,
 		const math::Vec3& a = { -0.5f, -0.5f, 0.0f },
 		const math::Vec3& b = { 0.5f, 0.5f, 0.0f }
 	);

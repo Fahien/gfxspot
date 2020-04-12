@@ -13,6 +13,7 @@ void Animations::update( const float delta_time, gltf::Gltf& gltf )
 	{
 		animation.time.current += delta_time;
 
+		// Find the max time
 		for ( auto& sampler : animation.samplers )
 		{
 			// Get time for keyframes
@@ -91,28 +92,28 @@ void Animations::update( const float delta_time, gltf::Gltf& gltf )
 				switch ( channel.target.path )
 				{
 				using namespace gltf;
-				case Gltf::Animation::Target::Path::Rotation:
+				case Animation::Target::Path::Rotation:
 				{
 					std::vector<math::Quat> quats( values.count );
 					std::memcpy( quats.data(), &data_buffer.data[data_offset], values.count * sizeof( math::Quat ) );
 					node->rotation = math::slerp( quats[keyframe - 1], quats[keyframe], norm_time );
 					break;
 				}
-				case Gltf::Animation::Target::Path::Scale:
+				case Animation::Target::Path::Scale:
 				{
 					std::vector<math::Vec3> scales( values.count );
 					std::memcpy( scales.data(), &data_buffer.data[data_offset], values.count * sizeof( math::Vec3 ) );
 					node->scale = math::lerp( scales[keyframe - 1], scales[keyframe], norm_time );
 					break;
 				}
-				case Gltf::Animation::Target::Path::Translation:
+				case Animation::Target::Path::Translation:
 				{
 					std::vector<math::Vec3> trans( values.count );
 					std::memcpy( trans.data(), &data_buffer.data[data_offset], values.count * sizeof( math::Vec3 ) );
 					node->translation = math::lerp( trans[keyframe - 1], trans[keyframe], norm_time );
 					break;
 				}
-				case Gltf::Animation::Target::Path::Weights:
+				case Animation::Target::Path::Weights:
 					break;
 				default:
 					assert( false && "Animation path not supported" );

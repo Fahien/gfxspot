@@ -14,6 +14,7 @@ add_demo( demo-6-rect )
 add_demo( demo-7 )
 add_demo( demo-8 )
 add_demo( demo-9 )
-add_demo( text )
+add_demo( demo-10-text )
+add_demo( demo-11-animation )
 
 add_subdirectory( shader )

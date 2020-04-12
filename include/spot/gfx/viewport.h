@@ -29,10 +29,12 @@ class Viewport
 	/// @brief Updates the virtual viewport
 	/// reflecting changes to the associated camera
 	void set_offset( float x, float y );
+	void set_offset( const math::Vec2& o ) { set_offset( o.x, o.y ); }
 
 	/// @brief Updates the virtual viewport
 	/// reflecting changes to the associated camera
 	void set_extent( float width, float height );
+	void set_extent( const math::Vec2& e ) { set_extent( e.x, e.y ); }
 
 	/// @brief Converts window coordinates to virtual viewport coordinates
 	math::Vec2 from_window( const math::Vec2& coords );
