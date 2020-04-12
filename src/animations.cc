@@ -31,7 +31,6 @@ void Animations::update( const float delta_time, gltf::Gltf& gltf )
 			}
 		}
 
-
 		// Start from the beginning
 		if ( animation.time.current >= animation.time.max )
 		{
