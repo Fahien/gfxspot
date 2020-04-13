@@ -227,13 +227,7 @@ Models::Models( Graphics& g )
 {}
 
 
-gltf::Node& Models::create_node( const int32_t parent )
-{
-	return gltf.create_node( parent );
-}
-
-
-gltf::Node& Models::create_node( Mesh&& mesh, const int32_t parent )
+gltf::Node& Models::create_node( Mesh&& mesh, const gltf::Node::Handle parent )
 {
 	auto& node = gltf.create_node( parent );
 
@@ -244,7 +238,7 @@ gltf::Node& Models::create_node( Mesh&& mesh, const int32_t parent )
 }
 
 
-gltf::Node* Models::get_node( const int32_t node )
+gltf::Node* Models::get_node( const gltf::Node::Handle node )
 {
 	return gltf.get_node( node );
 }
@@ -294,7 +288,7 @@ Mesh& Models::create_mesh( Mesh&& mesh )
 /// @todo Implement
 int32_t Models::create_text( const std::string& text )
 {
-	int32_t group = gltf.create_node().index;
+	auto group = gltf.create_node().handle;
 	// For each character in the text
 	for ( auto c : text )
 	{

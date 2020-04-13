@@ -4,6 +4,7 @@
 
 #include <spot/math/math.h>
 #include <spot/gltf/mesh.h>
+#include <spot/gltf/node.h>
 
 #include "spot/gfx/buffers.h"
 #include "spot/gfx/descriptors.h"
@@ -60,7 +61,7 @@ struct DescriptorResources
 	DescriptorResources(
 		const Renderer& renderer,
 		const GraphicsPipeline& gp,
-		uint64_t node,
+		gltf::Node::Handle node,
 		const Material* material = nullptr );
 
 	uint64_t pipeline;
@@ -101,10 +102,10 @@ class Renderer
 
 	void recreate_pipelines();
 
-	void add( uint32_t node );
-	void add( uint32_t node, const Primitive& prim );
+	void add( gltf::Node::Handle node );
+	void add( gltf::Node::Handle node, const Primitive& prim );
 
-	std::unordered_map<size_t, DescriptorResources>::iterator add_descriptors( uint32_t node, int32_t material );
+	std::unordered_map<size_t, DescriptorResources>::iterator add_descriptors( gltf::Node::Handle node, int32_t material );
 
 	Graphics& gfx;
 
@@ -115,13 +116,11 @@ class Renderer
 	/// Meshes with the same primitive will use the same resources
 	std::unordered_map<size_t, PrimitiveResources> primitive_resources;
 
-	/// @brief Key is material index
-	/// Value is ubos for material
+	/// @brief Key is material index, value is ubos for material
 	std::unordered_map<uint32_t, MaterialResources> material_resources;
 
-	/// @brief Key is node index
-	/// Value is ubos for frames
-	std::unordered_map<uint32_t, NodeResources> node_resources;
+	/// @brief Key is node handle, value is ubos for frames
+	std::unordered_map<handle_t, NodeResources> node_resources;
 
 	/// @brief Key is hash of node and material
 	/// Value is descriptor sets for this node and material

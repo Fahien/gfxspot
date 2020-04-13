@@ -261,7 +261,7 @@ PrimitiveResources::PrimitiveResources( const Device& device, const Primitive& p
 }
 
 
-DescriptorResources::DescriptorResources( const Renderer& renderer, const GraphicsPipeline& pipel, const uint64_t node, const Material* material )
+DescriptorResources::DescriptorResources( const Renderer& renderer, const GraphicsPipeline& pipel, const gltf::Node::Handle node, const Material* material )
 : pipeline { pipel.index }
 , descriptor_pool {
 		renderer.gfx.swapchain.device,
@@ -385,7 +385,7 @@ uint64_t select_pipeline( Material* material )
 }
 
 
-void Renderer::add( const uint32_t node_index, const Primitive& prim )
+void Renderer::add( const gltf::Node::Handle node_index, const Primitive& prim )
 {
 	assert( NODE( node_index ) && "Node should be valid" );
 
@@ -401,7 +401,7 @@ void Renderer::add( const uint32_t node_index, const Primitive& prim )
 }
 
 
-void Renderer::add( const uint32_t node_index )
+void Renderer::add( const gltf::Node::Handle node_index )
 {
 	auto node = NODE( node_index );
 	if ( node->mesh < 0 )
@@ -426,13 +426,13 @@ void Renderer::add( const uint32_t node_index )
 
 
 std::unordered_map<size_t, DescriptorResources>::iterator
-Renderer::add_descriptors( const uint32_t node_index, const int32_t material_index )
+Renderer::add_descriptors( const gltf::Node::Handle node_index, const int32_t material_index )
 {
 	// We need descriptors for the MVP ubos and material textures
 	// A node may have a mesh with multiple primitives with different materials
 	// And the same material may appear into multiple primitives of different nodes
 	// So we hash combine both node and material
-	auto key = hash( node_index, material_index );
+	auto key = hash( handle_t( node_index ), material_index );
 	auto it = descriptor_resources.find( key );
 	if ( it != std::end( descriptor_resources ) )
 	{
@@ -456,7 +456,7 @@ Renderer::add_descriptors( const uint32_t node_index, const int32_t material_ind
 	bool ok;
 	std::tie( it, ok ) = descriptor_resources.emplace( key, std::move( resource ) );
 	assert( ok && "Cannot emplace primitive resource" );
-	printf("Descriptor [node %d, material %d]\n", node_index, material_index );
+	printf( "Descriptor [node %zu, material %d]\n", size_t( node_index ), material_index );
 	return it;
 }
 

@@ -6,6 +6,7 @@
 #include <array>
 
 #include <vulkan/vulkan_core.h>
+#include <spot/gltf/node.h>
 
 #include "spot/gfx/glfw.h"
 #include "spot/gfx/renderer.h"
@@ -250,9 +251,9 @@ class Graphics
 	bool render_begin();
 	void render_end();
 
-	void draw( uint32_t node, const Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
-	void draw( uint32_t node, const Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
-	void draw( uint32_t node, const math::Mat4& transform = math::Mat4::identity );
+	void draw( gltf::Node::Handle node, const Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
+	void draw( gltf::Node::Handle node, const Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
+	void draw( gltf::Node::Handle node, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const gltf::Scene& scene, const math::Mat4& transform = math::Mat4::identity );
 
 	Glfw glfw;

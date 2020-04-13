@@ -161,10 +161,9 @@ class Models
 
 	/// @brief Creates a node with a new mesh
 	/// @return The new created node
-	gltf::Node& create_node( int32_t parent = -1 );
-	gltf::Node& create_node( Mesh&& m, int32_t parent = -1 );
+	gltf::Node& create_node( Mesh&& m, gltf::Node::Handle parent = {} );
 
-	gltf::Node* get_node( int32_t node );
+	gltf::Node* get_node( gltf::Node::Handle node );
 
 	/// @return The list of materials
 	const std::vector<Material>& get_materials() const noexcept { return materials; }
