@@ -7,29 +7,13 @@
 namespace spot::gfx
 {
 
+
 void Animations::update( const float delta_time, gltf::Gltf& gltf )
 {
 	for ( auto& animation : gltf.animations )
 	{
 		animation.time.current += delta_time;
-
-		// Find the max time
-		for ( auto& sampler : animation.samplers )
-		{
-			// Get time for keyframes
-			auto&              time = gltf.accessors.at( sampler.input );
-			std::vector<float> times( time.count );
-			auto&              view   = gltf.buffer_views.at( time.buffer_view_index );
-			auto               offset = time.byte_offset + view.byte_offset;
-			auto&              buffer = gltf.get_buffer( view.buffer_index );
-			std::memcpy( times.data(), &buffer.data[offset], time.count * sizeof( float ) );
-
-			auto it = std::max_element( std::begin( times ), std::end( times ) );
-			if ( it != std::end( times ) )
-			{
-				animation.time.max = std::max<float>( animation.time.max, *it );
-			}
-		}
+		animation.find_max_time();
 
 		// Start from the beginning
 		if ( animation.time.current >= animation.time.max )
@@ -46,17 +30,12 @@ void Animations::update( const float delta_time, gltf::Gltf& gltf )
 			assert( node && "Channel has no target" );
 
 			auto& sampler = animation.samplers.at( channel.sampler );
-			// Get time for keyframes
-			auto&              time = gltf.accessors.at( sampler.input );
-			std::vector<float> times( time.count );
-			auto&              view   = gltf.buffer_views.at( time.buffer_view_index );
-			auto               offset = time.byte_offset + view.byte_offset;
-			auto&              buffer = gltf.get_buffer( view.buffer_index );
-			std::memcpy( times.data(), &buffer.data[offset], time.count * sizeof( float ) );
+			// Get times for keyframes
+			std::vector<float> times = animation.get_times( channel.sampler );
 
 			// Find the keyframe
 			size_t keyframe = 1;
-			for ( size_t i = 1; i < time.count; ++i )
+			for ( size_t i = 1; i < times.size(); ++i )
 			{
 				if ( animation.time.current > times[i] )
 				{
@@ -69,7 +48,7 @@ void Animations::update( const float delta_time, gltf::Gltf& gltf )
 			}
 
 			// Start from the beginning
-			if ( keyframe >= time.count )
+			if ( keyframe >= times.size() )
 			{
 				keyframe = 1;
 			}
@@ -93,8 +72,7 @@ void Animations::update( const float delta_time, gltf::Gltf& gltf )
 				using namespace gltf;
 				case Animation::Target::Path::Rotation:
 				{
-					std::vector<math::Quat> quats( values.count );
-					std::memcpy( quats.data(), &data_buffer.data[data_offset], values.count * sizeof( math::Quat ) );
+					std::vector<math::Quat> quats = animation.get_rotations( channel.sampler );
 					node->rotation = math::slerp( quats[keyframe - 1], quats[keyframe], norm_time );
 					break;
 				}
@@ -122,5 +100,6 @@ void Animations::update( const float delta_time, gltf::Gltf& gltf )
 		}
 	}
 }
+
 
 }  // namespace spot::gfx
