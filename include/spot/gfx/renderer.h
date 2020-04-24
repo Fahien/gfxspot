@@ -61,7 +61,7 @@ struct DescriptorResources
 	DescriptorResources(
 		const Renderer& renderer,
 		const GraphicsPipeline& gp,
-		gltf::Node::Handle node,
+		gltf::Handle<gltf::Node> node,
 		const Material* material = nullptr );
 
 	uint64_t pipeline;
@@ -102,10 +102,10 @@ class Renderer
 
 	void recreate_pipelines();
 
-	void add( gltf::Node::Handle node );
-	void add( gltf::Node::Handle node, const Primitive& prim );
+	void add( gltf::Handle<gltf::Node> node );
+	void add( gltf::Handle<gltf::Node> node, const Primitive& prim );
 
-	std::unordered_map<size_t, DescriptorResources>::iterator add_descriptors( gltf::Node::Handle node, int32_t material );
+	std::unordered_map<size_t, DescriptorResources>::iterator add_descriptors( gltf::Handle<gltf::Node> node, int32_t material );
 
 	Graphics& gfx;
 
@@ -120,7 +120,7 @@ class Renderer
 	std::unordered_map<uint32_t, MaterialResources> material_resources;
 
 	/// @brief Key is node handle, value is ubos for frames
-	std::unordered_map<handle_t, NodeResources> node_resources;
+	std::unordered_map<gltf::Handle<gltf::Node>, NodeResources> node_resources;
 
 	/// @brief Key is hash of node and material
 	/// Value is descriptor sets for this node and material

@@ -903,7 +903,7 @@ void Graphics::render_end()
 }
 
 
-void Graphics::draw( const gltf::Node::Handle node, const Mesh& mesh, const math::Mat4& transform )
+void Graphics::draw( const gltf::Handle<gltf::Node>& node, const Mesh& mesh, const math::Mat4& transform )
 {
 	for ( auto& prim : mesh.primitives )
 	{
@@ -912,7 +912,7 @@ void Graphics::draw( const gltf::Node::Handle node, const Mesh& mesh, const math
 }
 
 
-void Graphics::draw( const gltf::Node::Handle node, const Primitive& primitive, const math::Mat4& transform )
+void Graphics::draw( const gltf::Handle<gltf::Node>& node, const Primitive& primitive, const math::Mat4& transform )
 {
 	auto node_pair = renderer.node_resources.find( node );
 	if ( node_pair == std::end( renderer.node_resources ) )
@@ -935,7 +935,7 @@ void Graphics::draw( const gltf::Node::Handle node, const Primitive& primitive, 
 	auto& uniform_buffer = node_resources.ubos[current_frame_index];
 	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
-	size_t hash_desc = hash( handle_t( node ), primitive.get_material() );
+	size_t hash_desc = hash( node.get_index(), primitive.get_material() );
 	auto desc_it = renderer.descriptor_resources.find( hash_desc );
 	if ( desc_it == std::end( renderer.descriptor_resources ) )
 	{
@@ -970,10 +970,8 @@ void Graphics::draw( const gltf::Node::Handle node, const Primitive& primitive, 
 }
 
 
-void Graphics::draw( const gltf::Node::Handle node_index, const math::Mat4& transform )
+void Graphics::draw( const gltf::Handle<gltf::Node>& node, const math::Mat4& transform )
 {
-	auto node = models.get_node( node_index );
-
 	// Current transform
 	auto temp_transform = node->get_matrix();
 	temp_transform = transform * temp_transform;
@@ -991,7 +989,7 @@ void Graphics::draw( const gltf::Node::Handle node_index, const math::Mat4& tran
 		auto& mesh = models.meshes[node->mesh];
 		for ( auto& primitive : mesh.primitives )
 		{
-			draw( node_index, primitive, temp_transform );
+			draw( node, primitive, temp_transform );
 		}
 	}
 }

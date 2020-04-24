@@ -226,21 +226,24 @@ Models::Models( Graphics& g )
 , images{ g.device }
 {}
 
-
-gltf::Node& Models::create_node( Mesh&& mesh, const gltf::Node::Handle parent )
+gltf::Handle<gltf::Node> Models::create_node( Mesh&& mesh )
 {
-	auto& node = gltf.create_node( parent );
+	auto node = gltf.create_node();
 
 	meshes.emplace_back( std::move( mesh ) );
-	node.mesh = meshes.size() - 1;
+	node->mesh = meshes.size() - 1;
 
 	return node;
 }
 
-
-gltf::Node* Models::get_node( const gltf::Node::Handle node )
+gltf::Handle<gltf::Node> Models::create_node( Mesh&& mesh, gltf::Handle<gltf::Node> parent )
 {
-	return gltf.get_node( node );
+	auto node = gltf.create_node( parent );
+
+	meshes.emplace_back( std::move( mesh ) );
+	node->mesh = meshes.size() - 1;
+
+	return node;
 }
 
 
@@ -286,14 +289,14 @@ Mesh& Models::create_mesh( Mesh&& mesh )
 
 
 /// @todo Implement
-int32_t Models::create_text( const std::string& text )
+gltf::Handle<gltf::Node> Models::create_text( const std::string& text )
 {
-	auto group = gltf.create_node().handle;
+	auto group = gltf.create_node();
 	// For each character in the text
 	for ( auto c : text )
 	{
 		// We need to create a node
-		auto& node = gltf.create_node( group );
+		auto node = gltf.create_node( group );
 		// Its mesh will be a quad
 		// Quad's material will be the same for each character
 		// Material will have a texture to the bitmap font
@@ -336,7 +339,7 @@ gltf::Scene& Models::load( const std::string& path )
 	auto& white = create_material( Material( Color::white ) );
 
 	// Load meshes
-	for ( auto& m : gltf.meshes )
+	for ( auto& m : *gltf.meshes )
 	{
 		Mesh mesh;
 

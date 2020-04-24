@@ -6,7 +6,6 @@
 #include "spot/gfx/models.h"
 #include "spot/gfx/hash.h"
 
-#define NODE( index ) ( gfx.models.get_node( index ) )
 #define FIND( container, object ) ( container.find( object ) != std::end( container ) )
 
 namespace gtf = spot::gltf;
@@ -261,7 +260,7 @@ PrimitiveResources::PrimitiveResources( const Device& device, const Primitive& p
 }
 
 
-DescriptorResources::DescriptorResources( const Renderer& renderer, const GraphicsPipeline& pipel, const gltf::Node::Handle node, const Material* material )
+DescriptorResources::DescriptorResources( const Renderer& renderer, const GraphicsPipeline& pipel, const gltf::Handle<gltf::Node> node, const Material* material )
 : pipeline { pipel.index }
 , descriptor_pool {
 		renderer.gfx.swapchain.device,
@@ -385,10 +384,8 @@ uint64_t select_pipeline( Material* material )
 }
 
 
-void Renderer::add( const gltf::Node::Handle node_index, const Primitive& prim )
+void Renderer::add( const gltf::Handle<gltf::Node> node, const Primitive& prim )
 {
-	assert( NODE( node_index ) && "Node should be valid" );
-
 	// We need vertex and index buffers. These are stored in primitive resources
 	auto hash_prim = hash( prim );
 	// Avoid duplication of primitive resources
@@ -397,13 +394,12 @@ void Renderer::add( const gltf::Node::Handle node_index, const Primitive& prim )
 		primitive_resources.emplace( hash_prim, PrimitiveResources( gfx.device, prim ) );
 	}
 
-	add_descriptors( node_index, prim.get_material() );
+	add_descriptors( node, prim.get_material() );
 }
 
 
-void Renderer::add( const gltf::Node::Handle node_index )
+void Renderer::add( const gltf::Handle<gltf::Node> node )
 {
-	auto node = NODE( node_index );
 	if ( node->mesh < 0 )
 	{
 		return; // no mesh to add
@@ -411,28 +407,28 @@ void Renderer::add( const gltf::Node::Handle node_index )
 
 	// The node has a mesh, therefore we need UBOs for the MVP matrix
 	// MVP ubos are store in node resources
-	if ( !FIND( node_resources, node_index ) )
+	if ( !FIND( node_resources, node ) )
 	{
-		node_resources.emplace( node_index, NodeResources( gfx.swapchain ) );
+		node_resources.emplace( node, NodeResources( gfx.swapchain ) );
 	}
 
 	// Now get the mesh, and its primitives
 	auto mesh = gfx.models.meshes[node->mesh];
 	for ( auto& prim : mesh.primitives )
 	{
-		add( node_index, prim );
+		add( node, prim );
 	}
 }
 
 
 std::unordered_map<size_t, DescriptorResources>::iterator
-Renderer::add_descriptors( const gltf::Node::Handle node_index, const int32_t material_index )
+Renderer::add_descriptors( const gltf::Handle<gltf::Node> node, const int32_t material_index )
 {
 	// We need descriptors for the MVP ubos and material textures
 	// A node may have a mesh with multiple primitives with different materials
 	// And the same material may appear into multiple primitives of different nodes
 	// So we hash combine both node and material
-	auto key = hash( handle_t( node_index ), material_index );
+	auto key = hash( node.get_index(), material_index );
 	auto it = descriptor_resources.find( key );
 	if ( it != std::end( descriptor_resources ) )
 	{
@@ -452,11 +448,11 @@ Renderer::add_descriptors( const gltf::Node::Handle node_index, const int32_t ma
 
 	auto pipeline_index = select_pipeline( material );
 	auto& graphics_pipeline = pipelines[pipeline_index];
-	auto resource = DescriptorResources( *this, graphics_pipeline, node_index, material );
+	auto resource = DescriptorResources( *this, graphics_pipeline, node, material );
 	bool ok;
 	std::tie( it, ok ) = descriptor_resources.emplace( key, std::move( resource ) );
 	assert( ok && "Cannot emplace primitive resource" );
-	printf( "Descriptor [node %zu, material %d]\n", size_t( node_index ), material_index );
+	printf( "Descriptor [node %zu, material %d]\n", node.get_index(), material_index );
 	return it;
 }
 

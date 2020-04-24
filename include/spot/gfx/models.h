@@ -161,9 +161,8 @@ class Models
 
 	/// @brief Creates a node with a new mesh
 	/// @return The new created node
-	gltf::Node& create_node( Mesh&& m, gltf::Node::Handle parent = {} );
-
-	gltf::Node* get_node( gltf::Node::Handle node );
+	gltf::Handle<gltf::Node> create_node( Mesh&& m );
+	gltf::Handle<gltf::Node> create_node( Mesh&& m, gltf::Handle<gltf::Node> parent );
 
 	/// @return The list of materials
 	const std::vector<Material>& get_materials() const noexcept { return materials; }
@@ -186,7 +185,7 @@ class Models
 	Mesh& create_mesh( Mesh&& mesh = {} );
 
 	/// @return A node index for the text
-	int32_t create_text( const std::string& text );
+	gltf::Handle<gltf::Node> create_text( const std::string& text );
 
 	Graphics& graphics;
 

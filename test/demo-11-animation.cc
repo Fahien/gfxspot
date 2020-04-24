@@ -8,7 +8,7 @@ int main( const int argc, const char** argv )
 	using namespace spot;
 	gfx::Graphics gfx;
 
-	auto& quad = gfx.models.create_node(
+	auto quad = gfx.models.create_node(
 		gfx::Mesh::create_quad(
 			gfx.models.create_material(
 				gfx.images.load( "img/lena.png" )
@@ -27,14 +27,14 @@ int main( const int argc, const char** argv )
 		{
 			auto& anim = gfx.models.gltf.animations.emplace_back( gfx.models.gltf );
 			// Rotate 180 degrees
-			anim.add_rotation( quad.handle, 1.0f, math::Quat( math::Vec3::Z, math::radians( 180 ) ) );
+			anim.add_rotation( quad, 1.0f, math::Quat( math::Vec3::Z, math::radians( 180 ) ) );
 			// Rotate another 180 degrees
-			anim.add_rotation( quad.handle, 2.0f, math::Quat( math::Vec3::Z, math::radians( 360 ) ) );
+			anim.add_rotation( quad, 2.0f, math::Quat( math::Vec3::Z, math::radians( 360 ) ) );
 		}
 
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( quad.handle );
+			gfx.draw( quad );
 			gfx.render_end();
 		}
 	}
