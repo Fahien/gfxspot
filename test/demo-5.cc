@@ -10,12 +10,12 @@
 namespace spot::gfx
 {
 
-int create_line( gfx::Graphics& gfx, gfx::Dot a, gfx::Dot b )
+Handle<Node> create_line( gfx::Graphics& gfx, gfx::Dot a, gfx::Dot b )
 {
-	auto& node = gfx.models.create_node();
+	auto node = gfx.models.gltf.create_node();
 
-	auto& mesh = gfx.models.meshes.emplace_back();
-	node.mesh = gfx.models.meshes.size() - 1;
+	auto& mesh = gfx.models.create_mesh();
+	node->mesh = mesh.index;
 
 	auto& primitive = mesh.primitives.emplace_back();
 	primitive.vertices = {
@@ -25,29 +25,27 @@ int create_line( gfx::Graphics& gfx, gfx::Dot a, gfx::Dot b )
 
 	primitive.indices = { 0, 1 };
 
-	return node.index;
+	return node;
 }
 
 
-int32_t create_lena( gfx::Graphics& gfx )
+Handle<Node> create_lena( gfx::Graphics& gfx )
 {
-	auto& node = gfx.models.create_node(
+	return gfx.models.create_node(
 		Mesh::create_quad(
 			gfx.models.create_material(
 				gfx.images.load( "img/lena.png" )
 			).index
 		)
 	);
-
-	return node.index;
 }
 
 
-void rotate( gltf::Node& n, float angle )
+void rotate( Handle<Node>& n, float angle )
 {
 	const math::Vec3 axis = { 0.0f, 0.0f, 1.0f };
 	auto rot_axis = math::Quat( axis, angle );
-	n.rotation *= rot_axis;
+	n->rotation *= rot_axis;
 }
 
 
@@ -60,7 +58,7 @@ int main( const int argc, const char** argv )
 
 	auto gfx = gfx::Graphics();
 
-	gltf::Scene* scene;
+	Scene* scene;
 	if ( argc > 1 )
 	{
 		auto path = std::string( argv[1] );
@@ -92,16 +90,11 @@ int main( const int argc, const char** argv )
 		if ( gfx.window.swipe.x != 0 )
 		{
 			auto angle = math::radians( gfx.window.swipe.x );
-			gfx::rotate( *gfx.models.get_node( x ), angle );
-			gfx::rotate( *gfx.models.get_node( y ), angle );
-			gfx::rotate( *gfx.models.get_node( z ), angle );
-			gfx::rotate( *gfx.models.get_node( triangle ), angle );
+			gfx::rotate( triangle, angle );
 		}
 
-		if ( gfx.window.scroll.y != 0 )
-		{
-			gfx.models.get_node( 2 )->translation.y += gfx.window.scroll.y;
-		}
+		triangle->translation.x += gfx.window.scroll.x * dt;
+		triangle->translation.y += gfx.window.scroll.y * dt;
 
 		if ( gfx.render_begin() )
 		{

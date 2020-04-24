@@ -8,7 +8,7 @@
 
 #define FIND( container, object ) ( container.find( object ) != std::end( container ) )
 
-namespace gtf = spot::gltf;
+namespace gtf = spot::gfx;
 
 namespace spot::gfx
 {
@@ -198,7 +198,7 @@ std::vector<Buffer> create_mat_ubos( const Swapchain& swapchain )
 		ret.emplace_back(
 			Buffer(
 				swapchain.device,
-				sizeof( Material::Ubo ),
+				sizeof( Material::PbrMetallicRoughness ),
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
 			)
 		);
@@ -233,7 +233,7 @@ std::vector<VkDescriptorPoolSize> get_mesh_pool_size( const uint32_t count )
 	return pool_sizes;
 }
 
-
+/// @todo Figure out
 PrimitiveResources::PrimitiveResources( const Device& device, const Primitive& primitive )
 : vertex_buffer {
 		device,
@@ -260,7 +260,7 @@ PrimitiveResources::PrimitiveResources( const Device& device, const Primitive& p
 }
 
 
-DescriptorResources::DescriptorResources( const Renderer& renderer, const GraphicsPipeline& pipel, const gltf::Handle<gltf::Node> node, const Material* material )
+DescriptorResources::DescriptorResources( const Renderer& renderer, const GraphicsPipeline& pipel, const Handle<Node>& node, const Handle<Material>& material )
 : pipeline { pipel.index }
 , descriptor_pool {
 		renderer.gfx.swapchain.device,
@@ -300,12 +300,12 @@ DescriptorResources::DescriptorResources( const Renderer& renderer, const Graphi
 		VkDescriptorBufferInfo mat_info = {};
 		if ( material )
 		{
-			assert( renderer.material_resources.count( material->index ) && "Material resources were not created" );
-			auto& mat_res = renderer.material_resources.at( material->index );
+			assert( renderer.material_resources.count( material.get_index() ) && "Material resources were not created" );
+			auto& mat_res = renderer.material_resources.at( material.get_index() );
 
 			mat_info.buffer = mat_res.ubos[i].handle;
 			mat_info.offset = 0;
-			mat_info.range = sizeof( Material::Ubo );
+			mat_info.range = sizeof( Material::PbrMetallicRoughness );
 
 			VkWriteDescriptorSet mat_write = {};
 			mat_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -322,8 +322,8 @@ DescriptorResources::DescriptorResources( const Renderer& renderer, const Graphi
 		VkDescriptorImageInfo image_info = {};
 		if ( material && material->texture != VK_NULL_HANDLE )
 		{
-			assert( renderer.material_resources.count( material->index ) && "Material resources were not created" );
-			auto& mat_res = renderer.material_resources.at( material->index );
+			assert( renderer.material_resources.count( material.get_index() ) && "Material resources were not created" );
+			auto& mat_res = renderer.material_resources.at( material.get_index() );
 
 			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			image_info.imageView = material->texture;
@@ -368,7 +368,7 @@ uint64_t get_line_pipeline()
 
 
 /// @return The pipeline to use for this material
-uint64_t select_pipeline( Material* material )
+uint64_t select_pipeline( const Handle<Material>& material )
 {
 	if ( material )
 	{
@@ -384,7 +384,7 @@ uint64_t select_pipeline( Material* material )
 }
 
 
-void Renderer::add( const gltf::Handle<gltf::Node> node, const Primitive& prim )
+void Renderer::add( const Handle<Node>& node, const Primitive& prim )
 {
 	// We need vertex and index buffers. These are stored in primitive resources
 	auto hash_prim = hash( prim );
@@ -394,13 +394,13 @@ void Renderer::add( const gltf::Handle<gltf::Node> node, const Primitive& prim )
 		primitive_resources.emplace( hash_prim, PrimitiveResources( gfx.device, prim ) );
 	}
 
-	add_descriptors( node, prim.get_material() );
+	add_descriptors( node, prim.material );
 }
 
 
-void Renderer::add( const gltf::Handle<gltf::Node> node )
+void Renderer::add( const Handle<Node>& node )
 {
-	if ( node->mesh < 0 )
+	if ( !node->get_mesh() )
 	{
 		return; // no mesh to add
 	}
@@ -413,8 +413,7 @@ void Renderer::add( const gltf::Handle<gltf::Node> node )
 	}
 
 	// Now get the mesh, and its primitives
-	auto mesh = gfx.models.meshes[node->mesh];
-	for ( auto& prim : mesh.primitives )
+	for ( auto& prim : node->get_mesh()->primitives )
 	{
 		add( node, prim );
 	}
@@ -422,13 +421,13 @@ void Renderer::add( const gltf::Handle<gltf::Node> node )
 
 
 std::unordered_map<size_t, DescriptorResources>::iterator
-Renderer::add_descriptors( const gltf::Handle<gltf::Node> node, const int32_t material_index )
+Renderer::add_descriptors( const Handle<Node>& node, const Handle<Material>& material )
 {
 	// We need descriptors for the MVP ubos and material textures
 	// A node may have a mesh with multiple primitives with different materials
 	// And the same material may appear into multiple primitives of different nodes
 	// So we hash combine both node and material
-	auto key = hash( node.get_index(), material_index );
+	auto key = hash( node.get_index(), material.get_index() );
 	auto it = descriptor_resources.find( key );
 	if ( it != std::end( descriptor_resources ) )
 	{
@@ -436,13 +435,12 @@ Renderer::add_descriptors( const gltf::Handle<gltf::Node> node, const int32_t ma
 		return it;
 	}
 
-	auto material = gfx.models.get_material( material_index );
 	if ( material )
 	{
 		// Add ubo for this material
-		if ( material_resources.find( material_index ) == std::end( material_resources ) )
+		if ( material_resources.find( material.get_index() ) == std::end( material_resources ) )
 		{
-			material_resources.emplace( material_index, gfx.swapchain );
+			material_resources.emplace( material.get_index(), gfx.swapchain );
 		}
 	}
 
@@ -452,7 +450,7 @@ Renderer::add_descriptors( const gltf::Handle<gltf::Node> node, const int32_t ma
 	bool ok;
 	std::tie( it, ok ) = descriptor_resources.emplace( key, std::move( resource ) );
 	assert( ok && "Cannot emplace primitive resource" );
-	printf( "Descriptor [node %zu, material %d]\n", node.get_index(), material_index );
+	printf( "Descriptor [node %zu, material %zu]\n", node.get_index(), material.get_index() );
 	return it;
 }
 

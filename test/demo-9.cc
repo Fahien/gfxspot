@@ -4,7 +4,6 @@
 #include <spot/gfx/viewport.h>
 #include <fmt/format.h>
 
-#define NODE( index ) ( gfx.models.get_node( index ) )
 
 namespace spot::gfx
 {
@@ -72,15 +71,15 @@ SolidMeshes::SolidMeshes( Graphics& gfx )
 
 
 // 2x2 block
-int create_chess_board( Graphics& gfx )
+Handle<Node> create_chess_board( Graphics& gfx )
 {
-	auto block = gfx.models.create_node().index;
+	auto block = gfx.models.gltf.create_node();
 
-	auto add_child = [block, &gfx]( uint32_t mesh, math::Vec3 translation ) {
-		auto& node = gfx.models.create_node( block );
-		node.mesh = mesh;
-		node.translation.x = translation.x;
-		node.translation.y = translation.y;
+	auto add_child = [&block, &gfx]( uint32_t mesh, math::Vec3 translation ) {
+		auto node = gfx.models.gltf.create_node( block );
+		node->mesh = mesh;
+		node->translation.x = translation.x;
+		node->translation.y = translation.y;
 	};
 
 	size_t n = 16;
@@ -134,7 +133,7 @@ int main()
 		{
 			auto coords = gfx.viewport.from_window( gfx.window.cursor );
 
-			for ( auto child : NODE( chess_board )->get_children() )
+			for ( auto& child : chess_board->children )
 			{
 				/// @todo Implement some sort of contains
 				if ( child->contains( coords ) )

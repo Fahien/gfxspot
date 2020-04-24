@@ -8,7 +8,7 @@ namespace spot::gfx
 {
 
 
-void Animations::update( const float delta_time, gltf::Gltf& gltf )
+void Animations::update( const float delta_time, Gltf& gltf )
 {
 	for ( auto& animation : gltf.animations )
 	{
@@ -58,37 +58,35 @@ void Animations::update( const float delta_time, gltf::Gltf& gltf )
 				float norm_time =
 				    ( animation.time.current - times[keyframe - 1] ) / ( times[keyframe] - times[keyframe - 1] );
 
-				auto& values = gltf.accessors.at( channel.sampler->output );
+				auto& values = channel.sampler->output;
 
-				auto  view_index   = values.buffer_view_index;
-				auto& data_view    = gltf.buffer_views.at( view_index );
-				auto  data_offset  = values.byte_offset + data_view.byte_offset;
-				auto  buffer_index = data_view.buffer_index;
-				auto& data_buffer  = gltf.get_buffer( buffer_index );
+				auto& data_view   = values->buffer_view;
+				auto  data_offset  = values->byte_offset + data_view->byte_offset;
+				auto& data_buffer  = data_view->buffer;
 
 				switch ( channel.target.path )
 				{
-				case spot::gltf::Animation::Target::Path::Rotation:
+				case spot::gfx::Animation::Target::Path::Rotation:
 				{
 					std::vector<math::Quat> quats = animation.get_rotations( channel.sampler );
 					node->rotation = math::slerp( quats[keyframe - 1], quats[keyframe], norm_time );
 					break;
 				}
-				case spot::gltf::Animation::Target::Path::Scale:
+				case spot::gfx::Animation::Target::Path::Scale:
 				{
-					std::vector<math::Vec3> scales( values.count );
-					std::memcpy( scales.data(), &data_buffer.data[data_offset], values.count * sizeof( math::Vec3 ) );
+					std::vector<math::Vec3> scales( values->count );
+					std::memcpy( scales.data(), values->get_data(), values->count * sizeof( math::Vec3 ) );
 					node->scale = math::lerp( scales[keyframe - 1], scales[keyframe], norm_time );
 					break;
 				}
-				case spot::gltf::Animation::Target::Path::Translation:
+				case spot::gfx::Animation::Target::Path::Translation:
 				{
-					std::vector<math::Vec3> trans( values.count );
-					std::memcpy( trans.data(), &data_buffer.data[data_offset], values.count * sizeof( math::Vec3 ) );
+					std::vector<math::Vec3> trans( values->count );
+					std::memcpy( trans.data(), values->get_data(), values->count * sizeof( math::Vec3 ) );
 					node->translation = math::lerp( trans[keyframe - 1], trans[keyframe], norm_time );
 					break;
 				}
-				case spot::gltf::Animation::Target::Path::Weights:
+				case spot::gfx::Animation::Target::Path::Weights:
 					break;
 				default:
 					assert( false && "Animation path not supported" );

@@ -10,7 +10,7 @@
 
 #include "spot/gfx/hash.h"
 
-namespace gtf = spot::gltf;
+namespace gtf = spot::gfx;
 
 
 namespace spot::gfx
@@ -903,16 +903,16 @@ void Graphics::render_end()
 }
 
 
-void Graphics::draw( const gltf::Handle<gltf::Node>& node, const Mesh& mesh, const math::Mat4& transform )
+void Graphics::draw( const Handle<Node>& node, const Handle<Mesh>& mesh, const math::Mat4& transform )
 {
-	for ( auto& prim : mesh.primitives )
+	for ( auto& prim : mesh->primitives )
 	{
 		draw( node, prim, transform );
 	}
 }
 
 
-void Graphics::draw( const gltf::Handle<gltf::Node>& node, const Primitive& primitive, const math::Mat4& transform )
+void Graphics::draw( const Handle<Node>& node, const Primitive& primitive, const math::Mat4& transform )
 {
 	auto node_pair = renderer.node_resources.find( node );
 	if ( node_pair == std::end( renderer.node_resources ) )
@@ -935,22 +935,22 @@ void Graphics::draw( const gltf::Handle<gltf::Node>& node, const Primitive& prim
 	auto& uniform_buffer = node_resources.ubos[current_frame_index];
 	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
-	size_t hash_desc = hash( node.get_index(), primitive.get_material() );
+	size_t hash_desc = hash( node.get_index(), primitive.material.get_index() );
 	auto desc_it = renderer.descriptor_resources.find( hash_desc );
 	if ( desc_it == std::end( renderer.descriptor_resources ) )
 	{
-		desc_it = renderer.add_descriptors( node, primitive.get_material() );
+		desc_it = renderer.add_descriptors( node, primitive.material );
 	}
 	auto& descriptor_resources = desc_it->second;
 	auto& pipeline = renderer.pipelines[descriptor_resources.pipeline];
 	current_command_buffer->bind( pipeline );
 
-	if ( auto material = models.get_material( primitive.get_material() ) )
+	if ( primitive.material )
 	{
-		auto material_data = reinterpret_cast<const uint8_t*>( &material->ubo );
-		auto& material_resources = renderer.material_resources.at( primitive.get_material() );
+		auto material_data = reinterpret_cast<const uint8_t*>( &primitive.material->pbr );
+		auto& material_resources = renderer.material_resources.at( primitive.material.get_index() );
 		auto& material_ubo = material_resources.ubos[current_frame_index];
-		material_ubo.upload( material_data, sizeof( Material::Ubo ) );
+		material_ubo.upload( material_data, sizeof( Material::PbrMetallicRoughness ) );
 	}
 	else
 	{
@@ -970,7 +970,7 @@ void Graphics::draw( const gltf::Handle<gltf::Node>& node, const Primitive& prim
 }
 
 
-void Graphics::draw( const gltf::Handle<gltf::Node>& node, const math::Mat4& transform )
+void Graphics::draw( const Handle<Node>& node, const math::Mat4& transform )
 {
 	// Current transform
 	auto temp_transform = node->get_matrix();
@@ -979,15 +979,13 @@ void Graphics::draw( const gltf::Handle<gltf::Node>& node, const math::Mat4& tra
 	// Render its children
 	for ( auto child : node->get_children() )
 	{
-		draw( child->handle, temp_transform );
+		draw( child, temp_transform );
 	}
 
 	// Render the node
-	if ( node->mesh >= 0 )
+	if ( auto& mesh = node->get_mesh() )
 	{
-		assert( node->mesh < models.meshes.size() && "Cannot get mesh out of bounds" );
-		auto& mesh = models.meshes[node->mesh];
-		for ( auto& primitive : mesh.primitives )
+		for ( auto& primitive : mesh->primitives )
 		{
 			draw( node, primitive, temp_transform );
 		}
@@ -995,7 +993,7 @@ void Graphics::draw( const gltf::Handle<gltf::Node>& node, const math::Mat4& tra
 }
 
 
-void Graphics::draw( const gltf::Scene& scene, const math::Mat4& transform )
+void Graphics::draw( const Scene& scene, const math::Mat4& transform )
 {
 	for ( auto node : scene.nodes )
 	{

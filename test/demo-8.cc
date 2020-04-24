@@ -61,20 +61,18 @@ SolidMeshes::SolidMeshes( Graphics& gfx )
 
 
 // 2x2 block
-int create_tetris_el( const uint32_t mesh, Graphics& gfx )
+Handle<Node> create_tetris_el( const uint32_t mesh, Graphics& gfx )
 {
-	auto& block = gfx.models.create_node();
-	block.translation.y = 2.0;
-	auto block_index = block.index;
+	auto block = gfx.models.gltf.create_node();
+	block->translation.y = 2.0;
 
-	auto add_child = [block_index, mesh, &gfx]( math::Vec3 translation ) {
-		auto& node = gfx.models.create_node();
-		node.mesh = mesh;
-		node.translation.x = translation.x;
-		node.translation.y = translation.y;
+	auto add_child = [&block, mesh, &gfx]( math::Vec3 translation ) {
+		auto node = gfx.models.gltf.create_node();
+		node->mesh = mesh;
+		node->translation.x = translation.x;
+		node->translation.y = translation.y;
 
-		auto block = NODE( block_index );
-		block->children.emplace_back( node.index );
+		block->children.emplace_back( node );
 	};
 
 	add_child( math::Vec3( 0.0f, - 2.0f * unit ) );
@@ -82,7 +80,7 @@ int create_tetris_el( const uint32_t mesh, Graphics& gfx )
 	add_child( math::Vec3( 0.0f, 0.0f ) );
 	add_child( math::Vec3( unit, 0.0f ) );
 
-	return block_index;
+	return block;
 }
 
 
@@ -114,28 +112,24 @@ int main()
 		time += dt;
 		if ( time >= tick )
 		{
-			auto node = NODE( el );
-			if ( node->translation.y > 0.0f )
+			if ( el->translation.y > 0.0f )
 			{
-				node->translation.y -= gfx::unit;
+				el->translation.y -= gfx::unit;
 			}
 			time = 0.0;
 		}
 
 		if ( gfx.window.click.left )
 		{
-			auto node = NODE( el );
-			node->rotation *= math::Quat( math::Vec3::Z, math::radians( 90.0f ) );
+			el->rotation *= math::Quat( math::Vec3::Z, math::radians( 90.0f ) );
 		}
 
 		if ( gfx.window.scroll.y != 0 )
 		{
 			/// @todo Unify gltf and gfx
-			auto node = NODE( el );
-			for ( auto child : node->children )
+			for ( auto& child : el->children )
 			{
-				auto child_node = NODE( child );
-				auto& mesh = gfx.models.meshes[child_node->mesh];
+				auto& mesh = gfx.models.meshes[child->mesh];
 				for ( auto& primitive : mesh.primitives )
 				{
 					primitive.set_material( ( primitive.get_material() + 1 ) % 3 );

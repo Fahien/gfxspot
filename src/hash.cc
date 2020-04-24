@@ -91,6 +91,7 @@ size_t hash( const Primitive& prim )
 	auto hp = hash( prim.vertices );
 	auto hi = hash( prim.indices );
 	return hash( hp, hi );
+	return 0;
 }
 
 

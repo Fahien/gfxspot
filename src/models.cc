@@ -17,279 +17,14 @@ const Color Color::blue = { 0.0f, 0.0f, 1.0f };
 const Color Color::yellow = { 1.0f, 1.0f, 0.0f };
 
 
-Material& Material::get_black()
-{
-	static Material black = Material( Color::black );
-	return black;
-};
-
-
-Material& Material::get_white()
-{
-	static Material white = Material( Color::white );
-	return white;
-};
-
-
-Material& Material::get_red()
-{
-	static Material red = Material( Color::red );
-	return red;
-}
-
-
-Material& Material::get_yellow()
-{
-	static Material yellow = Material( Color::yellow );
-	return yellow;
-}
-
-
-Material::Material( const Color& c )
-: ubo { c }
-{}
-
-
-
-Material::Material( const VkImageView t )
-: texture { t }
-{}
-
-
-Primitive::Primitive(
-	const std::vector<Vertex>& vv,
-	const std::vector<Index>& ii,
-	int32_t mat )
-: vertices { std::move( vv ) }
-, indices { std::move( ii ) }
-, material { mat }
-{
-}
-
-
-Mesh Mesh::create_line( const math::Vec3& a, const math::Vec3& b, const Color& c, const float line_width )
-{
-	Mesh ret;
-
-	Primitive prim;
-
-	prim.vertices.resize( 2 );
-	prim.vertices[0].p = a;
-	prim.vertices[0].c = c;
-	prim.vertices[1].p = b;
-	prim.vertices[1].c = c;
-
-	prim.indices = { 0, 1 };
-
-	prim.line_width = line_width;
-
-	ret.primitives.emplace_back( std::move( prim ) );
-
-	return ret;
-}
-
-
-Mesh Mesh::create_triangle( const math::Vec3& a, const math::Vec3& b, const math::Vec3& c, const int32_t material )
-{
-	Mesh ret;
-
-	std::vector<Vertex> vertices;
-	vertices.resize( 3 );
-	vertices[0].p = a;
-	vertices[1].p = b;
-	vertices[2].p = c;
-
-	std::vector<Index> indices;
-	if ( material >= 0 )
-	{
-		indices = { 0, 1, 2 };
-	}
-	else
-	{
-		indices = { 0, 1, 1, 2, 2, 0 };
-	}
-
-	ret.primitives.emplace_back(
-		Primitive(
-			std::move( vertices ),
-			std::move( indices ),
-			material )
-	);
-
-	return ret;
-}
-
-
-Mesh Mesh::create_rect( const math::Rect& r, int32_t material )
-{
-	auto a = math::Vec3( r.offset.x, r.offset.y );
-	auto b = math::Vec3( r.extent.x + r.offset.x, r.extent.y + r.offset.y );
-	return create_rect( a, b, material );
-}
-
-
-Mesh Mesh::create_rect( const math::Vec3& a, const math::Vec3& b, const int32_t material )
-{
-	Mesh ret;
-
-	std::vector<Vertex> vertices;
-	vertices.resize( 4 );
-	vertices[0].p = a;
-	vertices[1].p = math::Vec3( b.x, a.y, a.z );
-	vertices[2].p = b;
-	vertices[3].p = math::Vec3( a.x, b.y, a.z );
-
-	std::vector<Index> indices;
-	if ( material >= 0 )
-	{
-		// .---B
-		// A---`
-		bool case1 = ( b.x > a.x && b.y > a.y );
-
-		// ,---A
-		// B---`
-		bool case2 = ( b.x < a.x && b.y < a.y );
-
-		if ( case1 || case2 )
-		{
-			indices = { 0, 1, 2, 0, 2, 3 };
-		}
-		else
-		{
-			indices = { 0, 2, 1, 0, 3, 2 };
-		}
-	}
-	else
-	{
-		// No material, use lines
-		indices = { 0, 1, 1, 2, 2, 3, 3, 0 };
-	}
-
-	ret.primitives.emplace_back(
-		Primitive(
-			std::move( vertices ),
-			std::move( indices ),
-			material )
-	);
-
-	return ret;
-}
-
-
-Mesh Mesh::create_rect( const math::Vec3& a, const math::Vec3& b, const Color& color )
-{
-	auto mesh = create_rect( a, b, -1 );
-	for ( auto& prim : mesh.primitives )
-	{
-		for ( auto& vert : prim.vertices )
-		{
-			vert.c = color;
-		}
-	}
-	return mesh;
-}
-
-
-Mesh Mesh::create_rect( const math::Rect& r, const Color& color )
-{
-	auto a = math::Vec3( r.offset.x, r.offset.y );
-	auto b = math::Vec3( r.extent.x + r.offset.x, r.extent.y + r.offset.y );
-	return create_rect( a, b, color );
-}
-
-
-Mesh Mesh::create_quad( const int32_t material, const math::Vec3& a, const math::Vec3& b )
-{
-	assert( material >= 0 && "Cannot create a quad with invalid material" );
-	Mesh ret = create_rect( a, b, material );
-
-	auto& vertices = ret.primitives[0].vertices;
-
-	// Text coords
-	vertices[0].t = math::Vec2( 1.0f, 0.0 ); // a
-	vertices[1].t = math::Vec2( 0.0f, 0.0 ); // b
-	vertices[2].t = math::Vec2( 0.0f, 1.0 ); // c
-	vertices[3].t = math::Vec2( 1.0f, 1.0 ); // d
-
-	return ret;
-}
-
-
-Mesh Mesh::create_quad( const Material& material, const math::Vec3& a, const math::Vec3& b )
-{
-	return create_quad( material.index, a, b );
-}
-
-
 Models::Models( Graphics& g )
 : graphics { g }
 , images{ g.device }
 {}
 
-gltf::Handle<gltf::Node> Models::create_node( Mesh&& mesh )
-{
-	auto node = gltf.create_node();
-
-	meshes.emplace_back( std::move( mesh ) );
-	node->mesh = meshes.size() - 1;
-
-	return node;
-}
-
-gltf::Handle<gltf::Node> Models::create_node( Mesh&& mesh, gltf::Handle<gltf::Node> parent )
-{
-	auto node = gltf.create_node( parent );
-
-	meshes.emplace_back( std::move( mesh ) );
-	node->mesh = meshes.size() - 1;
-
-	return node;
-}
-
-
-Material& Models::create_material( const Color& c )
-{
-	auto& material = create_material();
-	material.ubo.color = c;
-	return material;
-}
-
-
-Material& Models::create_material( Material&& material )
-{
-	material.index = materials.size();
-	return materials.emplace_back( std::move( material ) );
-}
-
-
-Material& Models::create_material( VkImageView texture )
-{
-	auto& material = create_material();
-	material.texture = texture;
-	return material;
-}
-
-
-Material* Models::get_material( const int32_t index )
-{
-	if ( index >= 0 && index < materials.size() )
-	{
-		return &materials[index];
-	}
-	return nullptr;
-}
-
-
-Mesh& Models::create_mesh( Mesh&& mesh )
-{
-	mesh.index = meshes.size();
-	auto& ret = meshes.emplace_back( std::move( mesh ) );
-	return ret;
-}
-
 
 /// @todo Implement
-gltf::Handle<gltf::Node> Models::create_text( const std::string& text )
+Handle<Node> Models::create_text( const std::string& text )
 {
 	auto group = gltf.create_node();
 	// For each character in the text
@@ -306,68 +41,53 @@ gltf::Handle<gltf::Node> Models::create_text( const std::string& text )
 }
 
 
-gltf::Scene& Models::load( const std::string& path )
+Scene& Models::load( const std::string& path )
 {
-	gltf = gltf::Gltf::load( path );
+	gltf = Gltf::load( path );
 
 	// Load materials
-	for ( auto& m : gltf.materials )
+	for ( auto& material : *gltf.materials )
 	{
-		Material material;
-
-		material.ubo.color.r = m.pbr.base_color_factor[0];
-		material.ubo.color.g = m.pbr.base_color_factor[1];
-		material.ubo.color.b = m.pbr.base_color_factor[2];
-		material.ubo.color.a = m.pbr.base_color_factor[3];
-
-		material.ubo.metallic = m.pbr.metallic_factor;
-		material.ubo.roughness = m.pbr.roughness_factor;
-
-		if ( auto texture = m.get_texture() )
+		if ( material.texture_handle )
 		{
-			auto source = texture->get_source();
+			auto& source = material.texture_handle->source;
 			assert( source && "Texture has no source" );
 			material.texture = images.load( source->uri.c_str() );
 		}
-
-		create_material( std::move( material ) );
 	}
 
 	// A primitive without material does not exist in gltf
 	// Therefore we a white material at the endMaterial white {
 	
-	auto& white = create_material( Material( Color::white ) );
+	auto white = gltf.create_material( Color::white );
 
 	// Load meshes
 	for ( auto& m : *gltf.meshes )
 	{
-		Mesh mesh;
-
 		for ( auto& p : m.primitives )
 		{
 			// Check valid material
-			if ( p.material < 0 )
+			if ( !p.material )
 			{
-				p.material = white.index;
+				p.material = white;
 			}
 
 			std::vector<Index> indices;
 
 			// Indices
-			if ( auto accessor = p.get_indices() )
+			if ( auto& accessor = p.indices_handle )
 			{
 				indices.resize( accessor->count );
 				std::memcpy( indices.data(), accessor->get_data(), accessor->get_size() );
 
-				assert( accessor->component_type == gltf::Accessor::ComponentType::UNSIGNED_SHORT );
-				assert( accessor->type == gltf::Accessor::Type::SCALAR );
+				assert( accessor->component_type == Accessor::ComponentType::UNSIGNED_SHORT );
+				assert( accessor->type == Accessor::Type::SCALAR );
 			}
 
 			// Vertex attributes
 			std::vector<Vertex> vertices;
 
-			auto attributes = p.get_attributes();
-			for ( auto [semantic, accessor] : attributes )
+			for ( auto [semantic, accessor] : p.attributes )
 			{
 				auto data = accessor->get_data();
 				auto elem_size = accessor->get_size() / accessor->count;
@@ -380,7 +100,7 @@ gltf::Scene& Models::load( const std::string& path )
 
 				switch ( semantic )
 				{
-				case gltf::Mesh::Primitive::Semantic::POSITION:
+				case Primitive::Semantic::POSITION:
 				{
 					if ( stride == 0 )
 					{
@@ -394,11 +114,11 @@ gltf::Scene& Models::load( const std::string& path )
 						std::memcpy( &vert.p.x, vert_data, elem_size );
 					}
 
-					assert( accessor->component_type == gltf::Accessor::ComponentType::FLOAT );
-					assert( accessor->type == gltf::Accessor::Type::VEC3 );
+					assert( accessor->component_type == Accessor::ComponentType::FLOAT );
+					assert( accessor->type == Accessor::Type::VEC3 );
 					break;
 				}
-				case gltf::Mesh::Primitive::Semantic::NORMAL:
+				case Primitive::Semantic::NORMAL:
 				{
 					if ( stride == 0 )
 					{
@@ -412,11 +132,11 @@ gltf::Scene& Models::load( const std::string& path )
 						std::memcpy( &vert.n.x, vert_data, elem_size );
 					}
 
-					assert( accessor->component_type == gltf::Accessor::ComponentType::FLOAT );
-					assert( accessor->type == gltf::Accessor::Type::VEC3 );
+					assert( accessor->component_type == Accessor::ComponentType::FLOAT );
+					assert( accessor->type == Accessor::Type::VEC3 );
 					break;
 				}
-				case gltf::Mesh::Primitive::Semantic::TEXCOORD_0:
+				case Primitive::Semantic::TEXCOORD_0:
 				{
 					if ( stride == 0 )
 					{
@@ -430,11 +150,11 @@ gltf::Scene& Models::load( const std::string& path )
 						std::memcpy( &vert.t.x, vert_data, elem_size );
 					}
 
-					assert( accessor->component_type == gltf::Accessor::ComponentType::FLOAT );
-					assert( accessor->type == gltf::Accessor::Type::VEC2 );
+					assert( accessor->component_type == Accessor::ComponentType::FLOAT );
+					assert( accessor->type == Accessor::Type::VEC2 );
 					break;
 				}
-				case gltf::Mesh::Primitive::Semantic::COLOR_0:
+				case Primitive::Semantic::COLOR_0:
 				{
 					if ( stride == 0 )
 					{
@@ -448,8 +168,8 @@ gltf::Scene& Models::load( const std::string& path )
 						std::memcpy( &vert.c.r, vert_data, elem_size );
 					}
 
-					assert( accessor->component_type == gltf::Accessor::ComponentType::FLOAT );
-					assert( accessor->type == gltf::Accessor::Type::VEC4 );
+					assert( accessor->component_type == Accessor::ComponentType::FLOAT );
+					assert( accessor->type == Accessor::Type::VEC4 );
 					break;
 				}
 				default:
@@ -459,15 +179,9 @@ gltf::Scene& Models::load( const std::string& path )
 				}
 			}
 
-			mesh.primitives.emplace_back(
-				Primitive(
-					std::move( vertices ),
-					std::move( indices ),
-					p.material )
-			);
+			p.vertices = vertices;
+			p.indices = indices;
 		}
-
-		meshes.emplace_back( std::move( mesh ) );
 	}
 
 	return *gltf.scene;

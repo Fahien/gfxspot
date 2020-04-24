@@ -251,10 +251,10 @@ class Graphics
 	bool render_begin();
 	void render_end();
 
-	void draw( const gltf::Handle<gltf::Node>& node, const Mesh& mesh, const math::Mat4& transform = math::Mat4::identity );
-	void draw( const gltf::Handle<gltf::Node>& node, const Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
-	void draw( const gltf::Handle<gltf::Node>& node, const math::Mat4& transform = math::Mat4::identity );
-	void draw( const gltf::Scene& scene, const math::Mat4& transform = math::Mat4::identity );
+	void draw( const Handle<Node>& node, const Handle<Mesh>& mesh, const math::Mat4& transform = math::Mat4::identity );
+	void draw( const Handle<Node>& node, const Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
+	void draw( const Handle<Node>& node, const math::Mat4& transform = math::Mat4::identity );
+	void draw( const Scene& scene, const math::Mat4& transform = math::Mat4::identity );
 
 	Glfw glfw;
 	Instance instance;

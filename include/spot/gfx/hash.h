@@ -5,13 +5,6 @@
 namespace spot
 {
 
-namespace gltf
-{
-
-class Node;
-
-} // namespace gltf
-
 namespace math
 {
 class Vec2;
@@ -20,6 +13,9 @@ class Vec3;
 
 namespace gfx
 {
+
+class Node;
+class Primitive;
 
 class Color;
 class Vertex;
@@ -40,6 +36,7 @@ size_t hash( const math::Vec2& vec );
 size_t hash( const math::Vec3& vec );
 size_t hash( const Color& color );
 size_t hash( const Vertex& vert );
+size_t hash( const Primitive& pm );
 size_t hash( const Primitive& pm );
 
 

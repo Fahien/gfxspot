@@ -1,25 +1,18 @@
 #pragma once
 
-namespace spot
+namespace spot::gfx
 {
 
-namespace gltf
-{
 class Gltf;
-} // namespace gltf
-
-namespace gfx
-{
 
 
 class Animations
 {
   public:
-	static void update( float dt, gltf::Gltf& model );
+	static void update( float dt, Gltf& model );
 
   private:
 };
 
 
-} // namespace gfx
-} // namespace spot
+} // namespace gfx::spot

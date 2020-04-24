@@ -10,7 +10,7 @@ namespace spot::gfx
 {
 
 
-void update( const double dt, gltf::Node& node )
+void update( const double dt, Node& node )
 {
 	auto radians = math::radians( dt * 128.0f );
 	auto z = math::Vec3( 0.0f, 0.0f, 1.0f );

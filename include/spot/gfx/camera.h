@@ -25,7 +25,7 @@ class Camera
 	void perspective( const float aspect_ratio, const float y, const float far, const float near );
 
 	/// Eye of the camera is node's translation
-	gltf::Node node;
+	Node node;
 
   private:
 	math::Mat4 view;
