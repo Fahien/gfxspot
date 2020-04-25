@@ -8,9 +8,9 @@ namespace spot::gfx
 {
 
 
-void Animations::update( const float delta_time, Gltf& gltf )
+void Animations::update( const float delta_time, const Handle<Gltf>& model )
 {
-	for ( auto& animation : gltf.animations )
+	for ( auto& animation : model->animations )
 	{
 		if ( animation.pause )
 		{

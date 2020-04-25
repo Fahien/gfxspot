@@ -17,52 +17,56 @@ const Color Color::blue = { 0.0f, 0.0f, 1.0f };
 const Color Color::yellow = { 1.0f, 1.0f, 0.0f };
 
 
-Models::Models( Graphics& g )
-: graphics { g }
-, images{ g.device }
-{}
-
-
 /// @todo Implement
 Handle<Node> Models::create_text( const std::string& text )
 {
-	auto group = gltf.create_node();
-	// For each character in the text
-	for ( auto c : text )
-	{
-		// We need to create a node
-		auto node = gltf.create_node( group );
-		// Its mesh will be a quad
-		// Quad's material will be the same for each character
-		// Material will have a texture to the bitmap font
-		// Only texture coordinates will change between each different character
-	}
-	return group;
+	//auto group = gltf.create_node();
+	//// For each character in the text
+	//for ( auto c : text )
+	//{
+	//	// We need to create a node
+	//	auto node = gltf.create_node( group );
+	//	// Its mesh will be a quad
+	//	// Quad's material will be the same for each character
+	//	// Material will have a texture to the bitmap font
+	//	// Only texture coordinates will change between each different character
+	//}
+	//return group;
+	return {};
 }
 
 
-Scene& Models::load( const std::string& path )
+Handle<Gltf> Graphics::create_model()
 {
-	gltf = Gltf::load( path );
+	auto model = models.push();
+	model->images = std::make_unique<Images>( device );
+	return model;
+}
+
+
+Handle<Gltf> Graphics::load_model( const std::string& path )
+{
+	auto model = models.push( Gltf::load( path ) );
+	model->images = std::make_unique<Images>( device );
 
 	// Load materials
-	for ( auto& material : *gltf.materials )
+	for ( auto& material : *model->materials )
 	{
 		if ( material.texture_handle )
 		{
 			auto& source = material.texture_handle->source;
 			assert( source && "Texture has no source" );
-			material.texture = images.load( source->uri.c_str() );
+			material.texture = model->images->load( source->uri.c_str() );
 		}
 	}
 
 	// A primitive without material does not exist in gltf
 	// Therefore we a white material at the endMaterial white {
 	
-	auto white = gltf.materials.push( Material( Color::white ) );
+	auto white = model->materials.push( Material( Color::white ) );
 
 	// Load meshes
-	for ( auto& m : *gltf.meshes )
+	for ( auto& m : *model->meshes )
 	{
 		for ( auto& p : m.primitives )
 		{
@@ -184,7 +188,7 @@ Scene& Models::load( const std::string& path )
 		}
 	}
 
-	return *gltf.scene;
+	return model;
 }
 
 

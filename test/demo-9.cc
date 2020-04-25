@@ -14,7 +14,7 @@ const float spacing = unit / 16.0f;
 
 struct SolidMaterials
 {
-	SolidMaterials( Graphics& gfx );
+	SolidMaterials( const Handle<Gltf>& model );
 
 	const Handle<Material> black;
 	const Handle<Material> white;
@@ -24,19 +24,19 @@ struct SolidMaterials
 };
 
 
-SolidMaterials::SolidMaterials( Graphics& gfx )
-: white { gfx.models.gltf.materials.push( Material( Color::white ) ) }
-, black { gfx.models.gltf.materials.push( Material( Color::black ) ) }
-, red   { gfx.models.gltf.materials.push( Material( Color::red  ) ) }
-, green { gfx.models.gltf.materials.push( Material( Color::green ) ) }
-, blue  { gfx.models.gltf.materials.push( Material( Color::blue  ) ) }
+SolidMaterials::SolidMaterials( const Handle<Gltf>& model )
+: white { model->materials.push( Material( Color::white ) ) }
+, black { model->materials.push( Material( Color::black ) ) }
+, red   { model->materials.push( Material( Color::red  ) ) }
+, green { model->materials.push( Material( Color::green ) ) }
+, blue  { model->materials.push( Material( Color::blue  ) ) }
 {}
 
 
-Handle<Mesh> create_mesh( const Handle<Material>& material, Graphics& gfx )
+Handle<Mesh> create_mesh( const Handle<Material>& material, const Handle<Gltf>& model )
 {
 	auto hs = unit / 2.0f - spacing / 2.0f;
-	return gfx.models.gltf.create_mesh(
+	return model->create_mesh(
 		Mesh::create_rect(
 			math::Vec3( -hs, -hs, 0.0f ),
 			math::Vec3( hs, hs, 0.0f ),
@@ -48,7 +48,7 @@ Handle<Mesh> create_mesh( const Handle<Material>& material, Graphics& gfx )
 
 struct SolidMeshes
 {
-	SolidMeshes( Graphics& gfx );
+	SolidMeshes( const Handle<Gltf>& model );
 
 	const SolidMaterials materials;
 
@@ -60,23 +60,23 @@ struct SolidMeshes
 };
 
 
-SolidMeshes::SolidMeshes( Graphics& gfx )
-: materials { gfx }
-, black { create_mesh( materials.black, gfx ) }
-, white { create_mesh( materials.white, gfx ) }
-, red { create_mesh( materials.red, gfx ) }
-, green { create_mesh( materials.green, gfx ) }
-, blue { create_mesh( materials.blue, gfx ) }
+SolidMeshes::SolidMeshes( const Handle<Gltf>& model )
+: materials { model }
+, black { create_mesh( materials.black, model ) }
+, white { create_mesh( materials.white, model ) }
+, red { create_mesh( materials.red, model ) }
+, green { create_mesh( materials.green, model ) }
+, blue { create_mesh( materials.blue, model ) }
 {}
 
 
 // 2x2 block
-Handle<Node> create_chess_board( Graphics& gfx )
+Handle<Node> create_chess_board( const Handle<Gltf>& model )
 {
-	auto block = gfx.models.gltf.create_node();
+	auto block = model->create_node();
 
-	auto add_child = [&block, &gfx]( const Handle<Mesh>& mesh, math::Vec3 translation ) {
-		auto node = gfx.models.gltf.create_node( block );
+	auto add_child = [&block, &model]( const Handle<Mesh>& mesh, math::Vec3 translation ) {
+		auto node = model->create_node( block );
 		node->mesh = mesh;
 		node->translation.x = translation.x;
 		node->translation.y = translation.y;
@@ -88,7 +88,7 @@ Handle<Node> create_chess_board( Graphics& gfx )
 		uint32_t offset = col % 2;
 		for ( size_t row = 0; row < n; ++row )
 		{
-			auto color = gfx.models.gltf.meshes.get_handle( ( row + offset ) % 2 );
+			auto color = model->meshes.get_handle( ( row + offset ) % 2 );
 			add_child( color,
 				math::Vec3(
 					0.0f + unit / 2.0f + unit * row,
@@ -111,9 +111,11 @@ int main()
 	namespace math = spot::math;
 
 	auto gfx = Graphics();
-	auto meshes = SolidMeshes( gfx );
+	auto model = gfx.create_model();
 
-	auto chess_board = create_chess_board( gfx );
+	auto meshes = SolidMeshes( model );
+
+	auto chess_board = create_chess_board( model );
 
 	gfx.viewport.set_offset( math::Vec2::Zero );
 	gfx.viewport.set_extent( math::Vec2::One * 16.0f );
@@ -138,7 +140,7 @@ int main()
 				/// @todo Implement some sort of contains
 				if ( child->contains( coords ) )
 				{
-					child->mesh = gfx.models.gltf.meshes.get_handle( ( child->mesh.get_index() + 1 ) % 5 );
+					child->mesh = model->meshes.get_handle( ( child->mesh.get_index() + 1 ) % 5 );
 				}
 			}
 		}

@@ -27,7 +27,9 @@ Handle<Node> create_card( gfx::Graphics& gfx )
 {
 	using namespace gfx;
 
-	auto card = gfx.models.gltf.create_mesh();
+	auto model = gfx.create_model();
+
+	auto card = model->create_mesh();
 
 	std::vector<Vertex> vertices = {
 		Vertex(
@@ -55,8 +57,8 @@ Handle<Node> create_card( gfx::Graphics& gfx )
 	// Currently, counterclockwise?
 	std::vector<Index> indices = { 0, 2, 1, 1, 2, 3 };
 
-	auto material = gfx.models.gltf.materials.push(
-		Material( gfx.images.load( "img/card.png" ) )
+	auto material = model->materials.push(
+		Material( model->images->load( "img/card.png" ) )
 	);
 
 	card->primitives.emplace_back(
@@ -66,7 +68,7 @@ Handle<Node> create_card( gfx::Graphics& gfx )
 			material )
 	);
 
-	auto node = gfx.models.gltf.scene->create_node();
+	auto node = model->scene->create_node();
 	node->mesh = card;
 
 	return node;
@@ -90,7 +92,7 @@ int main( const int argc, const char** argv )
 	auto gfx = Graphics();
 
 	auto path = std::string( argv[1] );
-	auto& scene = gfx.models.load( path );
+	auto model = gfx.load_model( path );
 
 	auto eye = math::Vec3( 4.0f, 4.0f, 4.0f );
 	gfx.camera.look_at( eye, math::Vec3::Zero, math::Vec3::Y );
@@ -99,11 +101,11 @@ int main( const int argc, const char** argv )
 	{
 		gfx.glfw.poll();
 		auto dt = gfx.glfw.get_delta();
-		Animations::update( dt, gfx.models.gltf );
+		Animations::update( dt, model );
 
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( scene );
+			gfx.draw( *model->scene );
 			gfx.render_end();
 		}
 	}

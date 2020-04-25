@@ -23,7 +23,7 @@ void update( const double dt, Handle<Node>& node )
 }
 
 
-Handle<Node> create_card( Graphics& gfx )
+Handle<Node> create_card( const Handle<Gltf>& model )
 {
 	std::vector<Vertex> vertices = {
 		Vertex(
@@ -51,16 +51,14 @@ Handle<Node> create_card( Graphics& gfx )
 	// Currently, counterclockwise?
 	std::vector<Index> indices = { 0, 2, 1, 1, 2, 3 };
 
-	auto material = gfx.models.gltf.materials.push(
-		Material( gfx.images.load( "img/card.png" ) )
+	auto material = model->materials.push(
+		Material( model->images->load( "img/card.png" ) )
 	);
 
 	auto card = Mesh({
 		Primitive( std::move( vertices ), std::move( indices ), material )
 	});
-	auto node = gfx.models.gltf.create_node( std::move( card ) );
-
-	return node;
+	return model->create_node( std::move( card ) );
 }
 
 
@@ -74,7 +72,7 @@ int main()
 
 	auto gfx = Graphics();
 
-	auto card = create_card( gfx );
+	auto card = create_card( gfx.create_model() );
 
 	gfx.camera.look_at( math::Vec3::Z * -2.0f, math::Vec3::Zero, math::Vec3::Y );
 

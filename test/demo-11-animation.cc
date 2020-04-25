@@ -7,11 +7,12 @@ int main( const int argc, const char** argv )
 {
 	using namespace spot;
 	gfx::Graphics gfx;
+	auto model = gfx.create_model();
 
-	auto quad = gfx.models.gltf.create_node(
+	auto quad = model->create_node(
 		gfx::Mesh::create_quad(
-			gfx.models.gltf.materials.push(
-				gfx::Material( gfx.images.load( "img/lena.png" ) )
+			model->materials.push(
+				gfx::Material( model->images->load( "img/lena.png" ) )
 			)
 		)
 	);
@@ -21,13 +22,13 @@ int main( const int argc, const char** argv )
 		gfx.glfw.poll();
 		const auto dt = gfx.glfw.get_delta();
 		gfx.window.update( dt );
-		gfx::Animations::update( dt, gfx.models.gltf );
+		gfx::Animations::update( dt, model );
 
 		if ( gfx.window.click.left )
 		{
-			if ( gfx.models.gltf.animations.empty() )
+			if ( model->animations.empty() )
 			{
-				auto& anim = gfx.models.gltf.animations.emplace_back( gfx.models.gltf );
+				auto& anim = model->animations.emplace_back( *model );
 				// Rotate 180 degrees
 				anim.add_rotation( quad, 1.0f, math::Quat( math::Vec3::Z, math::radians( 180 ) ) );
 				// Rotate another 180 degrees
@@ -35,7 +36,7 @@ int main( const int argc, const char** argv )
 			}
 			else
 			{
-				gfx.models.gltf.animations[0].pause = !gfx.models.gltf.animations[0].pause;
+				model->animations[0].pause = !model->animations[0].pause;
 			}
 			
 		}

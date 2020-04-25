@@ -8,6 +8,9 @@
 #include <cstring>
 #include <cmath>
 
+#include <spot/gltf/mesh.h>
+#include <spot/gltf/material.h>
+
 #include "spot/gfx/hash.h"
 
 namespace gtf = spot::gfx;
@@ -811,8 +814,6 @@ Graphics::Graphics()
 , framebuffers { frames.create_framebuffers( render_pass ) }
 , graphics_queue { device.find_graphics_queue() }
 , present_queue { device.find_present_queue( surface.handle ) }
-, images { device }
-, models { *this }
 {
 	//camera.perspective( swapchain.extent.width / float(swapchain.extent.height), math::radians( 60.0f ), 10000.0f, 0.125f );
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )

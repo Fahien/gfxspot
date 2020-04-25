@@ -6,14 +6,13 @@
 #include <array>
 
 #include <vulkan/vulkan_core.h>
-#include <spot/gltf/node.h>
+#include <spot/gltf/gltf.h>
 
 #include "spot/gfx/glfw.h"
 #include "spot/gfx/renderer.h"
 #include "spot/gfx/descriptors.h"
 #include "spot/gfx/commands.h"
 #include "spot/gfx/images.h"
-#include "spot/gfx/models.h"
 #include "spot/gfx/pipelines.h"
 #include "spot/gfx/camera.h"
 #include "spot/gfx/viewport.h"
@@ -29,6 +28,14 @@ struct alignas(16) Dot
 
 	math::Vec3  p = {};
 	Color c = {};
+};
+
+
+struct alignas(16) UniformBufferObject
+{
+	math::Mat4 model = math::Mat4::identity;
+	math::Mat4 view  = math::Mat4::identity;
+	math::Mat4 proj  = math::Mat4::identity;
 };
 
 
@@ -305,8 +312,15 @@ class Graphics
 	Queue& graphics_queue;
 	Queue& present_queue;
 
-	Models models;
-	Images images;
+	/// @brief Loads a gltf file
+	/// @return A handle to the gltf model
+	Handle<Gltf> load_model( const std::string& path );
+
+	/// @return A handle of a new gltf model
+	Handle<Gltf> create_model();
+
+private:
+	Uvec<Gltf> models;
 };
 
 

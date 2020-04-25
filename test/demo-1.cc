@@ -16,15 +16,6 @@ void update( const double dt, Handle<Node>& node )
 	node->rotation *= math::Quat( math::Vec3::Z, angle );
 }
 
-
-Mesh create_lenna( Graphics& gfx )
-{
-	auto view = gfx.images.load( "img/lena.png" );
-	auto material = gfx.models.gltf.create_material( view );
-	return Mesh::create_quad( material );
-}
-
-
 } // namespace spot::gfx
 
 
@@ -34,15 +25,16 @@ int main()
 	namespace math = spot::math;
 
 	auto gfx = Graphics();
+	auto model = gfx.create_model();
 
-	auto square = gfx.models.gltf.create_node(
+	auto square = model->create_node(
 		Mesh::create_rect(
 			math::Vec3( -0.5f, -0.5f ),
 			math::Vec3( 0.5f, 0.5f )
 		)
 	);
 	
-	auto triangle = gfx.models.gltf.create_node(
+	auto triangle = model->create_node(
 		Mesh::create_triangle(
 			math::Vec3( 0.5f, 0.0f, -1.0f ),
 			math::Vec3( -0.5f, 0.0f, -1.0f ),
@@ -50,8 +42,12 @@ int main()
 		)
 	);
 
-	auto quad = gfx.models.gltf.create_node(
-		create_lenna( gfx )
+	auto quad = model->create_node(
+		Mesh::create_quad(
+			model->materials.push(
+				model->images->load( "img/lena.png" )
+			)
+		)
 	);
 
 	gfx.camera.look_at( math::Vec3::One * 1.5f, math::Vec3::Zero, math::Vec3::Y );

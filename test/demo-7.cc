@@ -17,31 +17,31 @@ struct Colors
 };
 
 
-Colors create_colors( spot::gfx::Graphics& gfx )
+Colors create_colors( Handle<Gltf>& model )
 {
 	Colors ret;
 
-	auto black = gfx.models.gltf.materials.push();
+	auto black = model->materials.push();
 	black->pbr.color = Color( 30.0f / 255.0f, 30.0f / 255.0f, 30.0f / 255.0f );
 	ret.black = black;
 
-	auto white = gfx.models.gltf.materials.push();
+	auto white = model->materials.push();
 	white->pbr.color = Color( 1.0f, 1.0f, 1.0f );
 	ret.white = white;
 
-	auto red = gfx.models.gltf.materials.push();
+	auto red = model->materials.push();
 	red->pbr.color = Color( 190.0f / 255.0f, 50.0f / 255.0f, 50.0f / 255.0f );
 	ret.red = red;
 
-	auto green = gfx.models.gltf.materials.push();
+	auto green = model->materials.push();
 	green->pbr.color = Color( 0.0f, 1.0f, 0.0f );
 	ret.green = green;
 
-	auto blue = gfx.models.gltf.materials.push();
+	auto blue = model->materials.push();
 	blue->pbr.color = Color( 0.0f, 0.0f, 1.0f );
 	ret.blue = blue;
 
-	auto yellow = gfx.models.gltf.materials.push();
+	auto yellow = model->materials.push();
 	yellow->pbr.color = Color( 230.0f / 255.0f, 200.0f / 255.0f, 100.0f / 255.0f );
 	ret.yellow = yellow;
 
@@ -53,9 +53,9 @@ const float width = screen_width / 128.0f;
 const float step = width * 2.0f;
 
 
-Handle<Node> create_lines( const Colors& colors, Graphics& gfx )
+Handle<Node> create_lines( const Colors& colors, const Handle<Gltf>& model )
 {
-	auto root = gfx.models.gltf.create_node();
+	auto root = model->create_node();
 
 	// First half
 	// White lines
@@ -68,7 +68,7 @@ Handle<Node> create_lines( const Colors& colors, Graphics& gfx )
 
 		auto line = Mesh::create_rect( a, b, colors.white );
 
-		auto node = gfx.models.gltf.create_node( std::move( line ) );
+		auto node = model->create_node( std::move( line ) );
 		root->add_child( node );
 	}
 	// + black background
@@ -77,7 +77,7 @@ Handle<Node> create_lines( const Colors& colors, Graphics& gfx )
 		auto b = math::Vec3( 0.0f, 1.0f, -0.1f );
 		auto line = Mesh::create_rect( a, b, colors.black );
 		
-		auto node = gfx.models.gltf.create_node( std::move( line ) );
+		auto node = model->create_node( std::move( line ) );
 		root->add_child( node );
 	}
 
@@ -90,7 +90,7 @@ Handle<Node> create_lines( const Colors& colors, Graphics& gfx )
 
 		auto line = Mesh::create_rect( a, b, colors.yellow );
 		
-		auto node = gfx.models.gltf.create_node( std::move( line ) );
+		auto node = model->create_node( std::move( line ) );
 		root->add_child( node );
 	}
 	// + white background
@@ -98,7 +98,7 @@ Handle<Node> create_lines( const Colors& colors, Graphics& gfx )
 		auto a = math::Vec3( 0.0f, 0.0f - width, -0.1f );
 		auto b = math::Vec3( 1.0f, -1.0f, -0.1f );
 		auto line = Mesh::create_rect( a, b, colors.white );
-		auto node = gfx.models.gltf.create_node( std::move( line ) );
+		auto node = model->create_node( std::move( line ) );
 		root->add_child( node );
 	}
 	// Black delimitator
@@ -106,7 +106,7 @@ Handle<Node> create_lines( const Colors& colors, Graphics& gfx )
 		auto a = math::Vec3( 0.0f, 0.0f, -0.1f );
 		auto b = math::Vec3( 1.0f, -width, -0.1f );
 		auto line = Mesh::create_rect( a, b, colors.black );
-		auto node = gfx.models.gltf.create_node( std::move( line ) );
+		auto node = model->create_node( std::move( line ) );
 		root->add_child( node );
 	}
 
@@ -114,9 +114,9 @@ Handle<Node> create_lines( const Colors& colors, Graphics& gfx )
 }
 
 
-Handle<Node> create_red_lines( const Colors& colors, Graphics& gfx )
+Handle<Node> create_red_lines( const Colors& colors, const Handle<Gltf>& model )
 {
-	auto root = gfx.models.gltf.create_node();
+	auto root = model->create_node();
 
 	float red_width = width * sqrtf( 2.0f );
 	float step = red_width * 2;
@@ -132,7 +132,7 @@ Handle<Node> create_red_lines( const Colors& colors, Graphics& gfx )
 
 		auto line = Mesh::create_rect( a, b, colors.red );
 
-		auto node = gfx.models.gltf.create_node( std::move( line ) );
+		auto node = model->create_node( std::move( line ) );
 		root->add_child( node );
 	}
 	// + black background
@@ -140,7 +140,7 @@ Handle<Node> create_red_lines( const Colors& colors, Graphics& gfx )
 		auto a = math::Vec3( 0.0f, -1.0f, -0.3f );
 		auto b = math::Vec3( 2.0f, 1.0f, -0.3f );
 		auto line = Mesh::create_rect( a, b, colors.white );
-		auto node = gfx.models.gltf.create_node( std::move( line ) );
+		auto node = model->create_node( std::move( line ) );
 		root->add_child( node );
 	}
 
@@ -158,11 +158,12 @@ int main()
 	namespace math = spot::math;
 
 	auto gfx = Graphics();
+	auto model = gfx.create_model();
 
-	Colors colors = create_colors( gfx );
+	Colors colors = create_colors( model );
 
-	auto lines = create_lines( colors , gfx );
-	auto red_lines = create_red_lines( colors , gfx );
+	auto lines = create_lines( colors , model );
+	auto red_lines = create_red_lines( colors , model );
 
 	gfx.camera.look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
 	gfx.camera.orthographic( -1.0f, 1.0, -1.0, 1.0, 0.125f, 2.0 );

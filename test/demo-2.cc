@@ -16,11 +16,11 @@ void update( const double dt, gfx::UniformBufferObject& ubo )
 }
 
 
-Mesh create_bugart( spot::gfx::Graphics& gfx )
+Handle<Mesh> create_bugart( const Handle<Gltf>& model )
 {
 	using namespace spot::gfx;
 
-	Mesh bugart;
+	auto bugart = model->meshes.push();
 
 	std::vector<Index> indices;
 
@@ -109,11 +109,11 @@ Mesh create_bugart( spot::gfx::Graphics& gfx )
 	vertices[i++].c = { 0.99983,  0.00069,  0.02421,  0.00086 };
 	vertices[i++].c = { 0.01746,  0.99574,  0.36206,  0.02171 };
 
-	auto material = gfx.models.gltf.create_material(
-		Color { 0.8f, 0.8f, 0.8f, 1.0f }
+	auto material = model->materials.push(
+		Material( Color { 0.8f, 0.8f, 0.8f, 1.0f } )
 	);
 
-	bugart.primitives.emplace_back(
+	bugart->primitives.emplace_back(
 		Primitive(
 			std::move( vertices ),
 			std::move( indices ),
@@ -133,12 +133,11 @@ int main()
 	namespace math = spot::math;
 
 	auto gfx = Graphics();
+	auto model = gfx.create_model();
 
-	auto bugart = gfx.models.gltf.meshes.push(
-		create_bugart( gfx )
-	);
+	auto bugart = create_bugart( model );
 
-	auto node = gfx.models.gltf.create_node();
+	auto node = model->create_node();
 	node->mesh = bugart;
 
 	gfx.camera.look_at( math::Vec3::Z * -2.0f, math::Vec3::Zero, math::Vec3::Y );

@@ -21,7 +21,7 @@ endif()
 find_package( Vulkan )
 
 include( AddMathSpot )
-include( AddGltfSpot )
+include( AddFileSpot )
 #include( doxygen )
 
 # Lib
@@ -40,12 +40,18 @@ set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/animations.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/camera.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/viewport.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/animation.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/bounds.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/gltf.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/mesh.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/node.cc
 )
 add_library( ${PROJECT_NAME} ${SOURCES} )
 target_include_directories( ${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${Vulkan_INCLUDE_DIRS} )
-target_link_libraries( ${PROJECT_NAME} ${Vulkan_LIBRARIES} CONAN_PKG::fmt CONAN_PKG::glfw CONAN_PKG::libpng mathspot gltfspot )
+target_link_libraries( ${PROJECT_NAME} ${Vulkan_LIBRARIES} CONAN_PKG::fmt CONAN_PKG::glfw CONAN_PKG::libpng mathspot filespot )
 target_compile_features( ${PROJECT_NAME} PUBLIC cxx_std_17 )
 
 add_subdirectory( test )

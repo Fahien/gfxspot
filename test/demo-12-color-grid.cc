@@ -2,27 +2,22 @@
 
 #include <spot/gfx/graphics.h>
 
+// Draw a color spectrum grid
 int main()
 {
-	using namespace spot;
-
-	auto gfx = gfx::Graphics();
-
-	//auto text = gfx.models.create_text( "Hello" );
+	auto gfx = spot::gfx::Graphics();
 
 	while ( gfx.window.is_alive() )
 	{
 		gfx.glfw.poll();
 		const auto dt = gfx.glfw.get_delta();
-		gfx.window.update( dt );
 
 		if ( gfx.render_begin() )
 		{
-			//gfx.draw( text );
-
 			gfx.render_end();
 		}
 	}
 
+	gfx.device.wait_idle();
 	return EXIT_SUCCESS;
 }

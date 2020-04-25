@@ -2,8 +2,8 @@
 
 #include <cassert>
 
+#include "spot/gltf/material.h"
 #include "spot/gfx/graphics.h"
-#include "spot/gfx/models.h"
 #include "spot/gfx/hash.h"
 
 #define FIND( container, object ) ( container.find( object ) != std::end( container ) )
@@ -12,7 +12,6 @@ namespace gtf = spot::gfx;
 
 namespace spot::gfx
 {
-
 
 template <typename T>
 VkVertexInputBindingDescription get_bindings()

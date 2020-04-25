@@ -16,5 +16,6 @@ add_demo( demo-8 )
 add_demo( demo-9 )
 add_demo( demo-10-text )
 add_demo( demo-11-animation )
+add_demo( demo-12-color-grid )
 
 add_subdirectory( shader )
