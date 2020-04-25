@@ -20,6 +20,21 @@ class Shape;
 class Node : public Handled<Node>
 {
   public:
+	/// @return A newly created Node
+	Node() = default;
+
+	/// @param mesh The mesh of this node
+	/// @return A newly created Node
+	Node( const Handle<Mesh>& mesh );
+
+	/// @param parent The parent of this node
+	/// @return A newly created Node
+	Node( const Handle<Node>& parent );
+
+	/// @param name Name of the node
+	/// @return A newly created Node
+	Node( const std::string& name );
+
 	bool contains( const math::Vec2& point ) const;
 
 	/// @return The parent of this node, otherwise nullptr
@@ -39,7 +54,7 @@ class Node : public Handled<Node>
 	Handle<Node> create_child( const std::string& name );
 
 	/// @brief Add a new child to this node
-	void add_child( Handle<Node>& child );
+	void add_child( const Handle<Node>& child );
 
 	void remove_from_parent();
 

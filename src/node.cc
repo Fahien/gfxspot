@@ -5,6 +5,24 @@
 namespace spot::gfx
 {
 
+Node::Node( const Handle<Mesh>& mesh )
+: mesh { mesh }
+{}
+
+
+Node::Node( const std::string& name )
+: name { name }
+{}
+
+
+Handle<Node> Scene::create_node( const std::string& name )
+{
+	auto node = model->nodes.push( Node( name ) );
+	nodes.emplace_back( node );
+	return node;
+}
+
+
 math::Mat4 Node::get_matrix() const
 {
 	auto transform = matrix;
@@ -49,14 +67,13 @@ Handle<Node> Node::get_parent() const
 
 Handle<Node> Node::create_child( const std::string& name )
 {
-	auto child = model->create_node( name );
-	child->parent = handle;
-	children.push_back( child );
+	auto child = model->create_node( handle );
+	child->name = name;
 	return child;
 }
 
 
-void Node::add_child( Handle<Node>& child )
+void Node::add_child( const Handle<Node>& child )
 {
 	assert( child != handle && "Cannot add child to itself" );
 	child->parent = handle;

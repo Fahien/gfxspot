@@ -1,5 +1,4 @@
-#ifndef GST_MESH_H_
-#define GST_MESH_H_
+#pragma once
 
 #include <unordered_map>
 #include <string>
@@ -148,6 +147,3 @@ struct Mesh
 
 
 }  // namespace spot::gfx
-
-
-#endif  // GST_MESH_H_

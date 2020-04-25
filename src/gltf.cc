@@ -1232,62 +1232,11 @@ void Gltf::load_nodes()
 }
 
 
-Handle<Node> Gltf::create_node()
+Handle<Node> Gltf::create_node( const Handle<Node>& parent )
 {
 	auto node = nodes.push();
-	node->model = this;
+	parent->add_child( node );
 	return node;
-}
-
-
-Handle<Node> Gltf::create_node( Mesh&& mesh )
-{
-	auto node = create_node();
-	node->mesh = meshes.push( std::move( mesh ) );
-	return node;
-}
-
-
-Handle<Node> Gltf::create_node( Handle<Node>& parent )
-{
-	auto node = create_node();
-	node->parent = parent;
-	parent->children.emplace_back( node );
-	return node;
-}
-
-
-Handle<Node> Gltf::create_node( const std::string& name )
-{
-	auto node = create_node();
-	node->name = name;
-	return node;
-}
-
-
-Handle<Node> Gltf::add_node( Node&& n )
-{
-	// Add it to the vector which triggers need to recalculate node references
-	auto& node = nodes->emplace_back( std::move( n ) );
-	node.handle = Handle<Node>( nodes, nodes->size() - 1 );
-	load_nodes();
-	return node.handle;
-}
-
-
-Handle<Node> Scene::create_node( const std::string& name )
-{
-	auto node = model->create_node( name );
-	nodes.emplace_back( node );
-	return node;
-}
-
-
-Handle<Mesh> Gltf::create_mesh( Mesh&& m )
-{
-	auto& mesh = meshes->emplace_back( std::move( m ) );
-	mesh.handle = Handle<Mesh>( meshes, meshes->size() - 1 );
-	return mesh.handle;
 }
 
 

@@ -67,26 +67,7 @@ class Gltf : public Handled<Gltf>
 	/// @return A Gltf model
 	static Gltf load( const std::string& path );
 
-	/// @return A newly created Node
-	Handle<Node> create_node();
-
-	/// @param mesh The mesh of this node
-	/// @return A newly created Node
-	Handle<Node> create_node( Mesh&& mesh );
-
-	/// @param parent The parent of this node
-	/// @return A newly created Node
-	Handle<Node> create_node( Handle<Node>& parent );
-
-	/// @param name Name of the node
-	/// @return A newly created Node
-	Handle<Node> create_node( const std::string& name );
-
-	/// @param node Node to add
-	Handle<Node> add_node( Node&& node );
-
-	/// @return The handle of a new mesh
-	Handle<Mesh> create_mesh( Mesh&& m = {} );
+	Handle<Node> create_node( const Handle<Node>& parent );
 
 	/// @param bounds Index of the bounds
 	/// @return The bounds found at that index, nullptr otherwise
