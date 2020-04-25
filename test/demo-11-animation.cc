@@ -8,10 +8,10 @@ int main( const int argc, const char** argv )
 	using namespace spot;
 	gfx::Graphics gfx;
 
-	auto quad = gfx.models.create_node(
+	auto quad = gfx.models.gltf.create_node(
 		gfx::Mesh::create_quad(
-			gfx.models.create_material(
-				gfx.images.load( "img/lena.png" )
+			gfx.models.gltf.materials.push(
+				gfx::Material( gfx.images.load( "img/lena.png" ) )
 			)
 		)
 	);
@@ -25,11 +25,19 @@ int main( const int argc, const char** argv )
 
 		if ( gfx.window.click.left )
 		{
-			auto& anim = gfx.models.gltf.animations.emplace_back( gfx.models.gltf );
-			// Rotate 180 degrees
-			anim.add_rotation( quad, 1.0f, math::Quat( math::Vec3::Z, math::radians( 180 ) ) );
-			// Rotate another 180 degrees
-			anim.add_rotation( quad, 2.0f, math::Quat( math::Vec3::Z, math::radians( 360 ) ) );
+			if ( gfx.models.gltf.animations.empty() )
+			{
+				auto& anim = gfx.models.gltf.animations.emplace_back( gfx.models.gltf );
+				// Rotate 180 degrees
+				anim.add_rotation( quad, 1.0f, math::Quat( math::Vec3::Z, math::radians( 180 ) ) );
+				// Rotate another 180 degrees
+				anim.add_rotation( quad, 2.0f, math::Quat( math::Vec3::Z, math::radians( 360 ) ) );
+			}
+			else
+			{
+				gfx.models.gltf.animations[0].pause = !gfx.models.gltf.animations[0].pause;
+			}
+			
 		}
 
 		if ( gfx.render_begin() )

@@ -10,20 +10,20 @@ namespace spot::gfx
 {
 
 
-void update( const double dt, Node& node )
+void update( const double dt, Handle<Node>& node )
 {
 	auto radians = math::radians( dt * 128.0f );
 	auto z = math::Vec3( 0.0f, 0.0f, 1.0f );
 	auto quat = math::Quat( z, radians );
-	node.rotation *= quat;
+	node->rotation *= quat;
 
 	static float acc = 0;
 	acc += dt;
-	node.translation.z = std::cos( math::radians( acc * 256.0f ) ) + 4.0f;
+	node->translation.z = std::cos( math::radians( acc * 256.0f ) ) + 4.0f;
 }
 
 
-int32_t create_card( Graphics& gfx )
+Handle<Node> create_card( Graphics& gfx )
 {
 	std::vector<Vertex> vertices = {
 		Vertex(
@@ -51,15 +51,16 @@ int32_t create_card( Graphics& gfx )
 	// Currently, counterclockwise?
 	std::vector<Index> indices = { 0, 2, 1, 1, 2, 3 };
 
-	auto& material = gfx.models.create_material();
-	material.texture = gfx.images.load( "img/card.png" );
+	auto material = gfx.models.gltf.materials.push(
+		Material( gfx.images.load( "img/card.png" ) )
+	);
 
 	auto card = Mesh({
-		Primitive( std::move( vertices ), std::move( indices ), material.index )
+		Primitive( std::move( vertices ), std::move( indices ), material )
 	});
-	auto& node = gfx.models.create_node( std::move( card ) );
+	auto node = gfx.models.gltf.create_node( std::move( card ) );
 
-	return node.index;
+	return node;
 }
 
 
@@ -82,7 +83,7 @@ int main()
 		gfx.glfw.poll();
 		auto dt = gfx.glfw.get_delta();
 
-		update( dt, *gfx.models.get_node( card ) );
+		update( dt, card );
 
 		if ( gfx.render_begin() )
 		{

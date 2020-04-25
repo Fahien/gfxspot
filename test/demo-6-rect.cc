@@ -11,7 +11,7 @@ int main()
 	auto a = math::Vec3::Zero;
 	auto b = math::Vec3( 4.5f, 2.0f ); // ( x=4.5f, y=2.0f, z=0.0f )
 
-	auto root = gfx.models.create_node(
+	auto root = gfx.models.gltf.create_node(
 		gfx::Mesh::create_rect( a, b )
 	);
 

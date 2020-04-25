@@ -16,33 +16,33 @@ struct SolidMaterials
 {
 	SolidMaterials( Graphics& gfx );
 
-	const int32_t black;
-	const int32_t white;
-	const int32_t red;
-	const int32_t green;
-	const int32_t blue;
+	const Handle<Material> black;
+	const Handle<Material> white;
+	const Handle<Material> red;
+	const Handle<Material> green;
+	const Handle<Material> blue;
 };
 
 
 SolidMaterials::SolidMaterials( Graphics& gfx )
-: white { gfx.models.create_material( Color::white ).index }
-, black { gfx.models.create_material( Color::black ).index }
-, red   { gfx.models.create_material( Color::red  ).index }
-, green { gfx.models.create_material( Color::green ).index }
-, blue  { gfx.models.create_material( Color::blue  ).index }
+: white { gfx.models.gltf.materials.push( Material( Color::white ) ) }
+, black { gfx.models.gltf.materials.push( Material( Color::black ) ) }
+, red   { gfx.models.gltf.materials.push( Material( Color::red  ) ) }
+, green { gfx.models.gltf.materials.push( Material( Color::green ) ) }
+, blue  { gfx.models.gltf.materials.push( Material( Color::blue  ) ) }
 {}
 
 
-int32_t create_mesh( uint32_t material, Graphics& gfx )
+Handle<Mesh> create_mesh( const Handle<Material>& material, Graphics& gfx )
 {
 	auto hs = unit / 2.0f - spacing / 2.0f;
-	return gfx.models.create_mesh(
+	return gfx.models.gltf.create_mesh(
 		Mesh::create_rect(
 			math::Vec3( -hs, -hs, 0.0f ),
 			math::Vec3( hs, hs, 0.0f ),
 			material
 		)
-	).index;
+	);
 }
 
 
@@ -52,11 +52,11 @@ struct SolidMeshes
 
 	const SolidMaterials materials;
 
-	const int32_t black;
-	const int32_t white;
-	const int32_t red;
-	const int32_t green;
-	const int32_t blue;
+	const Handle<Mesh> black;
+	const Handle<Mesh> white;
+	const Handle<Mesh> red;
+	const Handle<Mesh> green;
+	const Handle<Mesh> blue;
 };
 
 
@@ -75,7 +75,7 @@ Handle<Node> create_chess_board( Graphics& gfx )
 {
 	auto block = gfx.models.gltf.create_node();
 
-	auto add_child = [&block, &gfx]( uint32_t mesh, math::Vec3 translation ) {
+	auto add_child = [&block, &gfx]( const Handle<Mesh>& mesh, math::Vec3 translation ) {
 		auto node = gfx.models.gltf.create_node( block );
 		node->mesh = mesh;
 		node->translation.x = translation.x;
@@ -88,7 +88,7 @@ Handle<Node> create_chess_board( Graphics& gfx )
 		uint32_t offset = col % 2;
 		for ( size_t row = 0; row < n; ++row )
 		{
-			uint32_t color = ( row + offset ) % 2;
+			auto color = gfx.models.gltf.meshes.get_handle( ( row + offset ) % 2 );
 			add_child( color,
 				math::Vec3(
 					0.0f + unit / 2.0f + unit * row,
@@ -133,12 +133,12 @@ int main()
 		{
 			auto coords = gfx.viewport.from_window( gfx.window.cursor );
 
-			for ( auto& child : chess_board->children )
+			for ( auto& child : chess_board->get_children() )
 			{
 				/// @todo Implement some sort of contains
 				if ( child->contains( coords ) )
 				{
-					child->mesh = ( child->mesh + 1 ) % 5;
+					child->mesh = gfx.models.gltf.meshes.get_handle( ( child->mesh.get_index() + 1 ) % 5 );
 				}
 			}
 		}

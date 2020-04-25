@@ -55,8 +55,8 @@ Handle<Node> create_card( gfx::Graphics& gfx )
 	// Currently, counterclockwise?
 	std::vector<Index> indices = { 0, 2, 1, 1, 2, 3 };
 
-	auto material = gfx.models.gltf.create_material(
-		gfx.images.load( "img/card.png" )
+	auto material = gfx.models.gltf.materials.push(
+		Material( gfx.images.load( "img/card.png" ) )
 	);
 
 	card->primitives.emplace_back(
@@ -67,7 +67,7 @@ Handle<Node> create_card( gfx::Graphics& gfx )
 	);
 
 	auto node = gfx.models.gltf.scene->create_node();
-	node->set_mesh( card );
+	node->mesh = card;
 
 	return node;
 }
@@ -92,7 +92,7 @@ int main( const int argc, const char** argv )
 	auto path = std::string( argv[1] );
 	auto& scene = gfx.models.load( path );
 
-	auto eye = math::Vec3( 20.0f, 20.0f, 20.0f );
+	auto eye = math::Vec3( 4.0f, 4.0f, 4.0f );
 	gfx.camera.look_at( eye, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( gfx.window.is_alive() )

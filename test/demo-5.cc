@@ -14,10 +14,10 @@ Handle<Node> create_line( gfx::Graphics& gfx, gfx::Dot a, gfx::Dot b )
 {
 	auto node = gfx.models.gltf.create_node();
 
-	auto& mesh = gfx.models.create_mesh();
-	node->mesh = mesh.index;
+	auto mesh = gfx.models.gltf.meshes.push();
+	node->mesh = mesh;
 
-	auto& primitive = mesh.primitives.emplace_back();
+	auto& primitive = mesh->primitives.emplace_back();
 	primitive.vertices = {
 		gfx::Vertex( a.p, a.c ),
 		gfx::Vertex( b.p, b.c )
@@ -31,11 +31,11 @@ Handle<Node> create_line( gfx::Graphics& gfx, gfx::Dot a, gfx::Dot b )
 
 Handle<Node> create_lena( gfx::Graphics& gfx )
 {
-	return gfx.models.create_node(
+	return gfx.models.gltf.create_node(
 		Mesh::create_quad(
-			gfx.models.create_material(
-				gfx.images.load( "img/lena.png" )
-			).index
+			gfx.models.gltf.materials.push(
+				Material( gfx.images.load( "img/lena.png" ) )
+			)
 		)
 	);
 }
@@ -58,7 +58,7 @@ int main( const int argc, const char** argv )
 
 	auto gfx = gfx::Graphics();
 
-	Scene* scene;
+	gfx::Scene* scene;
 	if ( argc > 1 )
 	{
 		auto path = std::string( argv[1] );

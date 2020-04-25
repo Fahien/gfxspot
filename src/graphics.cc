@@ -977,15 +977,15 @@ void Graphics::draw( const Handle<Node>& node, const math::Mat4& transform )
 	temp_transform = transform * temp_transform;
 
 	// Render its children
-	for ( auto child : node->get_children() )
+	for ( auto& child : node->get_children() )
 	{
 		draw( child, temp_transform );
 	}
 
 	// Render the node
-	if ( auto& mesh = node->get_mesh() )
+	if ( node->mesh )
 	{
-		for ( auto& primitive : mesh->primitives )
+		for ( auto& primitive : node->mesh->primitives )
 		{
 			draw( node, primitive, temp_transform );
 		}
@@ -995,7 +995,7 @@ void Graphics::draw( const Handle<Node>& node, const math::Mat4& transform )
 
 void Graphics::draw( const Scene& scene, const math::Mat4& transform )
 {
-	for ( auto node : scene.nodes )
+	for ( auto& node : scene.nodes )
 	{
 		draw( node, transform );
 	}

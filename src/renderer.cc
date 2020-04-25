@@ -400,7 +400,7 @@ void Renderer::add( const Handle<Node>& node, const Primitive& prim )
 
 void Renderer::add( const Handle<Node>& node )
 {
-	if ( !node->get_mesh() )
+	if ( !node->mesh )
 	{
 		return; // no mesh to add
 	}
@@ -413,7 +413,7 @@ void Renderer::add( const Handle<Node>& node )
 	}
 
 	// Now get the mesh, and its primitives
-	for ( auto& prim : node->get_mesh()->primitives )
+	for ( auto& prim : node->mesh->primitives )
 	{
 		add( node, prim );
 	}

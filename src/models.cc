@@ -59,7 +59,7 @@ Scene& Models::load( const std::string& path )
 	// A primitive without material does not exist in gltf
 	// Therefore we a white material at the endMaterial white {
 	
-	auto white = gltf.create_material( Color::white );
+	auto white = gltf.materials.push( Material( Color::white ) );
 
 	// Load meshes
 	for ( auto& m : *gltf.meshes )

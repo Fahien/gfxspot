@@ -6,8 +6,9 @@
 #include "spot/gfx/png.h"
 #include "spot/gfx/images.h"
 
-namespace gfx = spot::gfx;
 
+namespace spot::gfx
+{
 
 void update( const double dt, gfx::UniformBufferObject& ubo )
 {
@@ -15,7 +16,7 @@ void update( const double dt, gfx::UniformBufferObject& ubo )
 }
 
 
-gfx::Mesh create_bugart( spot::gfx::Graphics& gfx )
+Mesh create_bugart( spot::gfx::Graphics& gfx )
 {
 	using namespace spot::gfx;
 
@@ -108,19 +109,22 @@ gfx::Mesh create_bugart( spot::gfx::Graphics& gfx )
 	vertices[i++].c = { 0.99983,  0.00069,  0.02421,  0.00086 };
 	vertices[i++].c = { 0.01746,  0.99574,  0.36206,  0.02171 };
 
-	Material& material = gfx.models.create_material();
-	material.ubo.color = { 0.8f, 0.8f, 0.8f, 1.0f };
+	auto material = gfx.models.gltf.create_material(
+		Color { 0.8f, 0.8f, 0.8f, 1.0f }
+	);
 
 	bugart.primitives.emplace_back(
 		Primitive(
 			std::move( vertices ),
 			std::move( indices ),
-			material.index
+			material
 		)
 	);
 
 	return bugart;
 }
+
+} // namespace spot::gfx
 
 
 int main()
@@ -130,12 +134,12 @@ int main()
 
 	auto gfx = Graphics();
 
-	auto bugart = create_bugart( gfx );
+	auto bugart = gfx.models.gltf.meshes.push(
+		create_bugart( gfx )
+	);
 
-	gfx.models.meshes.emplace_back( std::move( bugart ) );
-
-	auto& node = gfx.models.create_node();
-	node.mesh = 0;
+	auto node = gfx.models.gltf.create_node();
+	node->mesh = bugart;
 
 	gfx.camera.look_at( math::Vec3::Z * -2.0f, math::Vec3::Zero, math::Vec3::Y );
 
@@ -146,7 +150,7 @@ int main()
 
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( node.index );
+			gfx.draw( node );
 			gfx.render_end();
 		}
 	}

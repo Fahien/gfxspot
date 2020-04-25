@@ -12,6 +12,11 @@ void Animations::update( const float delta_time, Gltf& gltf )
 {
 	for ( auto& animation : gltf.animations )
 	{
+		if ( animation.pause )
+		{
+			continue;
+		}
+
 		animation.time.current += delta_time;
 		animation.find_max_time();
 
