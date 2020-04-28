@@ -78,9 +78,6 @@ class Node : public Handled<Node>
 	std::string name = "Unknown";
 
   private:
-	/// Gltf owning the node
-	Gltf* model = nullptr;
-
 	/// Parent of this node
 	Handle<Node> parent = {};
 

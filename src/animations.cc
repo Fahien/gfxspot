@@ -10,21 +10,34 @@ namespace spot::gfx
 
 void Animations::update( const float delta_time, const Handle<Gltf>& model )
 {
-	for ( auto& animation : model->animations )
+	if ( pause )
 	{
-		if ( animation.pause )
+		return;
+	}
+
+	for ( auto& animation : *model->animations )
+	{
+		if ( animation.state != Animation::State::Play )
 		{
 			continue;
 		}
 
-		animation.time.current += delta_time;
 		animation.find_max_time();
+		animation.time.current += delta_time;
 
-		// Start from the beginning
-		if ( animation.time.current >= animation.time.max )
+		if ( animation.time.current > animation.time.max )
 		{
-			// Reset time
-			animation.time.current -= animation.time.max;
+			if ( animation.repeat )
+			{
+				// Reset time "smoothly"
+				animation.time.current -= animation.time.max;
+			}
+			else
+			{
+				// Set current time to max and perform last animation step
+				animation.time.current = animation.time.max;
+				animation.state = Animation::State::Stop;
+			}
 		}
 
 		for ( size_t i = 0; i < animation.channels->size(); ++i )
@@ -94,6 +107,12 @@ void Animations::update( const float delta_time, const Handle<Gltf>& model )
 					break;
 				}
 			}
+		}
+
+		if ( animation.state == Animation::State::Stop )
+		{
+			// Reset timer
+			animation.time.current = 0;
 		}
 	}
 }

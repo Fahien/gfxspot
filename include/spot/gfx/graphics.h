@@ -16,6 +16,7 @@
 #include "spot/gfx/pipelines.h"
 #include "spot/gfx/camera.h"
 #include "spot/gfx/viewport.h"
+#include "spot/gfx/animations.h"
 
 
 namespace spot::gfx
@@ -318,6 +319,8 @@ class Graphics
 
 	/// @return A handle of a new gltf model
 	Handle<Gltf> create_model();
+
+	Animations animations;
 
 private:
 	Uvec<Gltf> models;

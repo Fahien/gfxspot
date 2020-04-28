@@ -16,8 +16,16 @@ class Gltf;
 
 
 /// Keyframe animation
-struct Animation
+struct Animation : public Handled<Animation>
 {
+	/// State of the animation
+	enum class State
+	{
+		Play,
+		Pause,
+		Stop
+	};
+
 	/// Identifies which node to animate
 	struct Target
 	{
@@ -38,7 +46,7 @@ struct Animation
 
 	/// Input and output accessors with an interpolation
 	/// algorithm which define a keyframe graph
-	struct Sampler
+	struct Sampler : public Handled<Sampler>
 	{
 		/// Interpolation algorithm
 		enum class Interpolation
@@ -68,7 +76,7 @@ struct Animation
 		Target target;
 	};
 
-	Animation( Gltf& m ) : model { &m } {}
+	Animation( const Handle<Gltf>& m ) : model { m } {}
 
 	/// @return The max keyframe time of the animation
 	float find_max_time();
@@ -91,7 +99,7 @@ struct Animation
 	/// With no previous values, 0.0f and Quat::Identity will be used
 	void add_rotation( const Handle<Node>& node, const float time, const math::Quat& quat );
 
-	Gltf* model = nullptr;
+	Handle<Gltf> model = {};
 
 	/// Name of the animation
 	std::string name = "Unknown";
@@ -109,7 +117,11 @@ struct Animation
 	/// Samplers
 	Uvec<Sampler> samplers;
 
-	bool pause = false;
+	// Whether the animation is playing, paused, or stopped
+	State state = State::Play;
+
+	// Whether to repeat this animation or not
+	bool repeat = false;
 };
 
 

@@ -10,7 +10,9 @@ class Gltf;
 class Animations
 {
   public:
-	static void update( float dt, const Handle<Gltf>& model );
+	void update( float dt, const Handle<Gltf>& model );
+
+	bool pause = false;
 };
 
 

@@ -189,7 +189,7 @@ class Gltf : public Handled<Gltf>
 	Uvec<Node> nodes;
 
 	/// List of animations
-	std::vector<Animation> animations;
+	Uvec<Animation> animations;
 
 	/// List of shapes (abstract)
 	Uvec<Rect> rects;

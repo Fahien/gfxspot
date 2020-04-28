@@ -86,32 +86,29 @@ void Animation::add_rotation(
 	channel.target.path = Target::Path::Rotation;
 
 	// Create the sampler
-	auto& sampler = samplers->emplace_back();
-	channel.sampler = Handle<Sampler>( samplers, samplers->size() - 1 );
-	sampler.interpolation = Sampler::Interpolation::Linear;
+	channel.sampler = samplers.push();
+	channel.sampler->interpolation = Sampler::Interpolation::Linear;
 
 	// Timepoints
 	{
-		auto accessor = model->accessors.push();
-		sampler.input = accessor;
-		accessor->type = Accessor::Type::SCALAR;
-		accessor->component_type = Accessor::ComponentType::FLOAT;
-		accessor->count = times.size();
+		channel.sampler->input = model->accessors.push();
+		channel.sampler->input->type = Accessor::Type::SCALAR;
+		channel.sampler->input->component_type = Accessor::ComponentType::FLOAT;
+		channel.sampler->input->count = times.size();
 
-		auto buffer_view = model->buffer_views.push();
-		accessor->buffer_view = buffer_view;
+		channel.sampler->input->buffer_view = model->buffer_views.push();
 
-		auto buffer = model->buffers.push();
-		buffer_view->buffer = buffer;
-		buffer->byte_length = times.size() * sizeof( float );
-		buffer->data.resize( buffer->byte_length );
-		std::memcpy( buffer->data.data(), times.data(), buffer->byte_length );
+		ByteBuffer buffer;
+		buffer.byte_length = times.size() * sizeof( float );
+		buffer.data.resize( buffer.byte_length );
+		std::memcpy( buffer.data.data(), times.data(), buffer.byte_length );
+		channel.sampler->input->buffer_view->buffer = model->buffers.push( std::move( buffer ) );
 	}
 
 	// Rotation values
 	{
 		auto accessor = model->accessors.push();
-		sampler.output = accessor;
+		channel.sampler->output = accessor;
 		accessor->type = Accessor::Type::VEC4;
 		accessor->component_type = Accessor::ComponentType::FLOAT;
 		accessor->count = quats.size();

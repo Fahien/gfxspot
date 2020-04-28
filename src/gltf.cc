@@ -35,9 +35,7 @@ Gltf::Gltf( Gltf&& other )
 , scenes{ std::move( other.scenes ) }
 , scene{ std::move( other.scene ) }
 {
-	std::for_each( std::begin( *nodes ), std::end( *nodes ), [this]( auto& node ) { node.model = this; } );
 	std::for_each( std::begin( scenes ), std::end( scenes ), [this]( auto& scene ) { scene.model = this; } );
-	std::for_each( std::begin( animations ), std::end( animations ), [this]( auto& anim ) { anim.model = this; } );
 	load_meshes();
 	load_nodes();
 }
@@ -69,9 +67,7 @@ Gltf& Gltf::operator=( Gltf&& other )
 	scenes        = std::move( other.scenes );
 	scene         = std::move( other.scene );
 
-	std::for_each( std::begin( *nodes ), std::end( *nodes ), [this]( auto& node ) { node.model = this; } );
 	std::for_each( std::begin( scenes ), std::end( scenes ), [this]( auto& scene ) { scene.model = this; } );
-	std::for_each( std::begin( animations ), std::end( animations ), [this]( auto& anim ) { anim.model = this; } );
 	load_meshes();
 	load_nodes();
 
@@ -929,58 +925,54 @@ void Gltf::init_nodes( const nlohmann::json& j )
 
 	for ( const auto& n : j )
 	{
-		auto& node = nodes->emplace_back();
-		node.model = this;
-
-		// Index
-		node.handle = Handle<Node>( nodes, i++ );
+		auto node = nodes.push();
 
 		// Name
 		if ( n.count( "name" ) )
 		{
-			node.name = n["name"].get<std::string>();
+			node->name = n["name"].get<std::string>();
 		}
 
 		// Camera
 		if ( n.count( "camera" ) )
 		{
 			unsigned m  = n["camera"];
-			node.camera = &( cameras[m] );
+			node->camera = &( cameras[m] );
 		}
 
 		// Matrix
 		if ( n.count( "matrix" ) )
 		{
 			auto marr = n["matrix"].get<std::array<float, 16>>();
-			node.matrix = math::Mat4( marr.data() );
+			node->matrix = math::Mat4( marr.data() );
 		}
 
 		// Mesh
 		if ( n.count( "mesh" ) )
 		{
 			auto mesh_index = n["mesh"];
-			node.mesh = Handle<Mesh>( meshes, mesh_index );
+			node->mesh = Handle<Mesh>( meshes, mesh_index );
 		}
 
 		// Rotation
 		if ( n.count( "rotation" ) )
 		{
 			auto qvec     = n["rotation"].get<std::vector<float>>();
-			node.rotation = math::Quat{ qvec[3], qvec[0], qvec[1], qvec[2] };
+			node->rotation = math::Quat{ qvec[3], qvec[0], qvec[1], qvec[2] };
 		}
 
 		// Scale
 		if ( n.count( "scale" ) )
 		{
 			auto s     = n["scale"].get<std::vector<float>>();
-			node.scale = math::Vec3{ s[0], s[1], s[2] };
+			node->scale = math::Vec3{ s[0], s[1], s[2] };
 		}
 
 		// Translation
 		if ( n.count( "translation" ) )
 		{
 			auto t           = n["translation"].get<std::vector<float>>();
-			node.translation = math::Vec3{ t[0], t[1], t[2] };
+			node->translation = math::Vec3{ t[0], t[1], t[2] };
 		}
 
 		// Estensions
@@ -990,7 +982,7 @@ void Gltf::init_nodes( const nlohmann::json& j )
 			// Lights
 			if ( extensions.count( "KHR_lights_punctual" ) )
 			{
-				node.light_index = extensions["KHR_lights_punctual"]["light"].get<int32_t>();
+				node->light_index = extensions["KHR_lights_punctual"]["light"].get<int32_t>();
 			}
 		}
 
@@ -1003,13 +995,13 @@ void Gltf::init_nodes( const nlohmann::json& j )
 			if ( extras.count( "bounds" ) )
 			{
 				auto bounds_index = extras["bounds"].get<int32_t>();
-				node.bounds = bounds.get_handle( bounds_index );
+				node->bounds = bounds.get_handle( bounds_index );
 			}
 
 			// Scripts
 			if ( extras.count( "scripts" ) )
 			{
-				node.scripts_indices = extras["scripts"].get<std::vector<size_t>>();
+				node->scripts_indices = extras["scripts"].get<std::vector<size_t>>();
 			}
 		}
 	}
@@ -1084,7 +1076,7 @@ void Gltf::init_animations( const nlohmann::json& j )
 {
 	for ( auto& a : j )
 	{
-		auto animation = Animation( *this );
+		auto animation = Animation( handle );
 
 		if ( a.count( "name" ) )
 		{
@@ -1131,7 +1123,7 @@ void Gltf::init_animations( const nlohmann::json& j )
 			animation.channels->push_back( std::move( channel ) );
 		}
 
-		animations.push_back( std::move( animation ) );
+		animations.push( std::move( animation ) );
 	}
 }
 

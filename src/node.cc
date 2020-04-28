@@ -35,9 +35,9 @@ math::Mat4 Node::get_matrix() const
 
 math::Mat4 Node::get_absolute_matrix() const
 {
-	if ( auto parent_node = get_parent() )
+	if ( parent )
 	{
-		return parent_node->get_absolute_matrix() * get_matrix();
+		return parent->get_absolute_matrix() * get_matrix();
 	}
 	return get_matrix();
 }
@@ -62,14 +62,6 @@ bool Node::contains( const math::Vec2& point ) const
 Handle<Node> Node::get_parent() const
 {
 	return parent;
-}
-
-
-Handle<Node> Node::create_child( const std::string& name )
-{
-	auto child = model->create_node( handle );
-	child->name = name;
-	return child;
 }
 
 
