@@ -52,7 +52,9 @@ bool Rect::contains( const math::Vec2& p ) const
 	if ( node )
 	{
 		math::Rect rect = *this;
-		rect.offset = node->get_absolute_matrix() * rect.offset;
+		auto matrix = node->get_absolute_matrix();
+		rect.a = matrix * rect.a;
+		rect.b = matrix * rect.b;
 		return rect.contains( p );
 	}
 	return math::Rect::contains( p );

@@ -127,6 +127,12 @@ void Animation::add_rotation(
 
 void Animation::add_rotation( const Handle<Node>& node, const float time, const math::Quat& quat )
 {
+	add_rotation( node, time, find_last_rotation(), quat );
+}
+
+
+void Animation::add_rotation( const Handle<Node>& node, const float time, const math::Quat& a, const math::Quat& b )
+{
 	assert( node && "Animation should work on a valid node" );
 
 	// Timepoints
@@ -136,7 +142,7 @@ void Animation::add_rotation( const Handle<Node>& node, const float time, const 
 
 	// Rotation values
 	auto last_rotation = find_last_rotation();
-	std::vector<math::Quat> quats = { last_rotation, quat };
+	std::vector<math::Quat> quats = { a, b };
 
 	// Create a channel to target the node
 	auto& channel = channels->emplace_back();

@@ -71,8 +71,8 @@ Mesh Mesh::create_triangle( const math::Vec3& a, const math::Vec3& b, const math
 
 Mesh Mesh::create_rect( const math::Rect& r, const Handle<Material>& material )
 {
-	auto a = math::Vec3( r.offset.x, r.offset.y );
-	auto b = math::Vec3( r.extent.x + r.offset.x, r.extent.y + r.offset.y );
+	auto a = math::Vec3( r.a );
+	auto b = math::Vec3( r.b );
 	return create_rect( a, b, material );
 }
 
@@ -141,8 +141,8 @@ Mesh Mesh::create_rect( const math::Vec3& a, const math::Vec3& b, const Color& c
 
 Mesh Mesh::create_rect( const math::Rect& r, const Color& color )
 {
-	auto a = math::Vec3( r.offset.x, r.offset.y );
-	auto b = math::Vec3( r.extent.x + r.offset.x, r.extent.y + r.offset.y );
+	auto a = math::Vec3( r.a );
+	auto b = math::Vec3( r.b );
 	return create_rect( a, b, color );
 }
 

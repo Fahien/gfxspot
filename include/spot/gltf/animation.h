@@ -98,6 +98,9 @@ struct Animation : public Handled<Animation>
 	/// @brief Adds a new rotation to this animation by using previous values
 	/// With no previous values, 0.0f and Quat::Identity will be used
 	void add_rotation( const Handle<Node>& node, const float time, const math::Quat& quat );
+	
+	/// @brief Adds a new rotation to this animation from a to b in time seconds
+	void add_rotation( const Handle<Node>& node, const float time, const math::Quat& a, const math::Quat& b );
 
 	Handle<Gltf> model = {};
 

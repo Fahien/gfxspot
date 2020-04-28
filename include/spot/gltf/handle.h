@@ -12,12 +12,22 @@ template <typename T>
 class Uvec;
 
 
+/// @brief The handle class is used to solve the problem of using
+/// pointers to elements of a vector which can become dangling when
+/// the vector gets resized and the element gets moved somwhere else.
+/// The handle stores a reference of that vector and the index of the
+/// elements it should point to. Using the index means that elements
+/// of the vector should never be erased, or a handle might end up
+/// referring to a different element.
 template <typename T>
 class Handle
 {
   public:
+	/// @brief Constucts an invalid handle
 	Handle() = default;
 
+	/// @param v Unique pointer to a vector ensures that vector would not move
+	/// @param i Index to the element pointed to by the handle
 	Handle( const Uvec<T>& v, size_t i )
 	: vec { v.get() }
 	, index { i }
@@ -25,6 +35,7 @@ class Handle
 		assert( *this && "Handle is not valid" );
 	}
 
+	/// @return Whether the handle is valid or not
 	explicit operator bool() const
 	{
 		return vec && index < vec->size();
