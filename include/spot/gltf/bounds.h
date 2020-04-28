@@ -1,30 +1,17 @@
 #pragma once
 
 #include <cassert>
+#include <variant>
+
 #include <spot/math/math.h>
 #include <spot/math/shape.h>
+
 #include "spot/gltf/node.h"
 
 namespace spot::gfx
 {
 
 class Gltf;
-
-struct Bounds
-{
-	enum class Type
-	{
-		Undefined,
-		Rect,
-		Box,
-		Sphere,
-		Max,
-	};
-
-	int32_t index = -1;
-	Type type = Type::Rect;
-	int32_t shape = -1;
-};
 
 
 /// @todo 
@@ -45,11 +32,6 @@ struct Shape
 	virtual bool intersects( const Shape& s ) const { assert( false && "unimplemented" ); return false; }
 	virtual bool contains( const math::Vec2& p ) const { assert( false && "unimplemented" ); return false; }
 
-	Gltf* model = nullptr;
-
-	/// @brief Index of the shape
-	int32_t index = -1;
-
 	/// @brief Node this shape belongs to
 	Handle<Node> node = {};
 
@@ -65,7 +47,7 @@ struct Shape
 };
 
 
-struct Rect : public math::Rect, Shape
+struct Rect : public math::Rect, public Handled<Rect>, Shape
 {
 	using math::Rect::Rect;
 
@@ -73,16 +55,34 @@ struct Rect : public math::Rect, Shape
 };
 
 
-struct Box : public math::Box, Shape
+struct Box : public math::Box, public Handled<Box>, Shape
 {
 	using math::Box::Box;
 
 };
 
 
-struct Sphere : public math::Sphere, Shape
+struct Sphere : public math::Sphere, public Handled<Sphere>, Shape
 {
 	using math::Sphere::Sphere;
+};
+
+
+struct Bounds : public Handled<Bounds>
+{
+	enum class Type
+	{
+		Undefined,
+		Rect,
+		Box,
+		Sphere,
+		Max,
+	};
+
+	Shape& get_shape() const;
+
+	Type type = Type::Rect;
+	std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> shape;
 };
 
 

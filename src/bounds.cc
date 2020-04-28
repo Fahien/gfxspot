@@ -5,6 +5,19 @@ namespace spot::gfx
 {
 
 
+Shape& Bounds::get_shape() const
+{
+	switch ( type )
+	{
+	case Type::Rect:   return *std::get<Handle<Rect>>( shape );
+	case Type::Box:    return *std::get<Handle<Box>>( shape );
+	case Type::Sphere: return *std::get<Handle<Sphere>>( shape );
+	default:
+		assert( false && "Bounds shape type not supported" );
+	}
+}
+
+
 void Shape::set_matrix( const math::Mat4& m )
 {
 	matrix = m;

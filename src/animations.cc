@@ -65,10 +65,6 @@ void Animations::update( const float delta_time, const Handle<Gltf>& model )
 
 				auto& values = channel.sampler->output;
 
-				auto& data_view   = values->buffer_view;
-				auto  data_offset  = values->byte_offset + data_view->byte_offset;
-				auto& data_buffer  = data_view->buffer;
-
 				switch ( channel.target.path )
 				{
 				case spot::gfx::Animation::Target::Path::Rotation:

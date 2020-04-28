@@ -76,6 +76,7 @@ Handle<Node> Node::create_child( const std::string& name )
 void Node::add_child( const Handle<Node>& child )
 {
 	assert( child != handle && "Cannot add child to itself" );
+	assert( !child->parent && "Cannot add a child which already has a parent" );
 	child->parent = handle;
 	children.emplace_back( child );
 }
@@ -83,25 +84,16 @@ void Node::add_child( const Handle<Node>& child )
 
 void Node::remove_from_parent()
 {
-	if ( auto parent_node = get_parent() )
+	if ( parent )
 	{
 		// Remove node from parent's children
-		auto index_it = std::find( std::begin( parent_node->children ), std::end( parent_node->children ), handle );
-		if ( index_it != std::end( parent_node->children ) )
+		auto it = std::find( std::begin( parent->children ), std::end( parent->children ), handle );
+		if ( it != std::end( parent->children ) )
 		{
-			parent_node->children.erase( index_it );
+			parent->children.erase( it );
 		}
 
 		parent = {};
-	}
-	else if ( auto scene = model->scene )
-	{
-		// Remove node from the scene
-		auto index_it = std::find( std::begin( scene->nodes ), std::end( scene->nodes ), handle );
-		if ( index_it != std::end( scene->nodes ) )
-		{
-			scene->nodes.erase( index_it );
-		}
 	}
 }
 

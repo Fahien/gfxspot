@@ -67,15 +67,8 @@ class Gltf : public Handled<Gltf>
 	/// @return A Gltf model
 	static Gltf load( const std::string& path );
 
+	/// @return A new child node of the provided parent
 	Handle<Node> create_node( const Handle<Node>& parent );
-
-	/// @param bounds Index of the bounds
-	/// @return The bounds found at that index, nullptr otherwise
-	Bounds* get_bounds( int32_t bounds );
-
-	/// @param bounds Index of the bounds
-	/// @return The shape of that bounds, nullptr otherwise
-	Shape* get_shape( int32_t bounds );
 
 	/// @return The animation at that index, nullptr otherwise
 	Accessor* get_accessor( size_t accessor );
@@ -199,10 +192,10 @@ class Gltf : public Handled<Gltf>
 	std::vector<Animation> animations;
 
 	/// List of shapes (abstract)
-	std::vector<Rect> rects;
-	std::vector<Box> boxes;
-	std::vector<Sphere> spheres;
-	std::vector<Bounds> bounds;
+	Uvec<Rect> rects;
+	Uvec<Box> boxes;
+	Uvec<Sphere> spheres;
+	Uvec<Bounds> bounds;
 
 	/// List of scripts
 	std::vector<Script> scripts;

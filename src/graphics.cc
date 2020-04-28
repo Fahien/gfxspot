@@ -141,7 +141,10 @@ void Queue::submit( CommandBuffer& command_buffer, const std::vector<VkSemaphore
 	const auto res = vkQueueSubmit( handle, 1, &info, fence_handle );
 	assert( res == VK_SUCCESS && "Cannot submit to queue" );
 
-	fence->can_wait = true;
+	if ( fence )
+	{
+		fence->can_wait = true;
+	}
 }
 
 

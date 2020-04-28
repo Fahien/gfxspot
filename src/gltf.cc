@@ -1002,7 +1002,8 @@ void Gltf::init_nodes( const nlohmann::json& j )
 			// Bounds
 			if ( extras.count( "bounds" ) )
 			{
-				node.bounds = extras["bounds"].get<int32_t>();
+				auto bounds_index = extras["bounds"].get<int32_t>();
+				node.bounds = bounds.get_handle( bounds_index );
 			}
 
 			// Scripts
@@ -1165,7 +1166,7 @@ void Gltf::init_shapes( const nlohmann::json& ss )
 			auto bb = s["box"]["b"].get<std::vector<float>>();
 			auto b  = math::Vec3{ bb[0], bb[1], bb[2] };
 
-			boxes.emplace_back( Box{ a, b } );
+			boxes.push( Box{ a, b } );
 		}
 		else if ( type == "sphere" )
 		{
@@ -1174,7 +1175,7 @@ void Gltf::init_shapes( const nlohmann::json& ss )
 
 			auto r = s["sphere"]["r"].get<float>();
 
-			spheres.emplace_back( Sphere{ o, r } );
+			spheres.push( Sphere{ o, r } );
 		}
 		else
 		{
@@ -1237,35 +1238,6 @@ Handle<Node> Gltf::create_node( const Handle<Node>& parent )
 	auto node = nodes.push();
 	parent->add_child( node );
 	return node;
-}
-
-
-Bounds* Gltf::get_bounds( int32_t index )
-{
-	if ( index >= 0 && index < bounds.size() )
-	{
-		return &bounds[index];
-	}
-	return nullptr;
-}
-
-
-Shape* Gltf::get_shape( int32_t index )
-{
-	if ( auto bb = get_bounds( index ) )
-	{
-		switch ( bb->type )
-		{
-		case Bounds::Type::Rect:
-			if ( bb->shape >= 0 && bb->shape < rects.size() )
-			{
-				return &rects[bb->shape];
-			}
-		default:
-			assert( false && "Bounds type not supported yet" );
-		}
-	}
-	return nullptr;
 }
 
 

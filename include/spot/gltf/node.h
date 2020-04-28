@@ -14,6 +14,7 @@ class Mesh;
 class Light;
 class Script;
 class Shape;
+class Bounds;
 
 
 /// Node in the node hierarchy
@@ -70,6 +71,9 @@ class Node : public Handled<Node>
 	/// Handle of the mesh of the node
 	Handle<Mesh> mesh = {};
 
+	/// This node's bounds handle
+	Handle<Bounds> bounds = {};
+
 	/// User-defined name of this object
 	std::string name = "Unknown";
 
@@ -91,9 +95,6 @@ class Node : public Handled<Node>
 
 	/// If not negative, index of light contained by this node
 	int32_t light_index = -1;
-
-	/// This node's bounds indices
-	int32_t bounds = -1;
 
 	/// This node's scripts indices
 	std::vector<size_t> scripts_indices;

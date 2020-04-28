@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include <limits>
 
 namespace spot::gfx
 {
@@ -38,7 +39,7 @@ class Handle
 	size_t get_index() const { return index; }
 
   private:
-	size_t index = 0;
+	size_t index = std::numeric_limits<size_t>::max();
 	std::vector<T>* vec = nullptr;
 };
 
