@@ -76,6 +76,7 @@ class Images
 
 	/// @brief Loads an image from file
 	/// @return an image view to that image
+	/// @todo Should I use std::string instead?
 	VkImageView load( const char* path );
 
 	/// @brief Loads an image from memory

@@ -98,6 +98,15 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 			window->click.right = true;
 		}
 	}
+
+	if ( button == GLFW_MOUSE_BUTTON_3 )
+	{
+		if ( action == GLFW_PRESS )
+		{
+			window->click.pos = window->get_cursor_position();
+			window->click.middle = true;
+		}
+	}
 }
 
 
@@ -191,4 +200,4 @@ Window::Surface::~Surface()
 }
 
 
-}
+} // namespace spot::gfx
