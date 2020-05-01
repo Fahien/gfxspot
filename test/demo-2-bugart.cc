@@ -137,7 +137,7 @@ int main()
 
 	auto bugart = create_bugart( model );
 
-	auto node = model->create_node();
+	auto node = model->nodes.push();
 	node->mesh = bugart;
 
 	gfx.camera.look_at( math::Vec3::Z * -2.0f, math::Vec3::Zero, math::Vec3::Y );

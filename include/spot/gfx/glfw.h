@@ -73,6 +73,8 @@ class Window
 		math::Vec2 pos = {};
 	} click;
 
+	std::function<void( const VkExtent2D& )> on_resize = {};
+
 	class Surface
 	{
 	  public:

@@ -281,10 +281,10 @@ void Gltf::init_cameras( const nlohmann::json& j )
 
 		// Type
 		auto type   = c["type"].get<std::string>();
-		camera.type = ( type == "orthographic" ) ? GltfCamera::Type::Ortographic : GltfCamera::Type::Perspective;
+		camera.type = ( type == "orthographic" ) ? GltfCamera::Type::Orthographic : GltfCamera::Type::Perspective;
 
 		// Camera
-		if ( camera.type == GltfCamera::Type::Ortographic )
+		if ( camera.type == GltfCamera::Type::Orthographic )
 		{
 			camera.orthographic.xmag  = c["orthographic"]["xmag"].get<float>();
 			camera.orthographic.ymag  = c["orthographic"]["ymag"].get<float>();

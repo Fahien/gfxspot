@@ -47,8 +47,12 @@ double Glfw::get_delta()
 void set_window_size( GLFWwindow* handle, const int width, const int height )
 {
 	auto window = reinterpret_cast<Window*>( glfwGetWindowUserPointer( handle ) );
-	window->extent.width  = width;
-	window->extent.height = height;
+	window->extent.width  = static_cast<uint32_t>( width );
+	window->extent.height = static_cast<uint32_t>( height );
+	if ( window->on_resize )
+	{
+		window->on_resize( window->extent );
+	}
 }
 
 

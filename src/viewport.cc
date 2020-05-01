@@ -19,25 +19,33 @@ VkViewport create_viewport( const Window& window )
 }
 
 
-VkViewport create_abstract( const math::Vec2& off, const math::Vec2& ext )
+VkViewport create_abstract( const math::Vec2& offset = { -1.0f, -1.0f }, const math::Vec2& extent = { 2.0f, 2.0f } )
 {
 	VkViewport abstract = {};
-	abstract.x = off.x;
-	abstract.y = off.y;
-	abstract.width = ext.x;
-	abstract.height = ext.y;
+	abstract.x = offset.x;
+	abstract.y = offset.x;
+	abstract.width = extent.x;
+	abstract.height = extent.y;
 	abstract.minDepth = 0.125f;
 	abstract.maxDepth = 16.0f;
 	return abstract;
 }
 
 
-Viewport::Viewport( const Window& win, Camera& cam, const math::Vec2& off, const math::Vec2& ext )
+Viewport::Viewport( const Window& win, Camera& cam )
 : window { win }
 , viewport { create_viewport( window ) }
 , camera { cam }
-, abstract { create_abstract( off, ext ) }
-{}
+, abstract { create_abstract() }
+{
+	camera.update( *this );
+}
+
+
+void Viewport::update()
+{
+	viewport = create_viewport( window );
+}
 
 
 void Viewport::set_offset( const float x, const float y )
@@ -45,8 +53,7 @@ void Viewport::set_offset( const float x, const float y )
 	abstract.x = x;
 	abstract.y = y;
 
-	/// @todo Handle different types of camera
-	camera.orthographic( abstract );
+	camera.update( *this );
 }
 
 
@@ -55,8 +62,7 @@ void Viewport::set_extent( const float width, const float height )
 	abstract.width = width;
 	abstract.height = height;
 
-	/// @todo Handle different types of camera
-	camera.orthographic( abstract );
+	camera.update( *this );
 }
 
 

@@ -27,30 +27,29 @@ int main()
 	auto gfx = Graphics();
 	auto model = gfx.create_model();
 
-	auto square = model->create_node(
-		Mesh::create_rect(
+	auto square = model->nodes.push( Node(
+		model->meshes.push( Mesh::create_rect(
 			math::Vec3( -0.5f, -0.5f ),
 			math::Vec3( 0.5f, 0.5f )
-		)
-	);
+		) )
+	) );
 	
-	auto triangle = model->create_node(
-		Mesh::create_triangle(
+	auto triangle = model->nodes.push( Node(
+		model->meshes.push( Mesh::create_triangle(
 			math::Vec3( 0.5f, 0.0f, -1.0f ),
 			math::Vec3( -0.5f, 0.0f, -1.0f ),
 			math::Vec3( 0.0f, 0.0f, 0.0f )
-		)
-	);
+		) )
+	) );
 
-	auto quad = model->create_node(
-		Mesh::create_quad(
-			model->materials.push(
-				model->images->load( "img/lena.png" )
-			)
-		)
-	);
+	auto quad = model->nodes.push( Node(
+		model->meshes.push( Mesh::create_quad(
+			model->materials.push( model->images->load( "img/lena.png" ) )
+		) )
+	) );
 
-	gfx.camera.look_at( math::Vec3::One * 1.5f, math::Vec3::Zero, math::Vec3::Y );
+	gfx.camera.set_perspective( gfx.viewport );
+	gfx.camera.look_at( math::Vec3::One / 2.0f, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( gfx.window.is_alive() )
 	{

@@ -124,7 +124,7 @@ struct Animation : public Handled<Animation>
 	State state = State::Play;
 
 	// Whether to repeat this animation or not
-	bool repeat = false;
+	bool repeat = true;
 };
 
 

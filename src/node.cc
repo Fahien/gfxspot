@@ -5,6 +5,7 @@
 namespace spot::gfx
 {
 
+
 Node::Node( const Handle<Mesh>& mesh )
 : mesh { mesh }
 {}
@@ -40,22 +41,6 @@ math::Mat4 Node::get_absolute_matrix() const
 		return parent->get_absolute_matrix() * get_matrix();
 	}
 	return get_matrix();
-}
-
-
-bool Node::contains( const math::Vec2& point ) const
-{
-	/// @todo Make this a bounding box and store an handle to it into a node
-	auto rect = math::Rectangle();
-	rect.width = 1.0f;
-	rect.height = 1.0f;
-	rect.x = -rect.width / 2.0f;
-	rect.y = -rect.height / 2.0f;
-
-	rect.x += translation.x;
-	rect.y += translation.y;
-
-	return rect.contains( point.x, point.y );
 }
 
 

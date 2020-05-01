@@ -18,7 +18,13 @@ class Viewport
 	/// @param window Used to construct the graphics viewport
 	/// @param off Offset of the virtual viewport
 	/// @param ext Extent of the virtual viewport
-	Viewport( const Window& window, Camera& cam, const math::Vec2& off = { -1.0f, -1.0f }, const math::Vec2& ext = { 2.0f, 2.0f } );
+	Viewport( const Window& window, Camera& cam );
+
+	/// @brief Update the viewport according to the state of the window
+	void update();
+
+	/// @return The virtual viewport aspect ratio
+	float get_aspect_ratio() const { return abstract.width / float( abstract.height ); }
 
 	/// @return The graphics viewport
 	VkViewport& get_viewport() { return viewport; }
@@ -35,6 +41,7 @@ class Viewport
 	/// reflecting changes to the associated camera
 	void set_extent( float width, float height );
 	void set_extent( const math::Vec2& e ) { set_extent( e.x, e.y ); }
+	void set_extent( const VkExtent2D& e ) { set_extent( float( e.width ), float( e.height ) ); }
 
 	/// @brief Converts window coordinates to virtual viewport coordinates
 	math::Vec2 from_window( const math::Vec2& coords );

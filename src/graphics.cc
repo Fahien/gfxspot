@@ -818,7 +818,6 @@ Graphics::Graphics()
 , graphics_queue { device.find_graphics_queue() }
 , present_queue { device.find_present_queue( surface.handle ) }
 {
-	//camera.perspective( swapchain.extent.width / float(swapchain.extent.height), math::radians( 60.0f ), 10000.0f, 0.125f );
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )
 	{
 		images_available.emplace_back( device );
@@ -851,8 +850,7 @@ bool Graphics::render_begin()
 		render_pass = RenderPass( swapchain );
 
 		// Update viewport and scissor
-		viewport.get_viewport().width = window.frame.width;
-		viewport.get_viewport().height = window.frame.height;
+		viewport.update();
 		scissor.extent = window.frame;
 
 		renderer.recreate_pipelines();
@@ -860,12 +858,6 @@ bool Graphics::render_begin()
 		frames = Frames( swapchain );
 		framebuffers = frames.create_framebuffers( render_pass );
 
-		/// @todo How to handle this?
-		//proj = perspective(
-		//	viewport.width / viewport.height,
-		//	math::radians( 60.0f ),
-		//	10000.0f,
-		//	0.125f );
 
 		for ( auto& fence : frames_in_flight )
 		{

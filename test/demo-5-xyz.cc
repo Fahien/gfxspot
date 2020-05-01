@@ -12,7 +12,7 @@ namespace spot::gfx
 
 Handle<Node> create_line( const Handle<Gltf>& model, gfx::Dot a, gfx::Dot b )
 {
-	auto node = model->create_node();
+	auto node = model->nodes.push();
 
 	auto mesh = model->meshes.push();
 	node->mesh = mesh;
@@ -31,13 +31,13 @@ Handle<Node> create_line( const Handle<Gltf>& model, gfx::Dot a, gfx::Dot b )
 
 Handle<Node> create_lena( const Handle<Gltf>& model )
 {
-	return model->create_node(
-		Mesh::create_quad(
+	return model->nodes.push( Node(
+		model->meshes.push( Mesh::create_quad(
 			model->materials.push(
 				Material( model->images->load( "img/lena.png" ) )
 			)
-		)
-	);
+		) )
+	) );
 }
 
 
@@ -80,6 +80,7 @@ int main( const int argc, const char** argv )
 
 	auto triangle = create_lena( model );
 	
+	gfx.camera.set_perspective( gfx.viewport, math::radians( 60.0f ) );
 	gfx.camera.look_at( math::Vec3::One, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( gfx.window.is_alive() )

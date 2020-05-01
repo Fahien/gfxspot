@@ -55,10 +55,10 @@ Handle<Node> create_card( const Handle<Gltf>& model )
 		Material( model->images->load( "img/card.png" ) )
 	);
 
-	auto card = Mesh({
-		Primitive( std::move( vertices ), std::move( indices ), material )
-	});
-	return model->create_node( std::move( card ) );
+	auto card = model->meshes.push( Mesh(
+		{ Primitive( std::move( vertices ), std::move( indices ), material ) }
+	) );
+	return model->nodes.push( card );
 }
 
 
@@ -74,7 +74,9 @@ int main()
 
 	auto card = create_card( gfx.create_model() );
 
-	gfx.camera.look_at( math::Vec3::Z * -2.0f, math::Vec3::Zero, math::Vec3::Y );
+	gfx.window.on_resize = [&gfx]( const VkExtent2D& extent ) { gfx.viewport.set_extent( extent ); };
+	gfx.camera.set_perspective( gfx.viewport );
+	gfx.camera.look_at( math::Vec3::Z * -4.0f, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( gfx.window.is_alive() )
 	{

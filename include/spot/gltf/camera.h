@@ -1,5 +1,4 @@
-#ifndef GST_CAMERA_H_
-#define GST_CAMERA_H_
+#pragma once
 
 #include <string>
 
@@ -11,7 +10,7 @@ namespace spot::gfx
 struct GltfCamera
 {
 	/// Orthographic Camera
-	struct Ortographic
+	struct Orthographic
 	{
 		/// Horizontal magnification
 		float xmag = 0.0f;
@@ -45,12 +44,12 @@ struct GltfCamera
 	/// Type of the camera
 	enum class Type
 	{
-		Ortographic,
+		Orthographic,
 		Perspective
 	};
 
 	/// Orthographic camera
-	Ortographic orthographic;
+	Orthographic orthographic;
 
 	/// Perspective camera
 	Perspective perspective;
@@ -62,5 +61,3 @@ struct GltfCamera
 	std::string name = "Unknown";
 };
 }  // namespace spot::gfx
-
-#endif  // GST_CAMERA_H_

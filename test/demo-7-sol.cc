@@ -55,7 +55,7 @@ const float step = width * 2.0f;
 
 Handle<Node> create_lines( const Colors& colors, const Handle<Gltf>& model )
 {
-	auto root = model->create_node();
+	auto root = model->nodes.push();
 
 	// First half
 	// White lines
@@ -66,18 +66,18 @@ Handle<Node> create_lines( const Colors& colors, const Handle<Gltf>& model )
 		// Bottom right
 		auto b = math::Vec3( x + width, 1.0f, 0.0f );
 
-		auto line = Mesh::create_rect( a, b, colors.white );
+		auto line = model->meshes.push( Mesh::create_rect( a, b, colors.white ) );
 
-		auto node = model->create_node( std::move( line ) );
+		auto node = model->nodes.push( Node( line ) );
 		root->add_child( node );
 	}
 	// + black background
 	{
 		auto a = math::Vec3( -1.0f, -1.0f, -0.1f );
 		auto b = math::Vec3( 0.0f, 1.0f, -0.1f );
-		auto line = Mesh::create_rect( a, b, colors.black );
+		auto line = model->meshes.push( Mesh::create_rect( a, b, colors.black ) );
 		
-		auto node = model->create_node( std::move( line ) );
+		auto node = model->nodes.push( Node( line ) );
 		root->add_child( node );
 	}
 
@@ -88,25 +88,25 @@ Handle<Node> create_lines( const Colors& colors, const Handle<Gltf>& model )
 		auto a = math::Vec3( 0.0, y, 0.0f );
 		auto b = math::Vec3( 1.0f, y + width, 0.0f );
 
-		auto line = Mesh::create_rect( a, b, colors.yellow );
+		auto line = model->meshes.push( Mesh::create_rect( a, b, colors.yellow ) );
 		
-		auto node = model->create_node( std::move( line ) );
+		auto node = model->nodes.push( Node( line ) );
 		root->add_child( node );
 	}
 	// + white background
 	{
 		auto a = math::Vec3( 0.0f, 0.0f - width, -0.1f );
 		auto b = math::Vec3( 1.0f, -1.0f, -0.1f );
-		auto line = Mesh::create_rect( a, b, colors.white );
-		auto node = model->create_node( std::move( line ) );
+		auto line = model->meshes.push( Mesh::create_rect( a, b, colors.white ) );
+		auto node = model->nodes.push( Node( line ) );
 		root->add_child( node );
 	}
 	// Black delimitator
 	{
 		auto a = math::Vec3( 0.0f, 0.0f, -0.1f );
 		auto b = math::Vec3( 1.0f, -width, -0.1f );
-		auto line = Mesh::create_rect( a, b, colors.black );
-		auto node = model->create_node( std::move( line ) );
+		auto line = model->meshes.push( Mesh::create_rect( a, b, colors.black ) );
+		auto node = model->nodes.push( Node( line ) );
 		root->add_child( node );
 	}
 
@@ -116,7 +116,7 @@ Handle<Node> create_lines( const Colors& colors, const Handle<Gltf>& model )
 
 Handle<Node> create_red_lines( const Colors& colors, const Handle<Gltf>& model )
 {
-	auto root = model->create_node();
+	auto root = model->nodes.push();
 
 	float red_width = width * sqrtf( 2.0f );
 	float step = red_width * 2;
@@ -130,17 +130,17 @@ Handle<Node> create_red_lines( const Colors& colors, const Handle<Gltf>& model )
 		// Top right
 		auto b = math::Vec3( x + red_width, 1.0f, -0.2f );
 
-		auto line = Mesh::create_rect( a, b, colors.red );
+		auto line = model->meshes.push( Mesh::create_rect( a, b, colors.red ) );
 
-		auto node = model->create_node( std::move( line ) );
+		auto node = model->nodes.push( Node( line ) );
 		root->add_child( node );
 	}
 	// + black background
 	{
 		auto a = math::Vec3( 0.0f, -1.0f, -0.3f );
 		auto b = math::Vec3( 2.0f, 1.0f, -0.3f );
-		auto line = Mesh::create_rect( a, b, colors.white );
-		auto node = model->create_node( std::move( line ) );
+		auto line = model->meshes.push( Mesh::create_rect( a, b, colors.white ) );
+		auto node = model->nodes.push( Node( line ) );
 		root->add_child( node );
 	}
 
@@ -166,7 +166,11 @@ int main()
 	auto red_lines = create_red_lines( colors , model );
 
 	gfx.camera.look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
-	gfx.camera.orthographic( -1.0f, 1.0, -1.0, 1.0, 0.125f, 2.0 );
+
+	gfx.window.on_resize = {};
+	gfx.viewport.set_extent( 2.0f, 2.0f );
+	gfx.viewport.set_offset( -1.0f, -1.0f );
+	gfx.camera.set_orthographic( gfx.viewport );
 
 	const auto rot45 = math::Mat4::identity.rotateZ( math::radians( 45.0f ) );
 

@@ -24,7 +24,7 @@ struct Light
 		float inner_cone_angle = 0.0f;
 
 		/// Angle in radians, from center where falloff ends
-		float outer_cone_angle = spot::math::kPi / 4.0f;
+		float outer_cone_angle = spot::math::Pi / 4.0f;
 	};
 
 	/// Name of the light

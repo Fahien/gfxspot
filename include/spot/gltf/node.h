@@ -28,15 +28,9 @@ class Node : public Handled<Node>
 	/// @return A newly created Node
 	Node( const Handle<Mesh>& mesh );
 
-	/// @param parent The parent of this node
-	/// @return A newly created Node
-	Node( const Handle<Node>& parent );
-
 	/// @param name Name of the node
 	/// @return A newly created Node
 	Node( const std::string& name );
-
-	bool contains( const math::Vec2& point ) const;
 
 	/// @return The parent of this node, otherwise nullptr
 	Handle<Node> get_parent() const;

@@ -2,8 +2,6 @@
 
 #include <spot/gfx/graphics.h>
 
-#define NODE( index ) ( gfx.models.get_node( index ) )
-
 namespace spot::gfx
 {
 
@@ -30,7 +28,7 @@ SolidMaterials::SolidMaterials( const Handle<Gltf>& model )
 Handle<Mesh> create_mesh( const Handle<Material>& material, const Handle<Gltf>& model )
 {
 	auto hs = unit / 2.0f - spacing / 2.0f;
-	return model->create_mesh(
+	return model->meshes.push(
 		Mesh::create_rect(
 			math::Vec3( -hs, -hs, 0.0f ),
 			math::Vec3( hs, hs, 0.0f ),
@@ -61,14 +59,14 @@ SolidMeshes::SolidMeshes( const Handle<Gltf>& model )
 
 
 // 2x2 block
-Handle<Node> create_tetris_el( const Handle<Mesh> mesh, const Handle<Gltf>& model )
+Handle<Node> create_tetris_el( const Handle<Mesh>& mesh, const Handle<Gltf>& model )
 {
-	auto block = model->create_node();
+	auto block = model->nodes.push();
 	block->translation.y = 2.0;
 
 	auto add_child = [&block, mesh, &model]( math::Vec3 translation ) {
-		auto node = model->create_node( block );
-		node->mesh = mesh;
+		auto node = model->nodes.push( Node( mesh ) );
+		block->add_child( node );
 		node->translation.x = translation.x;
 		node->translation.y = translation.y;
 	};
@@ -96,7 +94,13 @@ int main()
 	auto el = create_tetris_el( meshes.green, model );
 
 	gfx.camera.look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
-	gfx.camera.orthographic( -1.0f, 1.0, 0.0 + gfx::unit / 2.0f, 2.0 + gfx::unit / 2.0f, 0.125f, 2.0 );
+	gfx.viewport.set_offset( -1.0f, gfx::unit / 2.0f );
+	gfx.viewport.set_extent( 2.0f, 2.0f );
+	gfx.camera.set_orthographic( gfx.viewport );
+	gfx.window.on_resize = [&gfx]( const VkExtent2D& extent ) {
+		gfx.viewport.set_offset( -1.0f * extent.width / extent.height );
+		gfx.viewport.set_extent( 2.0f * extent.width / extent.height, 2.0f );
+	};
 
 	double tick = 1.0;
 	double time = 0.0f;

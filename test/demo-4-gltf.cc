@@ -29,7 +29,7 @@ Handle<Node> create_card( gfx::Graphics& gfx )
 
 	auto model = gfx.create_model();
 
-	auto card = model->create_mesh();
+	auto card = model->meshes.push();
 
 	std::vector<Vertex> vertices = {
 		Vertex(
@@ -94,14 +94,23 @@ int main( const int argc, const char** argv )
 	auto path = std::string( argv[1] );
 	auto model = gfx.load_model( path );
 
-	auto eye = math::Vec3( 4.0f, 4.0f, 4.0f );
+	gfx.window.on_resize = [&gfx]( const VkExtent2D& extent ) {
+		gfx.viewport.set_extent( extent );
+	};
+	gfx.camera.set_perspective( gfx.viewport, math::radians( 60.0f ) );
+	auto eye = math::Vec3::One * 4.0f;
 	gfx.camera.look_at( eye, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( gfx.window.is_alive() )
 	{
 		gfx.glfw.poll();
 		auto dt = gfx.glfw.get_delta();
-		Animations::update( dt, model );
+		gfx.animations.update( dt, model );
+
+		if ( gfx.window.scroll.y )
+		{
+			gfx.camera.node.translation += gfx.window.scroll.y;
+		}
 
 		if ( gfx.render_begin() )
 		{
