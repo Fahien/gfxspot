@@ -88,7 +88,7 @@ int main()
 	using namespace spot;
 
 	auto gfx = gfx::Graphics();
-	auto model = gfx.create_model();
+	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
 	auto meshes = gfx::SolidMeshes( model );
 
 	auto el = create_tetris_el( meshes.green, model );

@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "spot/gltf/handle.h"
+#include "spot/handle.h"
 
 
 namespace spot::gfx
@@ -11,7 +11,7 @@ namespace spot::gfx
 
 
 /// Buffer pointing to binary geometry, animation, or skins
-struct ByteBuffer
+struct ByteBuffer : public Handled<ByteBuffer>
 {
 	ByteBuffer() = default;
 
@@ -31,7 +31,7 @@ struct ByteBuffer
 
 
 /// View into a buffer, generally representing a subset of the buffer
-struct BufferView
+struct BufferView : public Handled<BufferView>
 {
 	/// Target that the GPU buffer should be bound to
 	enum class Target

@@ -1,6 +1,7 @@
 #include "spot/gfx/renderer.h"
 
 #include <cassert>
+#include <spot/log.h>
 
 #include "spot/gltf/material.h"
 #include "spot/gfx/graphics.h"
@@ -449,7 +450,7 @@ Renderer::add_descriptors( const Handle<Node>& node, const Handle<Material>& mat
 	bool ok;
 	std::tie( it, ok ) = descriptor_resources.emplace( key, std::move( resource ) );
 	assert( ok && "Cannot emplace primitive resource" );
-	printf( "Descriptor [node %zu, material %zu]\n", node.get_index(), material.get_index() );
+	logi( "Descriptor [node {}, material {}]\n", node.get_index(), material.get_index() );
 	return it;
 }
 

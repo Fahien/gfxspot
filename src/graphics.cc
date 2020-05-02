@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstring>
 #include <cmath>
+#include <spot/log.h>
 
 #include <spot/gltf/mesh.h>
 #include <spot/gltf/material.h>
@@ -989,9 +990,15 @@ void Graphics::draw( const Handle<Node>& node, const math::Mat4& transform )
 }
 
 
-void Graphics::draw( const Scene& scene, const math::Mat4& transform )
+void Graphics::draw( const Handle<Gltf>& model, const math::Mat4& transform )
 {
-	for ( auto& node : scene.nodes )
+	if ( !model->scene )
+	{
+		loge( "Model has no scene" );
+		return;
+	}
+
+	for ( auto& node : model->scene->nodes )
 	{
 		draw( node, transform );
 	}

@@ -6,7 +6,7 @@
 #include <spot/math/math.h>
 #include <spot/math/shape.h>
 
-#include "spot/gltf/handle.h"
+#include "spot/handle.h"
 #include "spot/gltf/color.h"
 
 
@@ -96,7 +96,7 @@ struct Primitive
 
 
 /// @brief Set of primitives to be rendered
-struct Mesh
+struct Mesh : public Handled<Mesh>
 {
 	/// @return A colored line mesh
 	static Mesh create_line( const math::Vec3& a, const math::Vec3& b, const Color& c = Color::white, float line_width = 1.0f );
@@ -119,17 +119,13 @@ struct Mesh
 		const math::Vec3& b = { 0.5f, 0.5f, 0.0f }
 	);
 
+	/// @return A unit cube mesh
+	static Mesh create_cube( const Handle<Material>& m );
+
 	Mesh( std::vector<Primitive>&& ps = {} ) : primitives { std::move( ps ) } {}
 
-	Mesh( Gltf& g );
-
 	Mesh( Mesh&& m );
-
-	/// Gltf model owning the mesh
-	Gltf* model;
-
-	/// Own handle
-	Handle<Mesh> handle = {};
+	Mesh& operator=( Mesh&& other ) = default;
 
 	/// Array of primitives, each defining geometry to be rendered with a material (required)
 	std::vector<Primitive> primitives;

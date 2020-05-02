@@ -7,11 +7,11 @@ int main( const int argc, const char** argv )
 {
 	using namespace spot;
 	gfx::Graphics gfx;
-	auto model = gfx.create_model();
+	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
 
 	auto quad = model->nodes.push( gfx::Node(
 			model->meshes.push( gfx::Mesh::create_quad(
-					model->materials.push( gfx::Material( model->images->load( "img/lena.png" ) ) )
+					model->materials.push( gfx::Material( model->images.load( "img/lena.png" ) ) )
 			) )
 	) );
 
@@ -36,7 +36,7 @@ int main( const int argc, const char** argv )
 			}
 			else
 			{
-				auto anim = model->animations.get_handle( 0 );
+				auto anim = model->animations.find( 0 );
 				anim->state = gfx::Animation::State::Play;
 			}
 		}

@@ -150,13 +150,13 @@ void Animation::add_rotation( const Handle<Node>& node, const float time, const 
 	channel.target.path = Target::Path::Rotation;
 
 	// Create the sampler
-	auto& sampler = samplers->emplace_back();
-	channel.sampler = Handle<Sampler>( samplers, samplers->size() - 1 );
-	sampler.interpolation = Sampler::Interpolation::Linear;
+	auto sampler = samplers.push();
+	channel.sampler = sampler;
+	sampler->interpolation = Sampler::Interpolation::Linear;
 
 	{
 		auto accessor = model->accessors.push();
-		sampler.input = accessor;
+		sampler->input = accessor;
 		accessor->type = Accessor::Type::SCALAR;
 		accessor->component_type = Accessor::ComponentType::FLOAT;
 		accessor->count = times.size();
@@ -173,7 +173,7 @@ void Animation::add_rotation( const Handle<Node>& node, const float time, const 
 
 	{
 		auto accessor = model->accessors.push();
-		sampler.output = accessor;
+		sampler->output = accessor;
 
 		accessor->type = Accessor::Type::VEC4;
 		accessor->component_type = Accessor::ComponentType::FLOAT;

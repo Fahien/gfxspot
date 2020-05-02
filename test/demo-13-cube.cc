@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <filesystem>
 #include <cmath>
-#include <spot/log.h>
 
 #include "spot/gfx/graphics.h"
 #include "spot/gfx/png.h"
@@ -12,29 +11,32 @@
 int main( const int argc, const char** argv )
 {
 	using namespace spot;
-
-	if ( argc < 2 )
-	{
-		loge( "Usage: %s <gltf>\n", argv[0] );
-		return EXIT_FAILURE;
-	}
-	
 	auto gfx = gfx::Graphics();
 
-	auto path = std::string( argv[1] );
-	auto model = gfx.load_model( path );
-
-	gfx.window.on_resize = [&gfx]( const VkExtent2D& extent ) {
-		gfx.viewport.set_extent( extent );
-	};
+	// Set viewport and camera
+	gfx.window.on_resize = [&gfx]( const VkExtent2D& extent ) { gfx.viewport.set_extent( extent ); };
 	gfx.camera.set_perspective( gfx.viewport, math::radians( 60.0f ) );
 	auto eye = math::Vec3::One * 4.0f;
 	gfx.camera.look_at( eye, math::Vec3::Zero, math::Vec3::Y );
 
+	// Create scene
+	auto model = gfx.models.push( gfx.device );
+
+	auto cube = model->nodes.push(
+		model->meshes.push( gfx::Mesh::create_cube(
+			model->materials.push( model->images.load( "img/dice.png" ) )
+		) )
+	);
+
+	// Loop
 	while ( gfx.window.is_alive() )
 	{
+		// Input
 		gfx.glfw.poll();
 		auto dt = gfx.glfw.get_delta();
+		gfx.window.update( dt );
+
+		// Update
 		gfx.animations.update( dt, model );
 
 		if ( gfx.window.scroll.y )
@@ -42,9 +44,18 @@ int main( const int argc, const char** argv )
 			gfx.camera.node.translation += gfx.window.scroll.y;
 		}
 
+		if ( gfx.window.swipe.x != 0.0f )
+		{
+			cube->rotation *= math::Quat( math::Vec3::Y, math::radians( gfx.window.swipe.x ) );
+		}
+		if ( gfx.window.swipe.y != 0.0f )
+		{
+			cube->rotation *= math::Quat( math::Vec3::X, math::radians( -gfx.window.swipe.y ) );
+		}
+		// Render
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( model );
+			gfx.draw( cube );
 			gfx.render_end();
 		}
 	}

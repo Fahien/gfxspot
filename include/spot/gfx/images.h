@@ -74,6 +74,9 @@ class Images
   public:
 	Images( Device& d );
 
+	Images( Images&& o );
+	Images& operator=( Images&& o );
+
 	/// @brief Loads an image from file
 	/// @return an image view to that image
 	/// @todo Should I use std::string instead?

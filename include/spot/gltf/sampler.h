@@ -1,12 +1,12 @@
-#ifndef GST_SAMPLER_H_
-#define GST_SAMPLER_H_
+#pragma once
 
 #include <string>
+#include <spot/handle.h>
 
 namespace spot::gfx
 {
 /// Texture sampler properties for filtering and wrapping modes
-struct GltfSampler
+struct GltfSampler : public Handled<GltfSampler>
 {
 	/// Magnification/Minification filter
 	enum class Filter
@@ -46,6 +46,3 @@ struct GltfSampler
 
 
 }  // namespace spot::gfx
-
-
-#endif  // GST_SAMPLER_H_

@@ -36,18 +36,9 @@ Handle<Node> Models::create_text( const std::string& text )
 }
 
 
-Handle<Gltf> Graphics::create_model()
-{
-	auto model = models.push();
-	model->images = std::make_unique<Images>( device );
-	return model;
-}
-
-
 Handle<Gltf> Graphics::load_model( const std::string& path )
 {
-	auto model = models.push( Gltf::load( path ) );
-	model->images = std::make_unique<Images>( device );
+	auto model = models.push( Gltf( device, path ) );
 
 	// Load materials
 	for ( auto& material : *model->materials )
@@ -56,7 +47,7 @@ Handle<Gltf> Graphics::load_model( const std::string& path )
 		{
 			auto& source = material.texture_handle->source;
 			assert( source && "Texture has no source" );
-			material.texture = model->images->load( source->uri.c_str() );
+			material.texture = model->images.load( source->uri.c_str() );
 		}
 	}
 

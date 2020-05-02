@@ -17,5 +17,6 @@ add_demo( demo-9-chess-board )
 add_demo( demo-10-text )
 add_demo( demo-11-animation )
 add_demo( demo-12-color-grid )
+add_demo( demo-13-cube )
 
 add_subdirectory( shader )

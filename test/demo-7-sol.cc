@@ -154,13 +154,12 @@ Handle<Node> create_red_lines( const Colors& colors, const Handle<Gltf>& model )
 /// Draw lines
 int main()
 {
-	using namespace spot::gfx;
-	namespace math = spot::math;
+	using namespace spot;
 
-	auto gfx = Graphics();
-	auto model = gfx.create_model();
+	auto gfx = gfx::Graphics();
+	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
 
-	Colors colors = create_colors( model );
+	gfx::Colors colors = create_colors( model );
 
 	auto lines = create_lines( colors , model );
 	auto red_lines = create_red_lines( colors , model );

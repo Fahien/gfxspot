@@ -4,6 +4,7 @@
 #include <png.h>
 #include <cstdio>
 #include <cstdlib>
+#include <spot/log.h>
 
 #include "spot/gfx/graphics.h"
 
@@ -13,14 +14,14 @@ namespace spot::gfx
 
 void handle_error( png_struct* png, const char* msg )
 {
-	std::fprintf( stderr, "PNG error: %s\n", msg );
+	loge( "PNG error: {}\n", msg );
 	exit( EXIT_FAILURE );
 }
 
 
 void handle_warning( png_struct* png, const char* msg )
 {
-	std::fprintf( stderr, "PNG warning: %s\n", msg );
+	loge( "PNG warning: {}\n", msg );
 	exit( EXIT_FAILURE );
 }
 
@@ -30,7 +31,8 @@ void read_status( png_struct* png, uint32_t row, int pass )
 	Png* obj = ( Png* )png_get_error_ptr( png );
 	
 	uint32_t percent = row * 100.0f / obj->height;
-	std::fprintf( stdout, "\rRead\t%u%%", percent );
+	std::printf("\r");
+	logi( "Read\t{}%", percent );
 	std::fflush( stdout );
 }
 
@@ -50,10 +52,10 @@ const char* color_type_to_string( int color_type )
 
 void Png::print_info()
 {
-	std::printf( "Size\t%ux%u\n", width, height );
-	std::printf( "Depth\t%i\n", bit_depth );
-	std::printf( "Color\t%s\n", color_type_to_string( color_type ) );
-	std::printf( "Chans\t%d\n", channels );
+	logi( "Size\t{}x{}\n", width, height );
+	logi( "Depth\t{}\n", bit_depth );
+	logi( "Color\t{}\n", color_type_to_string( color_type ) );
+	logi( "Chans\t{}\n", channels );
 }
 
 

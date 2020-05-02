@@ -92,7 +92,7 @@ Handle<Node> create_chess_board( const Handle<Gltf>& model )
 		uint32_t offset = col % 2;
 		for ( size_t row = 0; row < n; ++row )
 		{
-			auto color = model->meshes.get_handle( ( row + offset ) % 2 );
+			auto color = model->meshes.find( ( row + offset ) % 2 );
 			add_child( color,
 				math::Vec3(
 					unit / 2.0f + unit * row,
@@ -111,13 +111,12 @@ Handle<Node> create_chess_board( const Handle<Gltf>& model )
 
 int main()
 {
-	using namespace spot::gfx;
-	namespace math = spot::math;
+	using namespace spot;
 
-	auto gfx = Graphics();
-	auto model = gfx.create_model();
+	auto gfx = gfx::Graphics();
+	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
 
-	auto meshes = SolidMeshes( model );
+	auto meshes = gfx::SolidMeshes( model );
 
 	auto chess_board = create_chess_board( model );
 
@@ -146,7 +145,7 @@ int main()
 				/// @todo Implement some sort of contains
 				if ( child->bounds->get_shape().contains( coords ) )
 				{
-					child->mesh = model->meshes.get_handle( ( child->mesh.get_index() + 1 ) % 5 );
+					child->mesh = model->meshes.find( ( child->mesh.get_index() + 1 ) % 5 );
 				}
 			}
 		}

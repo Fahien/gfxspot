@@ -81,15 +81,15 @@ Handle<Node> create_grid( const Handle<Gltf>& model )
 // Draw a color spectrum grid
 int main()
 {
-	using namespace spot::gfx;
+	using namespace spot;
 	using namespace spot::math;
 
-	auto gfx = Graphics();
+	auto gfx = gfx::Graphics();
 
 	gfx.viewport.set_extent( width, height );
 	gfx.viewport.set_offset( Vec2::Zero );
 
-	auto grid = create_grid( gfx.create_model() );
+	auto grid = create_grid( gfx.models.push( gfx::Gltf( gfx.device ) ) );
 
 	while ( gfx.window.is_alive() )
 	{

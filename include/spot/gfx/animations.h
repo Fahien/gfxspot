@@ -1,6 +1,6 @@
 #pragma once
 
-#include <spot/gltf/handle.h>
+#include <spot/handle.h>
 
 namespace spot::gfx
 {

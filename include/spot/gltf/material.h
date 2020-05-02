@@ -4,7 +4,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-#include "spot/gltf/handle.h"
+#include "spot/handle.h"
 #include "spot/gltf/color.h"
 
 namespace spot::gfx

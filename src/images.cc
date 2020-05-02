@@ -359,5 +359,17 @@ VkImageView Images::load( const char* path )
 	return ret;
 }
 
+Images::Images( Images&& o )
+: device { o.device }
+, images { std::move( o.images ) }
+{}
+
+Images& Images::operator=( Images&& o )
+{
+	assert( device == o.device && "Images are not from the same device" );
+	std::swap( images, o.images );
+	return *this;
+}
+
 
 } // namespace spot::gfx

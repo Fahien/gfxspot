@@ -3,7 +3,7 @@
 #include <vector>
 #include <spot/math/math.h>
 
-#include "spot/gltf/handle.h"
+#include "spot/handle.h"
 
 
 namespace spot::gfx

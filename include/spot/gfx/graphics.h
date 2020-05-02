@@ -109,6 +109,8 @@ class Device
 	Device( PhysicalDevice& p, VkSurfaceKHR s, RequiredExtensions required_extensions = {} );
 	~Device();
 
+	bool operator==( const Device& o ) const { return handle == o.handle; }
+
 	void wait_idle() const;
 	Queue& find_queue( VkQueueFlagBits flags );
 	Queue& find_graphics_queue();
@@ -262,7 +264,7 @@ class Graphics
 	void draw( const Handle<Node>& node, const Handle<Mesh>& mesh, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const Handle<Node>& node, const Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const Handle<Node>& node, const math::Mat4& transform = math::Mat4::identity );
-	void draw( const Scene& scene, const math::Mat4& transform = math::Mat4::identity );
+	void draw( const Handle<Gltf>& model, const math::Mat4& transform = math::Mat4::identity );
 
 	Glfw glfw;
 	Instance instance;
@@ -317,12 +319,8 @@ class Graphics
 	/// @return A handle to the gltf model
 	Handle<Gltf> load_model( const std::string& path );
 
-	/// @return A handle of a new gltf model
-	Handle<Gltf> create_model();
-
 	Animations animations;
 
-private:
 	Uvec<Gltf> models;
 };
 

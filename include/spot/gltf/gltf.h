@@ -4,6 +4,8 @@
 #include <spot/math/shape.h>
 #include <nlohmann/json.hpp>
 
+#include "spot/gfx/images.h"
+
 #include "spot/gltf/buffer.h"
 #include "spot/gltf/camera.h"
 #include "spot/gltf/image.h"
@@ -16,7 +18,7 @@
 #include "spot/gltf/texture.h"
 #include "spot/gltf/bounds.h"
 #include "spot/gltf/animation.h"
-#include "spot/gltf/handle.h"
+#include "spot/handle.h"
 
 namespace spot::gfx
 {
@@ -41,7 +43,17 @@ class Gltf : public Handled<Gltf>
 	friend class Node;
 	friend class Scene;
 
-	Gltf() = default;
+	Gltf( Device& d ) : images { d } {}
+
+	/// Loads a GLtf model from path
+	/// @param path Gltf file path
+	/// @return A Gltf model
+	Gltf( Device& d, const std::string& path );
+
+	/// Constructs a Gltf object
+	/// @param j Json object describing the model
+	/// @param path Gltf file path
+	Gltf( Device& d, const nlohmann::json& j, const std::string& path = "." );
 
 	/// Move contructs a Gltf object
 	/// @param g Gltf object
@@ -51,21 +63,11 @@ class Gltf : public Handled<Gltf>
 	/// @param g Gltf object
 	Gltf& operator=( Gltf&& g );
 
-	/// Constructs a Gltf object
-	/// @param j Json object describing the model
-	/// @param path Gltf file path
-	Gltf( const nlohmann::json& j, const std::string& path = "." );
-
 	/// Delete copy constructor
 	Gltf( const Gltf& ) = delete;
 
 	/// Delete copy assignment
 	Gltf& operator=( const Gltf& ) = delete;
-
-	/// Loads a GLtf model from path
-	/// @param path Gltf file path
-	/// @return A Gltf model
-	static Gltf load( const std::string& path );
 
 	/// @return A new child node of the provided parent
 	Handle<Node> create_node( const Handle<Node>& parent );
@@ -75,9 +77,6 @@ class Gltf : public Handled<Gltf>
 
 	/// Load the nodes pointer using node indices
 	void load_nodes();
-
-	/// Load meshes pointers using indices
-	void load_meshes();
 
 	/// glTF asset
 	Asset asset;
@@ -168,7 +167,7 @@ class Gltf : public Handled<Gltf>
 	Uvec<GltfImage> gltf_images;
 
 	/// Images manager
-	std::unique_ptr<Images> images = {};
+	Images images;
 
 	/// List of textures
 	Uvec<GltfTexture> textures;

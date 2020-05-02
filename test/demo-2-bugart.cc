@@ -18,7 +18,7 @@ void update( const double dt, gfx::UniformBufferObject& ubo )
 
 Handle<Mesh> create_bugart( const Handle<Gltf>& model )
 {
-	using namespace spot::gfx;
+	using namespace spot;
 
 	auto bugart = model->meshes.push();
 
@@ -129,11 +129,10 @@ Handle<Mesh> create_bugart( const Handle<Gltf>& model )
 
 int main()
 {
-	using namespace spot::gfx;
-	namespace math = spot::math;
+	using namespace spot;
 
-	auto gfx = Graphics();
-	auto model = gfx.create_model();
+	auto gfx = gfx::Graphics();
+	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
 
 	auto bugart = create_bugart( model );
 

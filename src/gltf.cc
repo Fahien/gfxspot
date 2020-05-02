@@ -3,7 +3,6 @@
 #include <spot/file/ifstream.h>
 
 #include "spot/gltf/gltf.h"
-#include "spot/gfx/images.h"
 
 
 namespace spot::gfx
@@ -13,30 +12,15 @@ namespace spot::gfx
 Gltf::Gltf( Gltf&& other )
 : asset{ std::move( other.asset ) }
 , path{ std::move( other.path ) }
-, buffers{ std::move( other.buffers ) }
 , buffers_cache{ std::move( other.buffers_cache ) }
-, buffer_views{ std::move( other.buffer_views ) }
 , cameras{ std::move( other.cameras ) }
-, samplers{ std::move( other.samplers ) }
-, gltf_images{ std::move( other.gltf_images ) }
 , images{ std::move( other.images ) }
-, textures{ std::move( other.textures ) }
-, accessors{ std::move( other.accessors ) }
-, materials{ std::move( other.materials ) }
-, meshes{ std::move( other.meshes ) }
 , lights{ std::move( other.lights ) }
-, nodes{ std::move( other.nodes ) }
-, animations{ std::move( other.animations ) }
-, rects{ std::move( other.rects ) }
-, boxes{ std::move( other.boxes ) }
-, spheres{ std::move( other.spheres ) }
-, bounds{ std::move( other.bounds ) }
 , scripts{ std::move( other.scripts ) }
 , scenes{ std::move( other.scenes ) }
 , scene{ std::move( other.scene ) }
 {
 	std::for_each( std::begin( scenes ), std::end( scenes ), [this]( auto& scene ) { scene.model = this; } );
-	load_meshes();
 	load_nodes();
 }
 
@@ -45,37 +29,40 @@ Gltf& Gltf::operator=( Gltf&& other )
 {
 	asset         = std::move( other.asset );
 	path          = std::move( other.path );
-	buffers       = std::move( other.buffers );
 	buffers_cache = std::move( other.buffers_cache );
-	buffer_views  = std::move( other.buffer_views );
 	cameras       = std::move( other.cameras );
-	samplers      = std::move( other.samplers );
-	images        = std::move( other.images );
-	gltf_images   = std::move( other.gltf_images );
-	textures      = std::move( other.textures );
-	accessors     = std::move( other.accessors );
-	materials     = std::move( other.materials );
-	meshes        = std::move( other.meshes );
+	std::swap( images, other.images );
 	lights        = std::move( other.lights );
-	nodes         = std::move( other.nodes );
-	animations    = std::move( other.animations );
-	rects         = std::move( other.rects );
-	boxes         = std::move( other.boxes );
-	spheres       = std::move( other.spheres );
-	bounds        = std::move( other.bounds );
 	scripts       = std::move( other.scripts );
 	scenes        = std::move( other.scenes );
 	scene         = std::move( other.scene );
 
 	std::for_each( std::begin( scenes ), std::end( scenes ), [this]( auto& scene ) { scene.model = this; } );
-	load_meshes();
 	load_nodes();
 
 	return *this;
 }
 
 
-Gltf::Gltf( const nlohmann::json& j, const std::string& pth )
+nlohmann::json read_json( const std::string& path )
+{
+	// read a JSON file
+	auto in = file::Ifstream( path );
+	assert( in.is_open() && "Cannot open gltf file" );
+	nlohmann::json js;
+	in >> js;
+	return js;
+}
+
+
+Gltf::Gltf( Device& d, const std::string& path )
+: Gltf( d, read_json( path ), path )
+{}
+
+
+
+Gltf::Gltf( Device& d, const nlohmann::json& j, const std::string& pth )
+: Gltf( d )
 {
 	// Get the directory path
 	auto index = pth.find_last_of( "/\\" );
@@ -244,7 +231,7 @@ void Gltf::init_buffer_views( const nlohmann::json& j )
 
 		// ByteBuffer
 		auto buffer_index = v["buffer"].get<size_t>();
-		view->buffer = Handle<ByteBuffer>( buffers, buffer_index );
+		view->buffer = buffers.find( buffer_index );
 
 		// Byte offset
 		if ( v.count( "byteOffset" ) )
@@ -459,15 +446,15 @@ void Gltf::init_textures( const nlohmann::json& j )
 		// GltfSampler
 		if ( t.count( "sampler" ) )
 		{
-			auto handle = t["sampler"].get<size_t>();
-			texture->sampler = Handle<GltfSampler>( samplers, handle );
+			auto index = t["sampler"].get<size_t>();
+			texture->sampler = samplers.find( index );
 		}
 
 		// Image
 		if ( t.count( "source" ) )
 		{
 			auto index = t["source"].get<int32_t>();
-			texture->source = Handle<GltfImage>( gltf_images, index );
+			texture->source = gltf_images.find( index );
 		}
 
 		// Name
@@ -619,7 +606,7 @@ void Gltf::init_accessors( const nlohmann::json& j )
 		if ( a.count( "bufferView" ) )
 		{
 			auto buffer_view_index = a["bufferView"].get<size_t>();
-			accessor->buffer_view = Handle<BufferView>( buffer_views, buffer_view_index );
+			accessor->buffer_view = buffer_views.find( buffer_view_index );
 		}
 
 		// Byte offset
@@ -687,7 +674,7 @@ void Gltf::init_materials( const nlohmann::json& j )
 			if ( mr.count( "baseColorTexture" ) )
 			{
 				auto index = mr["baseColorTexture"]["index"].get<size_t>();
-				material->texture_handle = Handle<GltfTexture>( textures, index );
+				material->texture_handle = textures.find( index );
 			}
 
 			if ( mr.count( "metallicFactor" ) )
@@ -794,7 +781,7 @@ void Gltf::init_meshes( const nlohmann::json& j )
 {
 	for ( const auto& m : j )
 	{
-		Mesh mesh { *this };
+		Mesh mesh;
 
 		// Name
 		if ( m.count( "name" ) )
@@ -812,20 +799,20 @@ void Gltf::init_meshes( const nlohmann::json& j )
 			for ( const auto& a : attributes )
 			{
 				auto semantic = from_string<Primitive::Semantic>( a.first );
-				auto accessor = Handle<Accessor>( accessors, a.second );
+				auto accessor = accessors.find( a.second );
 				primitive.attributes.emplace( semantic, accessor );
 			}
 
 			if ( p.count( "indices" ) )
 			{
 				auto indices_index = p["indices"].get<int32_t>();
-				primitive.indices_handle = Handle<Accessor>( accessors, indices_index );
+				primitive.indices_handle = accessors.find( indices_index );
 			}
 
 			if ( p.count( "material" ) )
 			{
 				auto material_index = p["material"].get<int32_t>();
-				primitive.material = Handle<Material>( materials, material_index );
+				primitive.material = materials.find( material_index );
 			}
 
 			if ( p.count( "mode" ) )
@@ -835,15 +822,6 @@ void Gltf::init_meshes( const nlohmann::json& j )
 		}
 
 		meshes->push_back( std::move( mesh ) );
-	}
-}
-
-
-void Gltf::load_meshes()
-{
-	for ( auto& mesh : *meshes )
-	{
-		mesh.model = this;
 	}
 }
 
@@ -951,7 +929,7 @@ void Gltf::init_nodes( const nlohmann::json& j )
 		if ( n.count( "mesh" ) )
 		{
 			auto mesh_index = n["mesh"];
-			node->mesh = Handle<Mesh>( meshes, mesh_index );
+			node->mesh = meshes.find( mesh_index );
 		}
 
 		// Rotation
@@ -995,7 +973,7 @@ void Gltf::init_nodes( const nlohmann::json& j )
 			if ( extras.count( "bounds" ) )
 			{
 				auto bounds_index = extras["bounds"].get<int32_t>();
-				node->bounds = bounds.get_handle( bounds_index );
+				node->bounds = bounds.find( bounds_index );
 			}
 
 			// Scripts
@@ -1019,7 +997,7 @@ void Gltf::init_nodes( const nlohmann::json& j )
 			node.children.resize( handles.size() );
 			for ( size_t i = 0; i < handles.size(); ++i )
 			{
-				node.children[i] = Handle<Node>( nodes, handles[i] );
+				node.children[i] = nodes.find( handles[i] );
 			}
 		}
 
@@ -1088,10 +1066,10 @@ void Gltf::init_animations( const nlohmann::json& j )
 			Animation::Sampler sampler;
 
 			auto input  = s["input"].get<size_t>();
-			sampler.input = Handle<Accessor>( accessors, input );
+			sampler.input = accessors.find( input );
 
 			auto output = s["output"].get<size_t>();
-			sampler.output = Handle<Accessor>( accessors, output );
+			sampler.output = accessors.find( output );
 
 			if ( s.count( "interpolation" ) )
 			{
@@ -1106,16 +1084,16 @@ void Gltf::init_animations( const nlohmann::json& j )
 		{
 			Animation::Channel channel;
 
-			auto handle = c["sampler"].get<size_t>();
-			channel.sampler = Handle<Animation::Sampler>( animation.samplers, handle );
+			auto index = c["sampler"].get<size_t>();
+			channel.sampler = animation.samplers.find( index );
 
 			// Target
 			auto& t = c["target"];
 
 			if ( t.count( "node" ) )
 			{
-				auto handle = t["node"].get<size_t>();
-				channel.target.node = Handle<Node>( nodes, handle );
+				auto index = t["node"].get<size_t>();
+				channel.target.node = nodes.find( index );
 			}
 
 			channel.target.path = from_string<Animation::Target::Path>( t["path"].get<std::string>() );
@@ -1263,7 +1241,7 @@ void Gltf::init_scenes( const nlohmann::json& j )
 			scene.nodes.resize( indices.size() );
 			for ( size_t i = 0; i < indices.size(); ++i )
 			{
-				scene.nodes[i] = Handle<Node>( nodes, indices[i] );
+				scene.nodes[i] = nodes.find( indices[i] );
 			}
 		}
 
@@ -1272,16 +1250,5 @@ void Gltf::init_scenes( const nlohmann::json& j )
 
 	load_nodes();
 }
-
-Gltf Gltf::load( const std::string& path )
-{
-	// read a JSON file
-	auto in = file::Ifstream( path );
-	assert( in.is_open() && "Cannot open gltf file" );
-	nlohmann::json js;
-	in >> js;
-	return Gltf( js, path );
-}
-
 
 }  // namespace spot::gfx

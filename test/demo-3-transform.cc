@@ -52,7 +52,7 @@ Handle<Node> create_card( const Handle<Gltf>& model )
 	std::vector<Index> indices = { 0, 2, 1, 1, 2, 3 };
 
 	auto material = model->materials.push(
-		Material( model->images->load( "img/card.png" ) )
+		Material( model->images.load( "img/card.png" ) )
 	);
 
 	auto card = model->meshes.push( Mesh(
@@ -67,12 +67,11 @@ Handle<Node> create_card( const Handle<Gltf>& model )
 
 int main()
 {
-	using namespace spot::gfx;
-	namespace math = spot::math;
+	using namespace spot;
 
-	auto gfx = Graphics();
+	auto gfx = gfx::Graphics();
 
-	auto card = create_card( gfx.create_model() );
+	auto card = create_card( gfx.models.push( gfx::Gltf( gfx.device ) ) );
 
 	gfx.window.on_resize = [&gfx]( const VkExtent2D& extent ) { gfx.viewport.set_extent( extent ); };
 	gfx.camera.set_perspective( gfx.viewport );

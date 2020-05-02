@@ -164,19 +164,91 @@ Mesh Mesh::create_quad( const Handle<Material>& material, const math::Vec3& a, c
 }
 
 
-Mesh::Mesh( Gltf& g )
-: model { &g }
-{}
+Mesh Mesh::create_cube( const Handle<Material>& material )
+{
+	auto v = std::vector<Vertex>( 24 );
+
+	// Front
+	v[0].p = math::Vec3( -0.5f, -0.5, 0.5f );
+	v[0].t = math::Vec2( 1 / 3.0f, 0.25f );
+	v[1].p = math::Vec3( 0.5f, -0.5, 0.5f );
+	v[1].t = math::Vec2( 2 / 3.0f, 0.25f );
+	v[2].p = math::Vec3( 0.5f, 0.5, 0.5f );
+	v[2].t = math::Vec2( 2 / 3.0f, 0.5f );
+	v[3].p = math::Vec3( -0.5f, 0.5, 0.5f );
+	v[3].t = math::Vec2( 1 / 3.0f, 0.5f );
+
+	// Right
+	v[4].p = math::Vec3( 0.5f, -0.5, 0.5f );
+	v[4].t = math::Vec2( 2 / 3.0f, 0.25f );
+	v[5].p = math::Vec3( 0.5f, -0.5, -0.5f );
+	v[5].t = math::Vec2( 1.0f, 0.25f );
+	v[6].p = math::Vec3( 0.5f, 0.5, -0.5f );
+	v[6].t = math::Vec2( 1.0f, 0.5f );
+	v[7].p = math::Vec3( 0.5f, 0.5, 0.5f );
+	v[7].t = math::Vec2( 2 / 3.0f, 0.5f );
+
+	// Back
+	v[8].p  = math::Vec3( 0.5f, -0.5, -0.5f );
+	v[8].t  = math::Vec2( 1 / 3.0f, 0.75f );
+	v[9].p  = math::Vec3( -0.5f, -0.5, -0.5f );
+	v[9].t  = math::Vec2( 2 / 3.0f, 0.75f );
+	v[10].p = math::Vec3( -0.5f, 0.5, -0.5f );
+	v[10].t = math::Vec2( 2 / 3.0f, 1.0f );
+	v[11].p = math::Vec3( 0.5f, 0.5, -0.5f );
+	v[11].t = math::Vec2( 1 / 3.0f, 1.0f );
+
+	// Left
+	v[12].p  = math::Vec3( -0.5f, -0.5, -0.5f );
+	v[12].t  = math::Vec2( 0.0f, 0.25f );
+	v[13].p  = math::Vec3( -0.5f, -0.5, 0.5f );
+	v[13].t  = math::Vec2( 1 / 3.0f, 0.25f );
+	v[14].p = math::Vec3( -0.5f, 0.5, 0.5f );
+	v[14].t = math::Vec2( 1 / 3.0f, 0.5f );
+	v[15].p = math::Vec3( -0.5f, 0.5, -0.5f );
+	v[15].t = math::Vec2( 0.0f, 0.5f );
+
+	// Top
+	v[16].p  = math::Vec3( -0.5f, 0.5, 0.5f );
+	v[16].t  = math::Vec2( 1 / 3.0f, 0.5f );
+	v[17].p  = math::Vec3( 0.5f, 0.5, 0.5f );
+	v[17].t  = math::Vec2( 2 / 3.0f, 0.5f );
+	v[18].p = math::Vec3( 0.5f, 0.5, -0.5f );
+	v[18].t = math::Vec2( 2 / 3.0f, 0.75f );
+	v[19].p = math::Vec3( -0.5f, 0.5, -0.5f );
+	v[19].t = math::Vec2( 1 / 3.0f, 0.75f );
+
+	// Bottom
+	v[20].p  = math::Vec3( -0.5f, -0.5, -0.5f );
+	v[20].t  = math::Vec2( 1 / 3.0f, 0.0f );
+	v[21].p  = math::Vec3( 0.5f, -0.5, -0.5f );
+	v[21].t  = math::Vec2( 2 / 3.0f, 0.0f );
+	v[22].p = math::Vec3( 0.5f, -0.5, 0.5f );
+	v[22].t = math::Vec2( 2 / 3.0f, 0.25f );
+	v[23].p = math::Vec3( -0.5f, -0.5, 0.5f );
+	v[23].t = math::Vec2( 1 / 3.0f, 0.25f );
+
+	auto i = std::vector<Index> {
+		0, 1, 2, 0, 2, 3, // front face
+		4, 5, 6, 4, 6, 7, // right
+		8, 9, 10, 8, 10, 11, // back
+		12, 13, 14, 12, 14, 15, // left
+		16, 17, 18, 16, 18, 19, // top
+		20, 21, 22, 20, 22, 23, // bottom
+	};
+	
+	auto p = Primitive( std::move( v ), std::move( i ), material );
+
+	return Mesh( { std::move( p ) } );
+}
 
 
 Mesh::Mesh( Mesh&& other )
-: model { other.model }
-, primitives { std::move( other.primitives ) }
+: primitives { std::move( other.primitives ) }
 , weights { std::move( other.weights ) }
 , name { std::move( other.name ) }
 , extras { other.extras }
 {
-	other.model  = nullptr;
 	other.extras = nullptr;
 }
 
