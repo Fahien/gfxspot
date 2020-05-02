@@ -243,14 +243,4 @@ Mesh Mesh::create_cube( const Handle<Material>& material )
 }
 
 
-Mesh::Mesh( Mesh&& other )
-: primitives { std::move( other.primitives ) }
-, weights { std::move( other.weights ) }
-, name { std::move( other.name ) }
-, extras { other.extras }
-{
-	other.extras = nullptr;
-}
-
-
 } // namespace spot::gfx

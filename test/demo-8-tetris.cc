@@ -19,9 +19,9 @@ struct SolidMaterials
 
 
 SolidMaterials::SolidMaterials( const Handle<Gltf>& model )
-: red   { model->materials.push( Material( Color::red  ) ) }
-, green { model->materials.push( Material( Color::green ) ) }
-, blue  { model->materials.push( Material( Color::blue  ) ) }
+: red   { model->materials.push( Material( Color::Red  ) ) }
+, green { model->materials.push( Material( Color::Green ) ) }
+, blue  { model->materials.push( Material( Color::Blue  ) ) }
 {}
 
 

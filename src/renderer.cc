@@ -387,7 +387,7 @@ uint64_t select_pipeline( const Handle<Material>& material )
 void Renderer::add( const Handle<Node>& node, const Primitive& prim )
 {
 	// We need vertex and index buffers. These are stored in primitive resources
-	auto hash_prim = hash( prim );
+	auto hash_prim = std::hash<Primitive>()( prim );
 	// Avoid duplication of primitive resources
 	if ( !FIND( primitive_resources, hash_prim ) )
 	{
@@ -427,7 +427,7 @@ Renderer::add_descriptors( const Handle<Node>& node, const Handle<Material>& mat
 	// A node may have a mesh with multiple primitives with different materials
 	// And the same material may appear into multiple primitives of different nodes
 	// So we hash combine both node and material
-	auto key = hash( node.get_index(), material.get_index() );
+	auto key = std::hash_combine( node.get_index(), material.get_index() );
 	auto it = descriptor_resources.find( key );
 	if ( it != std::end( descriptor_resources ) )
 	{

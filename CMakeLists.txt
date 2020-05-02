@@ -27,7 +27,6 @@ include( AddFileSpot )
 
 # Lib
 set( SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/src/hash.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/png.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/buffers.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/commands.cc

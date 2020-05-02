@@ -1,70 +1,52 @@
 #pragma once
 
-#include <vector>
+#include <spot/gltf/color.h>
+#include <spot/gltf/mesh.h>
+#include <spot/gltf/node.h>
+#include <spot/hash.h>
+#include <spot/math/math.h>
 
-namespace spot
+namespace std
 {
-
-namespace math
+template <>
+struct hash<spot::math::Vec2>
 {
-class Vec2;
-class Vec3;
-}
+	size_t operator()(const spot::math::Vec2& vec) const { return std::hash_combine(vec.x, vec.y); }
+};
 
-namespace gfx
+template <>
+struct hash<spot::math::Vec3>
 {
+	size_t operator()(const spot::math::Vec3& vec) const { return std::hash_combine(vec.x, vec.y, vec.z); }
+};
 
-class Node;
-class Primitive;
-
-class Color;
-class Vertex;
-class Primitive;
-
-// Base functions
-size_t hash( uint16_t h );
-size_t hash( uint32_t h );
-size_t hash( uint64_t h );
-size_t hash( int16_t h );
-size_t hash( int32_t h );
-size_t hash( int64_t h );
-size_t hash( size_t h );
-size_t hash( float h );
-
-
-size_t hash( const math::Vec2& vec );
-size_t hash( const math::Vec3& vec );
-size_t hash( const Color& color );
-size_t hash( const Vertex& vert );
-size_t hash( const Primitive& pm );
-size_t hash( const Primitive& pm );
-
-
-template<typename T, typename... Targs>
-size_t hash( T value, Targs... args ) // recursive variadic function
+template <>
+struct hash<spot::gfx::Color>
 {
-	auto hv = hash( value );
-	hv ^= hash( args... ) + 0x9e3779b9 + ( hv << 6 ) + ( hv >> 2 );
-	return hv;
-}
+	size_t operator()(const spot::gfx::Color& color) const { return std::hash_combine(color.r, color.g, color.b, color.a); }
+};
 
-
-template<typename T>
-size_t hash( const std::vector<T>& vec )
+template <>
+struct hash<spot::gfx::Vertex>
 {
-	size_t hv = 0;
-
-	for ( auto& elem : vec )
+	size_t operator()(const spot::gfx::Vertex& vert) const
 	{
-		/// @ref https://stackoverflow.com/a/2595226
-		hv ^= hash( elem ) + 0x9e3779b9 + ( hv << 6 ) + ( hv >> 2 );
+		auto hp = hash<spot::math::Vec3>()(vert.p);
+		auto hc = hash<spot::gfx::Color>()(vert.c);
+		auto ht = hash<spot::math::Vec2>()(vert.t);
+		return std::hash_combine(hp, hc, ht);
 	}
+};
 
-	return hv;
-}
+template <>
+struct hash<spot::gfx::Primitive>
+{
+	size_t operator()(const spot::gfx::Primitive& pm) const
+	{
+		auto hp = std::hash<std::vector<spot::gfx::Vertex>>()(pm.vertices);
+		auto hi = std::hash<std::vector<spot::gfx::Index>>()(pm.indices);
+		return std::hash_combine(hp, hi);
+	}
+};
 
-
-} // namespace gfx
-
-
-} // namespace spot
+}  // namespace std

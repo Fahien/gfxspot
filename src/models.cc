@@ -9,12 +9,12 @@
 namespace spot::gfx
 {
 
-const Color Color::black = { 0.0f, 0.0f, 0.0f };
-const Color Color::white = { 1.0f, 1.0f, 1.0f };
-const Color Color::red = { 1.0f, 0.0f, 0.0f };
-const Color Color::green = { 0.0f, 1.0f, 0.0f };
-const Color Color::blue = { 0.0f, 0.0f, 1.0f };
-const Color Color::yellow = { 1.0f, 1.0f, 0.0f };
+const Color Color::Black = { 0.0f, 0.0f, 0.0f };
+const Color Color::White = { 1.0f, 1.0f, 1.0f };
+const Color Color::Red = { 1.0f, 0.0f, 0.0f };
+const Color Color::Green = { 0.0f, 1.0f, 0.0f };
+const Color Color::Blue = { 0.0f, 0.0f, 1.0f };
+const Color Color::Yellow = { 1.0f, 1.0f, 0.0f };
 
 
 /// @todo Implement
@@ -54,7 +54,7 @@ Handle<Gltf> Graphics::load_model( const std::string& path )
 	// A primitive without material does not exist in gltf
 	// Therefore we a white material at the endMaterial white {
 	
-	auto white = model->materials.push( Material( Color::white ) );
+	auto white = model->materials.push( Material( Color::White ) );
 
 	// Load meshes
 	for ( auto& m : *model->meshes )

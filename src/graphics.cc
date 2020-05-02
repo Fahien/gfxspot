@@ -918,7 +918,7 @@ void Graphics::draw( const Handle<Node>& node, const Primitive& primitive, const
 		return;
 	}
 
-	auto hash_prim = hash( primitive );
+	auto hash_prim = std::hash<Primitive>()( primitive );
 	auto& resources = renderer.primitive_resources.at( hash_prim );
 
 	UniformBufferObject ubo;
@@ -932,7 +932,7 @@ void Graphics::draw( const Handle<Node>& node, const Primitive& primitive, const
 	auto& uniform_buffer = node_resources.ubos[current_frame_index];
 	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
 
-	size_t hash_desc = hash( node.get_index(), primitive.material.get_index() );
+	size_t hash_desc = std::hash_combine( node, primitive.material );
 	auto desc_it = renderer.descriptor_resources.find( hash_desc );
 	if ( desc_it == std::end( renderer.descriptor_resources ) )
 	{

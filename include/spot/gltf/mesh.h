@@ -99,7 +99,7 @@ struct Primitive
 struct Mesh : public Handled<Mesh>
 {
 	/// @return A colored line mesh
-	static Mesh create_line( const math::Vec3& a, const math::Vec3& b, const Color& c = Color::white, float line_width = 1.0f );
+	static Mesh create_line( const math::Vec3& a, const math::Vec3& b, const Color& c = Color::White, float line_width = 1.0f );
 
 	/// @return A triangle mesh; material is optional
 	static Mesh create_triangle( const math::Vec3& a, const math::Vec3& b, const math::Vec3& c, const Handle<Material>& material = {} );
@@ -109,8 +109,8 @@ struct Mesh : public Handled<Mesh>
 	static Mesh create_rect( const math::Rect& r, const Handle<Material>& material );
 
 	/// @return A colored rectangle mesh without material
-	static Mesh create_rect( const math::Vec3& a, const math::Vec3& b, const Color& c = Color::white );
-	static Mesh create_rect( const math::Rect& r, const Color& c = Color::white );
+	static Mesh create_rect( const math::Vec3& a, const math::Vec3& b, const Color& c = Color::White );
+	static Mesh create_rect( const math::Rect& r, const Color& c = Color::White );
 
 	/// @return A quad mesh, which is a unit square with a material
 	static Mesh create_quad(
@@ -123,9 +123,6 @@ struct Mesh : public Handled<Mesh>
 	static Mesh create_cube( const Handle<Material>& m );
 
 	Mesh( std::vector<Primitive>&& ps = {} ) : primitives { std::move( ps ) } {}
-
-	Mesh( Mesh&& m );
-	Mesh& operator=( Mesh&& other ) = default;
 
 	/// Array of primitives, each defining geometry to be rendered with a material (required)
 	std::vector<Primitive> primitives;
