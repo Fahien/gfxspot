@@ -752,45 +752,48 @@ std::vector<VkDescriptorSetLayoutBinding> get_line_bindings()
 }
 
 
-std::vector<VkDescriptorSetLayoutBinding> get_mesh_bindings()
+std::vector<VkDescriptorSetLayoutBinding> get_mesh_no_image_bindings()
 {
-	VkDescriptorSetLayoutBinding ubo_binding = {};
-	ubo_binding.binding = 0;
-	ubo_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	ubo_binding.descriptorCount = 1;
-	ubo_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	VkDescriptorSetLayoutBinding mvp = {};
+	mvp.binding = 0;
+	mvp.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	mvp.descriptorCount = 1;
+	mvp.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-	VkDescriptorSetLayoutBinding material_binding = {};
-	material_binding.binding = 1;
-	material_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	material_binding.descriptorCount = 1;
-	material_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	VkDescriptorSetLayoutBinding ambient = {};
+	ambient.binding = 1;
+	ambient.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	ambient.descriptorCount = 1;
+	ambient.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	VkDescriptorSetLayoutBinding sampler_binding = {};
-	sampler_binding.binding = 2;
-	sampler_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	sampler_binding.descriptorCount = 1;
-	sampler_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	VkDescriptorSetLayoutBinding light = {};
+	light.binding = 2;
+	light.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	light.descriptorCount = 1;
+	light.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	return { ubo_binding, material_binding, sampler_binding };
+	VkDescriptorSetLayoutBinding material = {};
+	material.binding = 3;
+	material.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	material.descriptorCount = 1;
+	material.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	return { mvp, ambient, light, material };
 }
 
 
-std::vector<VkDescriptorSetLayoutBinding> get_mesh_no_image_bindings()
+std::vector<VkDescriptorSetLayoutBinding> get_mesh_bindings()
 {
-	VkDescriptorSetLayoutBinding ubo_binding = {};
-	ubo_binding.binding = 0;
-	ubo_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	ubo_binding.descriptorCount = 1;
-	ubo_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	auto ret = get_mesh_no_image_bindings();
 
-	VkDescriptorSetLayoutBinding material_binding = {};
-	material_binding.binding = 1;
-	material_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	material_binding.descriptorCount = 1;
-	material_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	VkDescriptorSetLayoutBinding sampler = {};
+	sampler.binding = 4;
+	sampler.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	sampler.descriptorCount = 1;
+	sampler.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	return { ubo_binding, material_binding };
+	ret.emplace_back( sampler );
+	return ret;
 }
 
 
@@ -921,7 +924,8 @@ void Graphics::draw( const Handle<Node>& node, const Primitive& primitive, const
 	auto hash_prim = std::hash<Primitive>()( primitive );
 	auto& resources = renderer.primitive_resources.at( hash_prim );
 
-	UniformBufferObject ubo;
+	// Upload MVP UBO
+	MvpUbo ubo;
 	ubo.model = transform;
 	ubo.view  = camera.get_view();
 	ubo.proj  = camera.get_proj();
@@ -930,7 +934,7 @@ void Graphics::draw( const Handle<Node>& node, const Primitive& primitive, const
 
 	auto& node_resources = node_pair->second;
 	auto& uniform_buffer = node_resources.ubos[current_frame_index];
-	uniform_buffer.upload( data, sizeof( UniformBufferObject ) );
+	uniform_buffer.upload( data, sizeof( MvpUbo ) );
 
 	size_t hash_desc = std::hash_combine( node, primitive.material );
 	auto desc_it = renderer.descriptor_resources.find( hash_desc );
@@ -944,12 +948,28 @@ void Graphics::draw( const Handle<Node>& node, const Primitive& primitive, const
 
 	if ( primitive.material )
 	{
+		// Upload Material UBO
 		auto material_data = reinterpret_cast<const uint8_t*>( &primitive.material->pbr );
-		auto& material_resources = renderer.material_resources.at( primitive.material.get_index() );
+		auto& material_resources = renderer.material_resources.at( primitive.material );
 		auto& material_ubo = material_resources.ubos[current_frame_index];
 		material_ubo.upload( material_data, sizeof( Material::PbrMetallicRoughness ) );
+
+		// Upload Ambient UBO
+		auto ambient_data = reinterpret_cast<const uint8_t*>( &ambient.ubo );
+		auto& ambient_ubo = renderer.ambient_resources.ubos[current_frame_index];
+		ambient_ubo.upload( ambient_data, sizeof( Ambient::Ubo ) );
+
+		// Upload Light UBO
+		assert( light_node && light_node->light && "There is no node with light" );
+		LightUbo light_ubo = {};
+		light_ubo.position = light_node->translation;
+		light_ubo.color = light_node->light->color;
+		auto light_data = reinterpret_cast<const uint8_t*>( &light_ubo );
+		auto& light_res = renderer.light_resources.begin()->second;
+		auto& light_buffer = light_res.ubos[current_frame_index];
+		light_buffer.upload( light_data, sizeof( LightUbo ) );
 	}
-	else
+	else // Draw mesh with lines
 	{
 		// Check wideline support
 		if ( device.physical_device.features.wideLines == VK_TRUE )

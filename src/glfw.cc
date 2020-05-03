@@ -84,12 +84,12 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 		if ( action == GLFW_PRESS )
 		{
 			window->click.pos = window->get_cursor_position();
-			window->pressed = true;
+			window->press.left = true;
 			window->click.left = true;
 		}
 		else if ( action == GLFW_RELEASE )
 		{
-			window->pressed = false;
+			window->press.left = false;
 			window->swipe = {};
 		}
 	}
@@ -99,7 +99,13 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 		if ( action == GLFW_PRESS )
 		{
 			window->click.pos = window->get_cursor_position();
+			window->press.right = true;
 			window->click.right = true;
+		}
+		else if ( action == GLFW_RELEASE )
+		{
+			window->press.right = false;
+			window->swipe = {};
 		}
 	}
 
@@ -108,7 +114,13 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 		if ( action == GLFW_PRESS )
 		{
 			window->click.pos = window->get_cursor_position();
+			window->press.middle = true;
 			window->click.middle = true;
+		}
+		else if ( action == GLFW_RELEASE )
+		{
+			window->press.middle = false;
+			window->swipe = {};
 		}
 	}
 }
@@ -166,7 +178,7 @@ void Window::update( const float dt )
 {
 	auto current = get_cursor_position();
 
-	if ( pressed )
+	if ( press.left || press.middle || press.right )
 	{
 		swipe.x = current.x - cursor.x;
 		swipe.y = -(current.y - cursor.y);

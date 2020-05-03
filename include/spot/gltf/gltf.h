@@ -182,7 +182,7 @@ class Gltf : public Handled<Gltf>
 	Uvec<Mesh> meshes;
 
 	/// List of lights
-	std::vector<Light> lights;
+	Uvec<Light> lights;
 
 	/// List of nodes
 	Uvec<Node> nodes;

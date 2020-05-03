@@ -65,6 +65,9 @@ class Node : public Handled<Node>
 	/// Handle of the mesh of the node
 	Handle<Mesh> mesh = {};
 
+	/// Handle of light contained by this node
+	Handle<Light> light = {};
+
 	/// This node's bounds handle
 	Handle<Bounds> bounds = {};
 
@@ -83,9 +86,6 @@ class Node : public Handled<Node>
 
 	/// Camera referenced by this node
 	GltfCamera* camera = nullptr;
-
-	/// If not negative, index of light contained by this node
-	int32_t light_index = -1;
 
 	/// This node's scripts indices
 	std::vector<size_t> scripts_indices;

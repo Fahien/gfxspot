@@ -32,11 +32,19 @@ struct alignas(16) Dot
 };
 
 
-struct alignas(16) UniformBufferObject
+struct MvpUbo
 {
 	math::Mat4 model = math::Mat4::identity;
 	math::Mat4 view  = math::Mat4::identity;
 	math::Mat4 proj  = math::Mat4::identity;
+};
+
+
+struct LightUbo
+{
+	math::Vec3 position = math::Vec3::Zero;
+	float _; // this is just here for alignment
+	math::Vec3 color = math::Vec3::One;
 };
 
 
@@ -322,6 +330,10 @@ class Graphics
 	Animations animations;
 
 	Uvec<Gltf> models;
+
+	/// @todo Move into a scene?
+	Ambient ambient = {};
+	Handle<Node> light_node = {};
 };
 
 

@@ -12,6 +12,7 @@ struct Color
 	static const Color Green;
 	static const Color Blue;
 	static const Color Yellow;
+	static const Color Gray;
 
 	Color( float rr = 0.0f, float gg = 0.0f, float bb = 0.0f, float aa = 1.0f )
 	: r { rr }, g { gg }, b { bb }, a { aa } {}
@@ -21,7 +22,6 @@ struct Color
 	float b = 0.0f;
 	float a = 1.0f;
 };
-
 
 
 } // namespace spot::gfx

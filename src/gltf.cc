@@ -32,7 +32,7 @@ Gltf& Gltf::operator=( Gltf&& other )
 	buffers_cache = std::move( other.buffers_cache );
 	cameras       = std::move( other.cameras );
 	std::swap( images, other.images );
-	lights        = std::move( other.lights );
+	std::swap( lights, other.lights );
 	scripts       = std::move( other.scripts );
 	scenes        = std::move( other.scenes );
 	scene         = std::move( other.scene );
@@ -169,13 +169,13 @@ Gltf::Gltf( Device& d, const nlohmann::json& j, const std::string& pth )
 	{
 		init_scenes( j["scenes"] );
 
-		uint64_t uIndex = 0;
+		size_t index = 0;
 
 		if ( j.count( "scene" ) )
 		{
-			uIndex = j["scene"].get<uint64_t>();
+			index = j["scene"].get<size_t>();
 		}
-		scene = &scenes[static_cast<const unsigned>( uIndex )];
+		scene = &scenes[index];
 	}
 }
 
@@ -830,31 +830,31 @@ void Gltf::init_lights( const nlohmann::json& j )
 {
 	for ( const auto& l : j )
 	{
-		Light light;
+		auto light = lights.push();
 
 		// Name
 		if ( l.count( "name" ) )
 		{
-			light.name = l["name"].get<std::string>();
+			light->name = l["name"].get<std::string>();
 		}
 
 		// Color
 		if ( l.count( "color" ) )
 		{
 			auto color = l["color"].get<std::vector<float>>();
-			light.color.set( color[0], color[1], color[2] );
+			light->color.set( color[0], color[1], color[2] );
 		}
 
 		// Intensity
 		if ( l.count( "intensity" ) )
 		{
-			light.intensity = l["intensity"].get<float>();
+			light->intensity = l["intensity"].get<float>();
 		}
 
 		// Range
 		if ( l.count( "range" ) )
 		{
-			light.range = l["range"].get<float>();
+			light->range = l["range"].get<float>();
 		}
 
 		// Type
@@ -863,26 +863,26 @@ void Gltf::init_lights( const nlohmann::json& j )
 			auto type = l["type"].get<std::string>();
 			if ( type == "point" )
 			{
-				light.type = Light::Type::Point;
+				light->type = Light::Type::Point;
 			}
 			else if ( type == "directional" )
 			{
-				light.type = Light::Type::Directional;
+				light->type = Light::Type::Directional;
 			}
 			else if ( type == "spot" )
 			{
-				light.type = Light::Type::Spot;
+				light->type = Light::Type::Spot;
 
 				if ( l.count( "spot" ) )
 				{
 					const auto& spot = l["spot"];
 					if ( spot.count( "innerConeAngle" ) )
 					{
-						light.spot.inner_cone_angle = l["spot"]["innerConeAngle"].get<float>();
+						light->spot.inner_cone_angle = l["spot"]["innerConeAngle"].get<float>();
 					}
 					if ( spot.count( "innerConeAngle" ) )
 					{
-						light.spot.outer_cone_angle = l["spot"]["outerConeAngle"].get<float>();
+						light->spot.outer_cone_angle = l["spot"]["outerConeAngle"].get<float>();
 					}
 				}
 			}
@@ -891,8 +891,6 @@ void Gltf::init_lights( const nlohmann::json& j )
 				assert( false && "Invalid light type" );
 			}
 		}
-
-		lights.push_back( light );
 	}
 }
 
@@ -960,7 +958,8 @@ void Gltf::init_nodes( const nlohmann::json& j )
 			// Lights
 			if ( extensions.count( "KHR_lights_punctual" ) )
 			{
-				node->light_index = extensions["KHR_lights_punctual"]["light"].get<int32_t>();
+				auto light_index = extensions["KHR_lights_punctual"]["light"].get<size_t>();
+				node->light = lights.find( light_index );
 			}
 		}
 
@@ -972,7 +971,7 @@ void Gltf::init_nodes( const nlohmann::json& j )
 			// Bounds
 			if ( extras.count( "bounds" ) )
 			{
-				auto bounds_index = extras["bounds"].get<int32_t>();
+				auto bounds_index = extras["bounds"].get<size_t>();
 				node->bounds = bounds.find( bounds_index );
 			}
 

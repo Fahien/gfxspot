@@ -1,13 +1,28 @@
 #pragma once
 
 #include <string>
-
+#include <spot/handle.h>
 #include <spot/math/math.h>
 
 namespace spot::gfx
 {
+
+
+/// @brief Ambient light
+struct Ambient
+{
+	struct Ubo
+	{
+		math::Vec3 color = math::Vec3::One;
+		float strength = 0.125f;
+	} ubo;
+};
+
+
+class Node;
+
 /// Punctual light that emit light in well-defined directions and intensities
-struct Light
+struct Light : public Handled<Light>
 {
 	/// Type of light
 	enum class Type
@@ -31,7 +46,7 @@ struct Light
 	std::string name = "Unknown";
 
 	/// Color of the light
-	spot::math::Vec3 color = spot::math::Vec3{ 1.0f, 1.0f, 1.0f };
+	spot::math::Vec3 color = spot::math::Vec3::One;
 
 	/// Unit depending on the type of light
 	/// Point and spot lights use luminous intensity in candela (lm/sr)
@@ -48,5 +63,6 @@ struct Light
 	/// Spot light values
 	Spot spot = {};
 };
+
 
 }  // namespace spot::gfx

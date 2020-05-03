@@ -72,9 +72,9 @@ std::vector<VkVertexInputAttributeDescription> get_attributes<Vertex>()
 }
 
 
-
 Renderer::Renderer( Graphics& g )
 : gfx { g }
+, ambient_resources { gfx.swapchain }
 {
 	recreate_pipelines();
 }
@@ -146,13 +146,13 @@ DynamicResources::DynamicResources( Device& d, Swapchain& s, GraphicsPipeline& g
 	for ( size_t i = 0; i < s.images.size(); ++i )
 	{
 		uniform_buffers.emplace_back(
-			Buffer( d, sizeof( UniformBufferObject ), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT )
+			Buffer( d, sizeof( MvpUbo ), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT )
 		);
 
 		VkDescriptorBufferInfo buffer_info = {};
 		buffer_info.buffer = uniform_buffers[i].handle;
 		buffer_info.offset = 0;
-		buffer_info.range = sizeof( UniformBufferObject );
+		buffer_info.range = sizeof( MvpUbo );
 
 		VkWriteDescriptorSet descriptor_write = {};
 		descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -179,7 +179,7 @@ std::vector<Buffer> create_mvp_ubos( const Swapchain& swapchain )
 		ret.emplace_back(
 			Buffer(
 				swapchain.device,
-				sizeof( UniformBufferObject ),
+				sizeof( MvpUbo ),
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
 			)
 		);
@@ -198,7 +198,48 @@ std::vector<Buffer> create_mat_ubos( const Swapchain& swapchain )
 		ret.emplace_back(
 			Buffer(
 				swapchain.device,
-				sizeof( Material::PbrMetallicRoughness ),
+				sizeof( MvpUbo ),
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+			)
+		);
+	}
+
+	return ret;
+}
+
+
+/// @return Buffers for ambient bindings for each swapchain image
+/// @todo How about constant buffers?
+std::vector<Buffer> create_ambient_ubos( const Swapchain& swapchain )
+{
+	std::vector<Buffer> ret;
+
+	for ( size_t i = 0; i < swapchain.images.size(); ++i )
+	{
+		ret.emplace_back(
+			Buffer(
+				swapchain.device,
+				sizeof( Ambient::Ubo ),
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+			)
+		);
+	}
+
+	return ret;
+}
+
+
+/// @return Buffers for light bindings for each swapchain image
+std::vector<Buffer> create_light_ubos( const Swapchain& swapchain )
+{
+	std::vector<Buffer> ret;
+
+	for ( size_t i = 0; i < swapchain.images.size(); ++i )
+	{
+		ret.emplace_back(
+			Buffer(
+				swapchain.device,
+				sizeof( LightUbo ),
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
 			)
 		);
@@ -210,25 +251,37 @@ std::vector<Buffer> create_mat_ubos( const Swapchain& swapchain )
 
 NodeResources::NodeResources( const Swapchain& swapchain )
 : ubos { create_mvp_ubos( swapchain ) }
-{
-}
+{}
 
 
 MaterialResources::MaterialResources( const Swapchain& swapchain )
 : ubos { create_mat_ubos( swapchain ) }
 , sampler { swapchain.device }
-{
-}
+{}
+
+
+AmbientResources::AmbientResources( const Swapchain& swapchain )
+: ubos { create_ambient_ubos( swapchain ) }
+{}
+
+
+LightResources::LightResources( const Swapchain& swapchain )
+: ubos { create_light_ubos( swapchain ) }
+{}
 
 
 std::vector<VkDescriptorPoolSize> get_mesh_pool_size( const uint32_t count )
 {
-	std::vector<VkDescriptorPoolSize> pool_sizes(2);
+	std::vector<VkDescriptorPoolSize> pool_sizes(4);
 
 	pool_sizes[0].descriptorCount = count;
 	pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	pool_sizes[1].descriptorCount = count;
-	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	pool_sizes[2].descriptorCount = count;
+	pool_sizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	pool_sizes[3].descriptorCount = count;
+	pool_sizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
 	return pool_sizes;
 }
@@ -260,7 +313,11 @@ PrimitiveResources::PrimitiveResources( const Device& device, const Primitive& p
 }
 
 
-DescriptorResources::DescriptorResources( const Renderer& renderer, const GraphicsPipeline& pipel, const Handle<Node>& node, const Handle<Material>& material )
+DescriptorResources::DescriptorResources(
+	const Renderer& renderer,
+	const GraphicsPipeline& pipel,
+	const Handle<Node>& node,
+	const Handle<Material>& material )
 : pipeline { pipel.index }
 , descriptor_pool {
 		renderer.gfx.swapchain.device,
@@ -284,7 +341,7 @@ DescriptorResources::DescriptorResources( const Renderer& renderer, const Graphi
 		VkDescriptorBufferInfo buffer_info = {};
 		buffer_info.buffer = node_res.ubos[i].handle;
 		buffer_info.offset = 0;
-		buffer_info.range = sizeof( UniformBufferObject );
+		buffer_info.range = sizeof( MvpUbo );
 	
 		VkWriteDescriptorSet write = {};
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -297,11 +354,58 @@ DescriptorResources::DescriptorResources( const Renderer& renderer, const Graphi
 
 		writes.emplace_back( write );
 
+		VkDescriptorBufferInfo ambient_info = {};
+		if ( material )
+		{
+			ambient_info.buffer = renderer.ambient_resources.ubos[i].handle;
+			ambient_info.offset = 0;
+			ambient_info.range = sizeof( Ambient::Ubo );
+
+			VkWriteDescriptorSet ambient_write = {};
+			ambient_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			ambient_write.dstSet = descriptor_sets[i];
+			ambient_write.dstBinding = 1; /// @todo Fix magic number
+			ambient_write.dstArrayElement = 0;
+			ambient_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			ambient_write.descriptorCount = 1;
+			ambient_write.pBufferInfo = &ambient_info;
+
+			writes.emplace_back( ambient_write );
+
+		}
+
+		VkDescriptorBufferInfo light_info = {};
+		if ( material )
+		{
+			/// @todo Think about multiple lights
+			// assert( renderer.light_resources.count( light ) &&
+			// 	"Light resources were not created" );
+			// auto& light_res = renderer.light_resources.at( light );
+
+			auto& light_res = renderer.light_resources.begin()->second;
+
+			light_info.buffer = light_res.ubos[i].handle;
+			light_info.offset = 0;
+			light_info.range = sizeof( LightUbo );
+
+			VkWriteDescriptorSet light_write = {};
+			light_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			light_write.dstSet = descriptor_sets[i];
+			light_write.dstBinding = 2;
+			light_write.dstArrayElement = 0;
+			light_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			light_write.descriptorCount = 1;
+			light_write.pBufferInfo = &light_info;
+
+			writes.emplace_back( light_write );
+		}
+
+
 		VkDescriptorBufferInfo mat_info = {};
 		if ( material )
 		{
-			assert( renderer.material_resources.count( material.get_index() ) && "Material resources were not created" );
-			auto& mat_res = renderer.material_resources.at( material.get_index() );
+			assert( renderer.material_resources.count( material ) && "Material resources were not created" );
+			auto& mat_res = renderer.material_resources.at( material );
 
 			mat_info.buffer = mat_res.ubos[i].handle;
 			mat_info.offset = 0;
@@ -310,7 +414,7 @@ DescriptorResources::DescriptorResources( const Renderer& renderer, const Graphi
 			VkWriteDescriptorSet mat_write = {};
 			mat_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			mat_write.dstSet = descriptor_sets[i];
-			mat_write.dstBinding = 1;
+			mat_write.dstBinding = 3;
 			mat_write.dstArrayElement = 0;
 			mat_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			mat_write.descriptorCount = 1;
@@ -322,8 +426,8 @@ DescriptorResources::DescriptorResources( const Renderer& renderer, const Graphi
 		VkDescriptorImageInfo image_info = {};
 		if ( material && material->texture != VK_NULL_HANDLE )
 		{
-			assert( renderer.material_resources.count( material.get_index() ) && "Material resources were not created" );
-			auto& mat_res = renderer.material_resources.at( material.get_index() );
+			assert( renderer.material_resources.count( material ) && "Material resources were not created" );
+			auto& mat_res = renderer.material_resources.at( material );
 
 			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			image_info.imageView = material->texture;
@@ -332,7 +436,7 @@ DescriptorResources::DescriptorResources( const Renderer& renderer, const Graphi
 			VkWriteDescriptorSet write = {};
 			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			write.dstSet = descriptor_sets[i];
-			write.dstBinding = 2;
+			write.dstBinding = 4;
 			write.dstArrayElement = 0;
 			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			write.descriptorCount = 1;
@@ -400,22 +504,31 @@ void Renderer::add( const Handle<Node>& node, const Primitive& prim )
 
 void Renderer::add( const Handle<Node>& node )
 {
-	if ( !node->mesh )
+	if ( !node->mesh && !node->light )
 	{
-		return; // no mesh to add
+		return; // no mesh or light to add
 	}
 
-	// The node has a mesh, therefore we need UBOs for the MVP matrix
+	// The node has a mesh or a light, therefore we need UBOs for the MVP matrix
 	// MVP ubos are store in node resources
 	if ( !FIND( node_resources, node ) )
 	{
 		node_resources.emplace( node, NodeResources( gfx.swapchain ) );
 	}
 
-	// Now get the mesh, and its primitives
-	for ( auto& prim : node->mesh->primitives )
+	if ( node->light )
 	{
-		add( node, prim );
+		// Create resources for the light
+		light_resources.emplace( node->light.get_index(), LightResources( gfx.swapchain ) );
+	}
+
+	if ( node->mesh )
+	{
+		// Now get the mesh, and its primitives
+		for ( auto& prim : node->mesh->primitives )
+		{
+			add( node, prim );
+		}
 	}
 }
 
@@ -427,6 +540,7 @@ Renderer::add_descriptors( const Handle<Node>& node, const Handle<Material>& mat
 	// A node may have a mesh with multiple primitives with different materials
 	// And the same material may appear into multiple primitives of different nodes
 	// So we hash combine both node and material
+	/// @todo Use handles to include generations when hash combining
 	auto key = std::hash_combine( node.get_index(), material.get_index() );
 	auto it = descriptor_resources.find( key );
 	if ( it != std::end( descriptor_resources ) )
@@ -438,9 +552,9 @@ Renderer::add_descriptors( const Handle<Node>& node, const Handle<Material>& mat
 	if ( material )
 	{
 		// Add ubo for this material
-		if ( material_resources.find( material.get_index() ) == std::end( material_resources ) )
+		if ( material_resources.find( material ) == std::end( material_resources ) )
 		{
-			material_resources.emplace( material.get_index(), gfx.swapchain );
+			material_resources.emplace( material, gfx.swapchain );
 		}
 	}
 

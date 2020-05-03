@@ -23,6 +23,7 @@ class Swapchain;
 class Graphics;
 
 
+/// @todo Is this not used anymore?
 struct DynamicResources
 {
 	DynamicResources( Device& d, Swapchain& s, GraphicsPipeline& pl );
@@ -65,27 +66,57 @@ struct DescriptorResources
 		const Handle<Material>& material = {} );
 
 	uint64_t pipeline;
+
 	/// Descriptor pool for descriptor sets
 	DescriptorPool descriptor_pool;
+
 	// Descriptor sets for each swapchain image
 	std::vector<VkDescriptorSet> descriptor_sets;
 };
 
 
+/// @brief Rendering resources for Nodes
 struct NodeResources
 {
 	NodeResources( const Swapchain& swapchain );
 
+	/// MVP uniform buffer objects for each swapchain images
 	std::vector<Buffer> ubos;
 };
 
+
+/// @brief Rendering resources for Materials
 struct MaterialResources
 {
 	MaterialResources( const Swapchain& swapchain );
 
+	/// Material uniform buffer objects for each swapchain image
 	std::vector<Buffer> ubos;
+
+	/// A sampler for the diffuse texture
 	Sampler sampler;
 };
+
+
+/// @brief Rendering resources for Ambient light
+struct AmbientResources
+{
+	AmbientResources( const Swapchain& swapchain );
+
+	/// Ambient uniform buffer objects for each swapchain image
+	std::vector<Buffer> ubos;
+};
+
+
+/// @brief Rendering resources for lights
+struct LightResources
+{
+	LightResources( const Swapchain& swapchain );
+
+	/// Ambient uniform buffer objects for each swapchain image
+	std::vector<Buffer> ubos;
+};
+
 
 /// @todo Resource cache should be improved in this way:
 /// 1. A resource cache for primitives
@@ -116,8 +147,8 @@ class Renderer
 	/// Meshes with the same primitive will use the same resources
 	std::unordered_map<size_t, PrimitiveResources> primitive_resources;
 
-	/// @brief Key is material index, value is ubos for material
-	std::unordered_map<uint32_t, MaterialResources> material_resources;
+	/// @brief Key is material handle, value is ubos for material
+	std::unordered_map<Handle<Material>, MaterialResources> material_resources;
 
 	/// @brief Key is node handle, value is ubos for frames
 	std::unordered_map<Handle<Node>, NodeResources> node_resources;
@@ -125,6 +156,13 @@ class Renderer
 	/// @brief Key is hash of node and material
 	/// Value is descriptor sets for this node and material
 	std::unordered_map<size_t, DescriptorResources> descriptor_resources;
+
+	AmbientResources ambient_resources;
+
+	/// @brief Key is hash of node and light
+	/// The same light may be attached to multiple nodes
+	/// Value is ubos for frames
+	std::unordered_map<size_t, LightResources> light_resources;
 
   private:
 	/// @return Find the line pipeline with a specific width

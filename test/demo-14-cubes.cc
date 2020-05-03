@@ -22,18 +22,56 @@ int main( const int argc, const char** argv )
 	// Create scene
 	auto model = gfx.models.push( gfx.device );
 
-	auto blue_cube = model->nodes.push(
+	auto cube_root = model->nodes.push();
+
+	auto dice = model->nodes.push(
 		model->meshes.push( gfx::Mesh::create_cube(
-			model->materials.push( gfx::Material( gfx::Color::Blue ) )
+			model->materials.push(
+				model->images.load( "img/dice.png" )
+			)
 		) )
 	);
+	dice->translation.x -= 1.5f;
+	cube_root->add_child( dice );
+
+	auto gray_table = model->nodes.push(
+		model->meshes.push( gfx::Mesh::create_cube(
+			model->materials.push( gfx::Material( gfx::Color::Gray ) )
+		))
+	);
+	gray_table->scale.x *= 6.0f;
+	gray_table->scale.z *= 6.0f;
+	gray_table->translation.y -= 1.0f;
+	cube_root->add_child( gray_table );
 
 	auto red_cube = model->nodes.push(
 		model->meshes.push( gfx::Mesh::create_cube(
 			model->materials.push( gfx::Material( gfx::Color::Red ) )
 		) )
 	);
-	red_cube->translation.x += 1.0f;
+	red_cube->translation.x += 1.5f;
+	cube_root->add_child( red_cube );
+
+	auto blue_cube = model->nodes.push(
+		model->meshes.push( gfx::Mesh::create_cube(
+			model->materials.push( gfx::Material( gfx::Color::Blue ) )
+		) )
+	);
+	blue_cube->translation.z += 1.5f;
+	cube_root->add_child( blue_cube );
+
+	auto green_cube = model->nodes.push(
+		model->meshes.push( gfx::Mesh::create_cube(
+			model->materials.push( gfx::Material( gfx::Color::Green ) )
+		) )
+	);
+	green_cube->translation.z -= 1.5f;
+	cube_root->add_child( green_cube );
+
+	gfx.light_node = model->nodes.push();
+	gfx.light_node->light = model->lights.push();
+	gfx.light_node->translation.y += 4.0f;
+	gfx.renderer.add( gfx.light_node );
 
 	// Loop
 	while ( gfx.window.is_alive() )
@@ -51,19 +89,24 @@ int main( const int argc, const char** argv )
 			gfx.camera.node.translation += gfx.window.scroll.y;
 		}
 
-		if ( gfx.window.swipe.x != 0.0f )
+		cube_root->rotation *= math::Quat( math::Vec3::Y, math::radians( 4.0f * dt ) );
+
+		if ( gfx.window.press.left )
 		{
-			blue_cube->rotation *= math::Quat( math::Vec3::Y, math::radians( gfx.window.swipe.x ) );
+			cube_root->rotation *= math::Quat( math::Vec3::X, math::radians( -gfx.window.swipe.y * 4.0f * dt ) );
+			cube_root->rotation *= math::Quat( math::Vec3::Y, math::radians( gfx.window.swipe.x * dt ) );
 		}
-		if ( gfx.window.swipe.y != 0.0f )
+		if ( gfx.window.press.right )
 		{
-			blue_cube->rotation *= math::Quat( math::Vec3::X, math::radians( -gfx.window.swipe.y ) );
+			gfx.light_node->translation.y += gfx.window.swipe.y * dt;
 		}
+
+		gfx.ambient.ubo.strength += gfx.window.scroll.y * dt;
+
 		// Render
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( blue_cube );
-			gfx.draw( red_cube );
+			gfx.draw( cube_root );
 			gfx.render_end();
 		}
 	}

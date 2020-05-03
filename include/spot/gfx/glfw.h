@@ -61,7 +61,14 @@ class Window
 	math::Vec2 swipe = {};
 
 	math::Vec2 cursor = {};
-	bool pressed = false;
+
+	struct Press
+	{
+		bool left = false;
+		bool middle = false;
+		bool right = false;
+
+	} press;
 	
 	struct Click
 	{
