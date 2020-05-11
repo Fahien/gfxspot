@@ -101,6 +101,7 @@ Png::Png( const std::string& path )
 		color_type = png_get_color_type( png, info );
 	}
 
+	/// @todo Support different bit depths
 	assert( bit_depth == 8 && "PNG bit depth not supported" );
 	channels = png_get_channels( png, info );
 	print_info();

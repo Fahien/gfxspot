@@ -754,31 +754,33 @@ std::vector<VkDescriptorSetLayoutBinding> get_line_bindings()
 
 std::vector<VkDescriptorSetLayoutBinding> get_mesh_no_image_bindings()
 {
-	VkDescriptorSetLayoutBinding mvp = {};
-	mvp.binding = 0;
+	std::vector<VkDescriptorSetLayoutBinding> ret;
+
+	auto& mvp = ret.emplace_back();
+	mvp.binding = ret.size() - 1;
 	mvp.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	mvp.descriptorCount = 1;
 	mvp.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-	VkDescriptorSetLayoutBinding ambient = {};
-	ambient.binding = 1;
-	ambient.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	ambient.descriptorCount = 1;
-	ambient.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+//	auto& ambient = ret.emplace_back();
+//	ambient.binding = ret.size() - 1;
+//	ambient.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+//	ambient.descriptorCount = 1;
+//	ambient.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+//
+//	auto& light = ret.emplace_back();
+//	light.binding = ret.size() - 1;
+//	light.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+//	light.descriptorCount = 1;
+//	light.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	VkDescriptorSetLayoutBinding light = {};
-	light.binding = 2;
-	light.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	light.descriptorCount = 1;
-	light.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	VkDescriptorSetLayoutBinding material = {};
-	material.binding = 3;
+	auto& material = ret.emplace_back();
+	material.binding = ret.size() - 1;
 	material.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	material.descriptorCount = 1;
 	material.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	return { mvp, ambient, light, material };
+	return ret;
 }
 
 
@@ -786,13 +788,12 @@ std::vector<VkDescriptorSetLayoutBinding> get_mesh_bindings()
 {
 	auto ret = get_mesh_no_image_bindings();
 
-	VkDescriptorSetLayoutBinding sampler = {};
-	sampler.binding = 4;
+	auto& sampler = ret.emplace_back();
+	sampler.binding = ret.size() - 1;
 	sampler.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	sampler.descriptorCount = 1;
 	sampler.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	ret.emplace_back( sampler );
 	return ret;
 }
 
@@ -955,19 +956,21 @@ void Graphics::draw( const Handle<Node>& node, const Primitive& primitive, const
 		material_ubo.upload( material_data, sizeof( Material::PbrMetallicRoughness ) );
 
 		// Upload Ambient UBO
-		auto ambient_data = reinterpret_cast<const uint8_t*>( &ambient.ubo );
-		auto& ambient_ubo = renderer.ambient_resources.ubos[current_frame_index];
-		ambient_ubo.upload( ambient_data, sizeof( Ambient::Ubo ) );
+		if ( light_node )
+		{
+			auto ambient_data = reinterpret_cast<const uint8_t*>( &ambient.ubo );
+			auto& ambient_ubo = renderer.ambient_resources.ubos[current_frame_index];
+			ambient_ubo.upload( ambient_data, sizeof( Ambient::Ubo ) );
 
-		// Upload Light UBO
-		assert( light_node && light_node->light && "There is no node with light" );
-		LightUbo light_ubo = {};
-		light_ubo.position = light_node->translation;
-		light_ubo.color = light_node->light->color;
-		auto light_data = reinterpret_cast<const uint8_t*>( &light_ubo );
-		auto& light_res = renderer.light_resources.begin()->second;
-		auto& light_buffer = light_res.ubos[current_frame_index];
-		light_buffer.upload( light_data, sizeof( LightUbo ) );
+			// Upload Light UBO
+			LightUbo light_ubo = {};
+			light_ubo.position = light_node->translation;
+			light_ubo.color = light_node->light->color;
+			auto light_data = reinterpret_cast<const uint8_t*>( &light_ubo );
+			auto& light_res = renderer.light_resources.begin()->second;
+			auto& light_buffer = light_res.ubos[current_frame_index];
+			light_buffer.upload( light_data, sizeof( LightUbo ) );
+		}
 	}
 	else // Draw mesh with lines
 	{

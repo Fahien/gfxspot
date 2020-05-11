@@ -273,16 +273,16 @@ LightResources::LightResources( const Swapchain& swapchain )
 
 std::vector<VkDescriptorPoolSize> get_mesh_pool_size( const uint32_t count )
 {
-	std::vector<VkDescriptorPoolSize> pool_sizes(4);
+	std::vector<VkDescriptorPoolSize> pool_sizes(2);
 
 	pool_sizes[0].descriptorCount = count;
 	pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	//pool_sizes[1].descriptorCount = count;
+	//pool_sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	//pool_sizes[2].descriptorCount = count;
+	//pool_sizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	pool_sizes[1].descriptorCount = count;
-	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	pool_sizes[2].descriptorCount = count;
-	pool_sizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	pool_sizes[3].descriptorCount = count;
-	pool_sizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
 	return pool_sizes;
 }
@@ -337,6 +337,9 @@ DescriptorResources::DescriptorResources(
 
 	for ( size_t i = 0; i < renderer.gfx.swapchain.images.size(); ++i )
 	{
+		// Helper variable, increments every write
+		uint32_t dst_binding = 0;
+
 		std::vector<VkWriteDescriptorSet> writes = {};
 
 		VkDescriptorBufferInfo buffer_info = {};
@@ -347,60 +350,13 @@ DescriptorResources::DescriptorResources(
 		VkWriteDescriptorSet write = {};
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		write.dstSet = descriptor_sets[i];
-		write.dstBinding = 0;
+		write.dstBinding = dst_binding++;
 		write.dstArrayElement = 0;
 		write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		write.descriptorCount = 1;
 		write.pBufferInfo = &buffer_info;
 
 		writes.emplace_back( write );
-
-		VkDescriptorBufferInfo ambient_info = {};
-		if ( material )
-		{
-			ambient_info.buffer = renderer.ambient_resources.ubos[i].handle;
-			ambient_info.offset = 0;
-			ambient_info.range = sizeof( Ambient::Ubo );
-
-			VkWriteDescriptorSet ambient_write = {};
-			ambient_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			ambient_write.dstSet = descriptor_sets[i];
-			ambient_write.dstBinding = 1; /// @todo Fix magic number
-			ambient_write.dstArrayElement = 0;
-			ambient_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			ambient_write.descriptorCount = 1;
-			ambient_write.pBufferInfo = &ambient_info;
-
-			writes.emplace_back( ambient_write );
-
-		}
-
-		VkDescriptorBufferInfo light_info = {};
-		if ( material )
-		{
-			/// @todo Think about multiple lights
-			// assert( renderer.light_resources.count( light ) &&
-			// 	"Light resources were not created" );
-			// auto& light_res = renderer.light_resources.at( light );
-
-			auto& light_res = renderer.light_resources.begin()->second;
-
-			light_info.buffer = light_res.ubos[i].handle;
-			light_info.offset = 0;
-			light_info.range = sizeof( LightUbo );
-
-			VkWriteDescriptorSet light_write = {};
-			light_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			light_write.dstSet = descriptor_sets[i];
-			light_write.dstBinding = 2;
-			light_write.dstArrayElement = 0;
-			light_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			light_write.descriptorCount = 1;
-			light_write.pBufferInfo = &light_info;
-
-			writes.emplace_back( light_write );
-		}
-
 
 		VkDescriptorBufferInfo mat_info = {};
 		if ( material )
@@ -415,7 +371,7 @@ DescriptorResources::DescriptorResources(
 			VkWriteDescriptorSet mat_write = {};
 			mat_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			mat_write.dstSet = descriptor_sets[i];
-			mat_write.dstBinding = 3;
+			mat_write.dstBinding = dst_binding++;
 			mat_write.dstArrayElement = 0;
 			mat_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			mat_write.descriptorCount = 1;
@@ -437,13 +393,58 @@ DescriptorResources::DescriptorResources(
 			VkWriteDescriptorSet write = {};
 			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			write.dstSet = descriptor_sets[i];
-			write.dstBinding = 4;
+			write.dstBinding = dst_binding++;
 			write.dstArrayElement = 0;
 			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			write.descriptorCount = 1;
 			write.pImageInfo = &image_info;
 
 			writes.emplace_back( write );
+		}
+
+		VkDescriptorBufferInfo ambient_info = {};
+		if ( material && renderer.gfx.light_node )
+		{
+			ambient_info.buffer = renderer.ambient_resources.ubos[i].handle;
+			ambient_info.offset = 0;
+			ambient_info.range = sizeof( Ambient::Ubo );
+
+			VkWriteDescriptorSet ambient_write = {};
+			ambient_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			ambient_write.dstSet = descriptor_sets[i];
+			ambient_write.dstBinding = dst_binding++;
+			ambient_write.dstArrayElement = 0;
+			ambient_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			ambient_write.descriptorCount = 1;
+			ambient_write.pBufferInfo = &ambient_info;
+
+			writes.emplace_back( ambient_write );
+		}
+
+		VkDescriptorBufferInfo light_info = {};
+		if ( material && renderer.gfx.light_node )
+		{
+			/// @todo Think about multiple lights
+			// assert( renderer.light_resources.count( light ) &&
+			// 	"Light resources were not created" );
+			// auto& light_res = renderer.light_resources.at( light );
+
+			auto& light_res = renderer.light_resources.begin()->second;
+
+			light_info.buffer = light_res.ubos[i].handle;
+			light_info.offset = 0;
+			light_info.range = sizeof( LightUbo );
+
+			VkWriteDescriptorSet light_write = {};
+			light_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			light_write.dstSet = descriptor_sets[i];
+			light_write.dstBinding = dst_binding++;
+			light_write.dstArrayElement = 0;
+			light_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			light_write.descriptorCount = 1;
+			light_write.pBufferInfo = &light_info;
+
+			writes.emplace_back( light_write );
 		}
 
 		vkUpdateDescriptorSets( pipel.device.handle, writes.size(), writes.data(), 0, nullptr );
