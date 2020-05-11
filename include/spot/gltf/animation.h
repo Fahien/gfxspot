@@ -5,7 +5,6 @@
 
 #include <spot/math/math.h>
 
-#include "spot/gltf/node.h"
 #include "spot/gltf/accessor.h"
 
 namespace spot::gfx
@@ -13,6 +12,7 @@ namespace spot::gfx
 
 
 class Gltf;
+class Node;
 
 
 /// Keyframe animation

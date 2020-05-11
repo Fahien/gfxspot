@@ -97,22 +97,4 @@ class Node : public Handled<Node>
 };
 
 
-/// Root nodes of a scene
-struct Scene
-{
-	/// Gltf owning the scene
-	Gltf* model = nullptr;
-	
-	/// Indices of each root node
-	std::vector<Handle<Node>> nodes;
-	
-	/// User-defined name of this object
-	std::string name = "default";
-
-	/// @param name Name of the node
-	/// @return A newly created Node as root of a scene
-	Handle<Node> create_node( const std::string& name = {} );
-};
-
-
 }  // namespace spot::gfx

@@ -2,11 +2,13 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 
 #include <vulkan/vulkan_core.h>
 #include <spot/math/math.h>
 
 struct GLFWwindow;
+
 
 namespace spot::gfx
 {

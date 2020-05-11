@@ -2,7 +2,6 @@
 
 #include <spot/gltf/color.h>
 #include <spot/gltf/mesh.h>
-#include <spot/gltf/node.h>
 #include <spot/hash.h>
 #include <spot/math/math.h>
 

@@ -4,7 +4,6 @@
 
 #include <spot/math/math.h>
 #include <spot/gltf/mesh.h>
-#include <spot/gltf/node.h>
 
 #include "spot/gfx/buffers.h"
 #include "spot/gfx/descriptors.h"
@@ -15,6 +14,7 @@
 namespace spot::gfx
 {
 
+class Node;
 struct Primitive;
 struct Material;
 

@@ -1,6 +1,8 @@
 #include "spot/gltf/mesh.h"
 
 #include "spot/gltf/gltf.h"
+#include "spot/gltf/node.h"
+
 
 namespace spot::gfx
 {

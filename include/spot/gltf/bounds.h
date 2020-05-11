@@ -3,15 +3,16 @@
 #include <cassert>
 #include <variant>
 
+#include <spot/handle.h>
 #include <spot/math/math.h>
 #include <spot/math/shape.h>
 
-#include "spot/gltf/node.h"
 
 namespace spot::gfx
 {
 
 class Gltf;
+class Node;
 
 
 /// @todo 
