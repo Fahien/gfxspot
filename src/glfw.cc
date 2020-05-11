@@ -129,6 +129,10 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 Window::Window()
 {
 	glfwWindowHint( GLFW_CLIENT_API, GLFW_NO_API );
+	glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
+	uint32_t scale = 6;
+	extent.width = 320 * scale;
+	extent.height = 240 * scale;
 	handle = glfwCreateWindow( extent.width, extent.height, "Graphics", nullptr, nullptr );
 
 	int width, height;

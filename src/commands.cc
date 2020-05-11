@@ -42,7 +42,7 @@ void CommandBuffer::transition( Image& image, const VkImageLayout layout )
 	barrier.oldLayout = image.layout;
 	barrier.newLayout = layout;
 
-	barrier.image = image.handle;
+	barrier.image = image.vkhandle;
 	barrier.subresourceRange.aspectMask = get_aspect_mask( layout );
 	barrier.subresourceRange.baseMipLevel = 0;
 	barrier.subresourceRange.levelCount = 1;
@@ -105,7 +105,7 @@ void CommandBuffer::copy( const Buffer& from_buffer, const Image& dest_image )
 	region.imageOffset = { 0, 0, 0 };
 	region.imageExtent = dest_image.extent;
 
-	vkCmdCopyBufferToImage( handle, from_buffer.handle, dest_image.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region );
+	vkCmdCopyBufferToImage( handle, from_buffer.handle, dest_image.vkhandle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region );
 }
 
 

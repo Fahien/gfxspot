@@ -539,7 +539,7 @@ std::vector<Framebuffer> Frames::create_framebuffers( RenderPass& render_pass )
 	for ( size_t i = 0; i < color_views.size(); ++i )
 	{
 		auto color_view = color_views[i];
-		auto depth_view = depth_views[i].handle;
+		auto depth_view = depth_views[i].vkhandle;
 		std::vector<VkImageView> views = { color_view, depth_view };
 		VkExtent2D extent = { depth_images[i].extent.width, depth_images[i].extent.height };
 		auto framebuffer = Framebuffer( views, extent, render_pass );

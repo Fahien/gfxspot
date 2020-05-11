@@ -10,13 +10,14 @@
 namespace spot::gfx
 {
 struct GltfTexture;
+class ImageView;
 
 /// Material appearance of a primitive
 struct Material : public Handled<Material>
 {
 	Material() = default;
 	Material( const Color& c ) : pbr { c } {}
-	Material( VkImageView t ) : texture { t } {}
+	Material( const Handle<ImageView>& t ) : texture { t } {}
 
 	/// Metallic-Roughness Material
 	struct alignas(16) PbrMetallicRoughness
@@ -42,7 +43,7 @@ struct Material : public Handled<Material>
 	/// Base color texture
 	Handle<GltfTexture> texture_handle = {};
 
-	VkImageView texture = VK_NULL_HANDLE;
+	Handle<ImageView> texture = {};
 };
 
 

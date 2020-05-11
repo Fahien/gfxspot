@@ -157,10 +157,10 @@ Mesh Mesh::create_quad( const Handle<Material>& material, const math::Vec3& a, c
 	auto& vertices = ret.primitives[0].vertices;
 
 	// Text coords
-	vertices[0].t = math::Vec2( 1.0f, 0.0 ); // a
-	vertices[1].t = math::Vec2( 0.0f, 0.0 ); // b
-	vertices[2].t = math::Vec2( 0.0f, 1.0 ); // c
-	vertices[3].t = math::Vec2( 1.0f, 1.0 ); // d
+	vertices[0].t = math::Vec2( 0.0f, 1.0 ); // a
+	vertices[1].t = math::Vec2( 1.0f, 1.0 ); // b
+	vertices[2].t = math::Vec2( 1.0f, 0.0 ); // c
+	vertices[3].t = math::Vec2( 0.0f, 0.0 ); // d
 
 	return ret;
 }

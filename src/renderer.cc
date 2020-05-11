@@ -381,13 +381,13 @@ DescriptorResources::DescriptorResources(
 		}
 
 		VkDescriptorImageInfo image_info = {};
-		if ( material && material->texture != VK_NULL_HANDLE )
+		if ( material && material->texture )
 		{
 			assert( renderer.material_resources.count( material ) && "Material resources were not created" );
 			auto& mat_res = renderer.material_resources.at( material );
 
 			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			image_info.imageView = material->texture;
+			image_info.imageView = material->texture->vkhandle;
 			image_info.sampler = mat_res.sampler.handle;
 
 			VkWriteDescriptorSet write = {};
@@ -478,7 +478,7 @@ uint64_t select_pipeline( const Handle<Material>& material )
 {
 	if ( material )
 	{
-		if ( material->texture != VK_NULL_HANDLE )
+		if ( material->texture )
 		{
 			return get_mesh_pipeline();
 		}

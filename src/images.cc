@@ -78,13 +78,13 @@ Image::Image( Device& d, const VkExtent2D ext, const VkFormat fmt )
 	info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	info.samples = VK_SAMPLE_COUNT_1_BIT;
 
-	auto res = vkCreateImage( device.handle, &info, nullptr, &handle );
+	auto res = vkCreateImage( device.handle, &info, nullptr, &vkhandle );
 	assert( res == VK_SUCCESS && "Cannot create image" );
 
 	// Memory
 	{
 		VkMemoryRequirements requirements;
-		vkGetImageMemoryRequirements( device.handle, handle, &requirements);
+		vkGetImageMemoryRequirements( device.handle, vkhandle, &requirements);
 
 		VkMemoryAllocateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -97,7 +97,7 @@ Image::Image( Device& d, const VkExtent2D ext, const VkFormat fmt )
 		auto res = vkAllocateMemory( device.handle, &info, nullptr, &memory );
 		assert( res == VK_SUCCESS && "Cannot allocate memory for image" );
 
-		res = vkBindImageMemory( device.handle, handle, memory, 0 );
+		res = vkBindImageMemory( device.handle, vkhandle, memory, 0 );
 		assert( res == VK_SUCCESS && "Cannot bind image memory" );
 	}
 }
@@ -105,10 +105,10 @@ Image::Image( Device& d, const VkExtent2D ext, const VkFormat fmt )
 
 Image::~Image()
 {
-	if ( handle != VK_NULL_HANDLE )
+	if ( vkhandle != VK_NULL_HANDLE )
 	{
 		vkFreeMemory( device.handle, memory, nullptr );
-		vkDestroyImage( device.handle, handle, nullptr );
+		vkDestroyImage( device.handle, vkhandle, nullptr );
 	}
 }
 
@@ -117,12 +117,12 @@ Image::Image( Image&& other )
 : device { other.device }
 , extent { other.extent }
 , format { other.format }
-, handle { other.handle }
+, vkhandle { other.vkhandle }
 , memory { other.memory }
 , layout { other.layout }
 , command_pool { std::move( other.command_pool ) }
 {
-	other.handle = VK_NULL_HANDLE;
+	other.vkhandle = VK_NULL_HANDLE;
 	other.memory = VK_NULL_HANDLE;
 }
 
@@ -190,12 +190,19 @@ VkImageAspectFlags get_aspect( const Image& image )
 }
 
 
+ImageView::ImageView( const Handle<Image>& img )
+: ImageView( *img )
+{
+	image = img;
+}
+
+
 ImageView::ImageView( const Image& image )
 : device { image.device }
 {
 	VkImageViewCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	info.image = image.handle;
+	info.image = image.vkhandle;
 	info.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	info.format = image.format;
 	info.subresourceRange.aspectMask = get_aspect( image );
@@ -204,31 +211,33 @@ ImageView::ImageView( const Image& image )
 	info.subresourceRange.baseArrayLayer = 0;
 	info.subresourceRange.layerCount = 1;
 
-	auto res = vkCreateImageView( device.handle, &info, nullptr, &handle );
+	auto res = vkCreateImageView( device.handle, &info, nullptr, &vkhandle );
 	assert( res == VK_SUCCESS && "Cannot create image view" );
 }
 
 
 ImageView::~ImageView()
 {
-	if ( handle != VK_NULL_HANDLE )
+	if ( vkhandle != VK_NULL_HANDLE )
 	{
-		vkDestroyImageView( device.handle, handle, nullptr );
+		vkDestroyImageView( device.handle, vkhandle, nullptr );
 	}
 }
 
 
 ImageView::ImageView( ImageView&& other )
 : device { other.device }
-, handle { other.handle }
+, image { std::move( other.image ) }
+, vkhandle { other.vkhandle }
 {
-	other.handle = VK_NULL_HANDLE;
+	other.vkhandle = VK_NULL_HANDLE;
 }
 
 
 ImageView& ImageView::operator=( ImageView&& other )
 {
 	assert( device.handle == other.device.handle && "Cannot move images from different device" );
+	std::swap( image, other.image );
 	std::swap( handle, other.handle );
 
 	return *this;
@@ -240,14 +249,14 @@ Sampler::Sampler( Device& d )
 {
 	VkSamplerCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	info.magFilter = VK_FILTER_LINEAR;
-	info.minFilter = VK_FILTER_LINEAR;
+	info.magFilter = VK_FILTER_NEAREST;
+	info.minFilter = VK_FILTER_NEAREST;
 
 	info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 
-	info.anisotropyEnable = VK_TRUE;
+	info.anisotropyEnable = VK_FALSE;
 	info.maxAnisotropy = 16;
 
 	info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
@@ -256,7 +265,7 @@ Sampler::Sampler( Device& d )
 	info.compareEnable = VK_FALSE;
 	info.compareOp = VK_COMPARE_OP_ALWAYS;
 
-	info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	info.mipLodBias = 0.0f;
 	info.minLod = 0.0f;
 	info.maxLod = 0.0f;
@@ -296,12 +305,15 @@ Images::Images( Device& d )
 {}
 
 
-VkImageView Images::load( const char* name, std::vector<uint8_t>& mem )
+Handle<ImageView> Images::load( const char* name, std::vector<uint8_t>& mem )
 {
-	VkImageView ret = VK_NULL_HANDLE;
+	Handle<ImageView> ret = {};
 
-	auto it = images.find( name );
-	if ( it == std::end( images ) )
+	auto it = std::find(
+		std::begin( image_paths ),
+		std::end( image_paths ),
+		 name );
+	if ( it == std::end( image_paths ) )
 	{
 		auto png = Png( mem );
 		auto png_size = png.get_size();
@@ -310,30 +322,30 @@ VkImageView Images::load( const char* name, std::vector<uint8_t>& mem )
 		png.load( mem );
 		staging_buffer.unmap();
 
-		auto image = Image( device, png );
-		image.upload( staging_buffer );
-		auto view = ImageView( image );
-		ret = view.handle;
-
-		auto pair = std::make_pair( std::move( image ), std::move( view ) );
-		auto[res, ok] = images.emplace( name, std::move( pair ) );
-		assert( ok && "Cannot store image" );
+		image_paths.emplace_back( name );
+		auto image = images.push( Image( device, png ) );
+		image->upload( staging_buffer );
+		ret = views.push( ImageView( image ) );
 	}
 	else
 	{
-		ret = it->second.second.handle;
+		auto index = it - std::begin( image_paths );
+		ret = views.find( index );
 	}
 
 	return ret;
 }
 
 
-VkImageView Images::load( const char* path )
+Handle<ImageView> Images::load( const char* path )
 {
-	VkImageView ret = VK_NULL_HANDLE;
+	Handle<ImageView> ret = {};
 
-	auto it = images.find( path );
-	if ( it == std::end( images ) )
+	auto it = std::find(
+		std::begin( image_paths ),
+		std::end( image_paths ),
+		path );
+	if ( it == std::end( image_paths ) )
 	{
 		auto png = Png( path );
 		auto png_size = png.get_size();
@@ -342,18 +354,15 @@ VkImageView Images::load( const char* path )
 		png.load( mem );
 		staging_buffer.unmap();
 
-		auto image = Image( device, png );
-		image.upload( staging_buffer );
-		auto view = ImageView( image );
-		ret = view.handle;
-
-		auto pair = std::make_pair( std::move( image ), std::move( view ) );
-		auto[res, ok] = images.emplace( path, std::move( pair ) );
-		assert( ok && "Cannot store image" );
+		image_paths.emplace_back( path );
+		auto image = images.push( Image( device, png ) );
+		image->upload( staging_buffer );
+		ret = views.push( ImageView( image ) );
 	}
 	else
 	{
-		ret = it->second.second.handle;
+		auto index = it - std::begin( image_paths );
+		ret = views.find( index );
 	}
 
 	return ret;
