@@ -12,6 +12,7 @@ BreakBeforeBraces : Allman
 UseTab: ForIndentation
 Cpp11BracedListStyle: false
 SpaceBeforeCpp11BracedList: true
+SpacesInParentheses: true
 MaxEmptyLinesToKeep: 2
 ColumnLimit: 125
 AllowShortBlocksOnASingleLine: false

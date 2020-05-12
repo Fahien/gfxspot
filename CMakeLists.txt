@@ -4,22 +4,11 @@ project( gfxspot
 	LANGUAGES C CXX )
 
 # Dep
-list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
-
-# Conan
-# Download automatically, you can also just copy the conan.cmake file
-if( NOT TARGET CONAN_PKG::glfw )
-	if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
-		message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
-		file( DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
-			"${CMAKE_BINARY_DIR}/conan.cmake" )
-	endif()
-	include( ${CMAKE_BINARY_DIR}/conan.cmake )
-	conan_cmake_run( CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS BUILD missing )
-endif()
+set( MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
+list( APPEND CMAKE_MODULE_PATH ${MODULE_PATH} )
+include( ${MODULE_PATH}/conan.cmake )
 
 find_package( Vulkan )
-
 include( AddCoreSpot )
 include( AddMathSpot )
 include( AddFileSpot )
