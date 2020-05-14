@@ -32,12 +32,6 @@ class Node : public Handled<Node>
 	/// @return A newly created Node
 	Node( const std::string& name );
 
-	/// @return The parent of this node, otherwise nullptr
-	Handle<Node> get_parent() const;
-
-	/// @return A list of children of this node
-	const std::vector<Handle<Node>>& get_children() const { return children; }
-
 	/// @return The current transform
 	math::Mat4 get_matrix() const;
 
@@ -74,12 +68,13 @@ class Node : public Handled<Node>
 	/// User-defined name of this object
 	std::string name = "Unknown";
 
-  private:
 	/// Parent of this node
-	Handle<Node> parent = {};
+	Handle<Node> parent;
 
 	/// This node's children
 	std::vector<Handle<Node>> children;
+
+  private:
 
 	/// Floating-point 4x4 transformation matrix stored in column-major order
 	math::Mat4 matrix = math::Mat4::identity;

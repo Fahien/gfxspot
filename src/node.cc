@@ -44,12 +44,6 @@ math::Mat4 Node::get_absolute_matrix() const
 }
 
 
-Handle<Node> Node::get_parent() const
-{
-	return parent;
-}
-
-
 void Node::add_child( const Handle<Node>& child )
 {
 	assert( child != handle && "Cannot add child to itself" );

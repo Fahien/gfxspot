@@ -39,6 +39,10 @@ Gui::Gui( Device& device, const VkExtent2D& extent )
 	auto& io = ImGui::GetIO();
 	io.DisplaySize.x = float( extent.width );
 	io.DisplaySize.y = float( extent.height );
+	io.FontGlobalScale = 2.0f;
+
+	auto& style = ImGui::GetStyle();
+	style.ScaleAllSizes( 2.0f );
 
 	// Create font texture
 	unsigned char* font_data;
@@ -71,7 +75,7 @@ void Gui::update( const float delta_time, Window& window )
 	io.MouseDown[0] = window.press.left;
 	io.MouseDown[1] = window.press.right;
 	io.MouseDown[2] = window.press.middle;
-	
+
 	ImGui::Render();
 }
 

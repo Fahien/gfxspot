@@ -813,7 +813,7 @@ Graphics::Graphics()
 , mesh_no_image_frag { device, "shader/mesh-no-image.frag.spv" }
 , mesh_layout { device, get_mesh_bindings() }
 , mesh_no_image_layout { device, get_mesh_no_image_bindings() }
-, gui { device, VkExtent2D{ 320, 240 } }
+, gui { device, window.frame }
 , viewport { window, camera }
 , scissor { create_scissor( window ) }
 , renderer { *this }
@@ -1037,7 +1037,7 @@ void Graphics::draw( const Handle<Node>& node, const math::Mat4& transform )
 	temp_transform = transform * temp_transform;
 
 	// Render its children
-	for ( auto& child : node->get_children() )
+	for ( auto& child : node->children )
 	{
 		draw( child, temp_transform );
 	}

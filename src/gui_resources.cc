@@ -111,11 +111,11 @@ void Gui::draw( CommandBuffer& command_buffer )
 				scissor_rect.extent.height = static_cast<uint32_t>( cmd->ClipRect.w - cmd->ClipRect.y );
 
 				// Consider window scale
-				float scale = 6;
-				scissor_rect.offset.x *= 6;
-				scissor_rect.offset.y *= 6;
-				scissor_rect.extent.width *= 6;
-				scissor_rect.extent.height *= 6;
+				float scale = 1;
+				scissor_rect.offset.x *= scale;
+				scissor_rect.offset.y *= scale;
+				scissor_rect.extent.width *= scale;
+				scissor_rect.extent.height *= scale;
 
 				command_buffer.set_scissor( scissor_rect );
 				command_buffer.draw_indexed( cmd->ElemCount, 1, index_offset, vertex_offset );
