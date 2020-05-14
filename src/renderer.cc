@@ -141,9 +141,9 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.viewport.get_viewport(),
 		gfx.scissor,
 		get_color_blend(),
-		{},
+		{ VK_DYNAMIC_STATE_LINE_WIDTH },
 		VK_CULL_MODE_BACK_BIT,
-		VK_FALSE,
+		VK_TRUE,
 		VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
 	line_pipeline.index = 2;
 	ret.emplace_back( std::move( line_pipeline ) );
@@ -626,11 +626,14 @@ Renderer::add_descriptors( const Handle<Node>& node, const Handle<Material>& mat
 	bool ok;
 	std::tie( it, ok ) = descriptor_resources.emplace( key, std::move( resource ) );
 	assert( ok && "Cannot emplace primitive resource" );
-	logi( "Descriptor [node {} {}, mat {} {}]\n",
-		node.get_index(),
-		node->name,
-		material.get_index(),
-		material->name );
+
+	auto msg = fmt::format( "Descriptor [node {} {}", node.get_index(), node->name );
+	if ( material )
+	{
+		fmt::format( "{}, mat {} {}", msg, material.get_index(), material->name );
+	}
+	logi( "{}]\n", msg );
+
 	return it;
 }
 
