@@ -31,6 +31,8 @@ int main( const int argc, const char** argv )
 	{
 		gfx.glfw.poll();
 		auto dt = gfx.glfw.get_delta();
+		gfx.window.update( dt );
+
 		gfx.animations.update( dt, model );
 
 		if ( gfx.window.scroll.y )
@@ -40,9 +42,8 @@ int main( const int argc, const char** argv )
 
 		ImGui::NewFrame();
 		ImGui::ShowDemoWindow();
-		ImGui::Begin("Test");
-		ImGui::End();
-		gfx.gui.update( dt );
+
+		gfx.gui.update( dt, gfx.window );
 
 		if ( gfx.render_begin() )
 		{

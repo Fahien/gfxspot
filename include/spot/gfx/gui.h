@@ -18,6 +18,7 @@ struct Constants
 
 
 class CommandBuffer;
+class Window;
 
 class Gui
 {
@@ -25,7 +26,7 @@ class Gui
 	Gui( Device& d, const VkExtent2D& extent );
 	~Gui();
 
-	void update( const float delta_time );
+	void update( const float delta_time, Window& window );
 
 	void draw( CommandBuffer& cb );
 

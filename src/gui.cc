@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include "spot/gfx/glfw.h"
+
 
 namespace spot::gfx
 {
@@ -55,10 +57,21 @@ Gui::~Gui()
 }
 
 
-void Gui::update( const float delta_time )
+void Gui::update( const float delta_time, Window& window )
 {
 	ImGuiIO& io = ImGui::GetIO();
 	io.DeltaTime = delta_time;
+
+	VkViewport gui_viewport = {};
+	gui_viewport.width = io.DisplaySize.x;
+	gui_viewport.height = io.DisplaySize.y;
+
+	auto cursor = window.cursor_to( gui_viewport );
+	io.MousePos = ImVec2( cursor.x, gui_viewport.height - cursor.y );
+	io.MouseDown[0] = window.press.left;
+	io.MouseDown[1] = window.press.right;
+	io.MouseDown[2] = window.press.middle;
+	
 	ImGui::Render();
 }
 
