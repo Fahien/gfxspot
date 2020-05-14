@@ -141,6 +141,7 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.viewport.get_viewport(),
 		gfx.scissor,
 		get_color_blend(),
+		{},
 		VK_CULL_MODE_BACK_BIT,
 		VK_FALSE,
 		VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
@@ -157,6 +158,7 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.viewport.get_viewport(),
 		gfx.scissor,
 		get_color_blend(),
+		{ VK_DYNAMIC_STATE_SCISSOR },
 		VK_CULL_MODE_NONE,
 		VK_FALSE );
 	gui_pipeline.index = 3;

@@ -25,6 +25,8 @@ int main( const int argc, const char** argv )
 	auto eye = math::Vec3::One * 4.0f;
 	gfx.camera.look_at( eye, math::Vec3::Zero, math::Vec3::Y );
 
+	auto node = model->nodes.push();
+
 	while ( gfx.window.is_alive() )
 	{
 		gfx.glfw.poll();
@@ -44,7 +46,7 @@ int main( const int argc, const char** argv )
 
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( model );
+			gfx.draw( node );
 			gfx.render_end();
 		}
 	}

@@ -906,8 +906,8 @@ void Graphics::draw_gui()
 	// UI scale and translate via push constants
 	Constants constants;
 	auto& display_size = ImGui::GetIO().DisplaySize;
+	constants.transform.translate( math::Vec3( -1.0f, -1.0f ) );
 	constants.transform.scale( math::Vec3( 2.0f / display_size.x, 2.0f / display_size.y ) );
-	constants.transform.translate( math::Vec3( -1.0f ) );
 
 	current_command_buffer->push_constants( gui.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof( Constants ), &constants );
 

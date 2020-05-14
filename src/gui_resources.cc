@@ -102,11 +102,20 @@ void Gui::draw( CommandBuffer& command_buffer )
 			for ( int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++ )
 			{
 				const ImDrawCmd* cmd = &cmd_list->CmdBuffer[j];
+
 				VkRect2D         scissor_rect;
+
 				scissor_rect.offset.x = std::max( static_cast<int32_t>( cmd->ClipRect.x ), 0 );
 				scissor_rect.offset.y = std::max( static_cast<int32_t>( cmd->ClipRect.y ), 0 );
 				scissor_rect.extent.width = static_cast<uint32_t>( cmd->ClipRect.z - cmd->ClipRect.x );
 				scissor_rect.extent.height = static_cast<uint32_t>( cmd->ClipRect.w - cmd->ClipRect.y );
+
+				// Consider window scale
+				float scale = 6;
+				scissor_rect.offset.x *= 6;
+				scissor_rect.offset.y *= 6;
+				scissor_rect.extent.width *= 6;
+				scissor_rect.extent.height *= 6;
 
 				command_buffer.set_scissor( scissor_rect );
 				command_buffer.draw_indexed( cmd->ElemCount, 1, index_offset, vertex_offset );

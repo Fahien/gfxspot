@@ -51,6 +51,7 @@ GraphicsPipeline::GraphicsPipeline( VkVertexInputBindingDescription             
                                     const VkViewport& viewport,
 									const VkRect2D& scissor,
 									const VkPipelineColorBlendAttachmentState& color_blend_attachment,
+									std::vector<VkDynamicState> dynamic_states,
 									VkCullModeFlags cull_mode,
 									VkBool32 depth_test,
 									const VkPrimitiveTopology topology )
@@ -132,16 +133,10 @@ GraphicsPipeline::GraphicsPipeline( VkVertexInputBindingDescription             
 	color_blending.blendConstants[2] = 0.0f;  // Optional
 	color_blending.blendConstants[3] = 0.0f;  // Optional
 
-	std::vector<VkDynamicState> dynamic_states = {
-	//	VK_DYNAMIC_STATE_VIEWPORT,
-		VK_DYNAMIC_STATE_SCISSOR,
-	//	VK_DYNAMIC_STATE_LINE_WIDTH
-	};
-
 	VkPipelineDynamicStateCreateInfo dynamic_state = {};
 	dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamic_state.dynamicStateCount = uint32_t( dynamic_states.size() );
-	dynamic_state.pDynamicStates = dynamic_states.data();
+	dynamic_state.pDynamicStates = dynamic_states.size() ? dynamic_states.data() : nullptr;
 
 	VkGraphicsPipelineCreateInfo pipeline_info = {};
 	pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

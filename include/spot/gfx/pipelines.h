@@ -44,6 +44,7 @@ class GraphicsPipeline
 		const VkViewport& viewport,
 		const VkRect2D& scissor,
 		const VkPipelineColorBlendAttachmentState& color_blend_attachment,
+		std::vector<VkDynamicState> dynamic_states = {},
 		VkCullModeFlags cull_mode = VK_CULL_MODE_BACK_BIT,
 		VkBool32 depth_test = VK_TRUE,
 		VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST );

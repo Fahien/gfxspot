@@ -89,8 +89,8 @@ std::pair<std::vector<ImDrawVert>, std::vector<ImDrawIdx>> gui_draw()
 	for ( int i = 0; i < draw_data->CmdListsCount; ++i )
 	{
 		const ImDrawList* cmd_list = draw_data->CmdLists[i];
-		memcpy( vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size );
-		memcpy( idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size );
+		memcpy( vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof( ImDrawVert ) );
+		memcpy( idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof( ImDrawIdx ) );
 		vtx_dst += cmd_list->VtxBuffer.Size;
 		idx_dst += cmd_list->IdxBuffer.Size;
 	}
