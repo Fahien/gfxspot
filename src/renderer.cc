@@ -21,7 +21,6 @@ VkVertexInputBindingDescription get_bindings()
 	VkVertexInputBindingDescription bindings = {};
 	bindings.binding = 0;
 	bindings.stride = sizeof( Vertex );
-	bindings.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 	return bindings;
 }
 
@@ -73,17 +72,38 @@ std::vector<VkVertexInputAttributeDescription> get_attributes<Vertex>()
 }
 
 
-Renderer::Renderer( Graphics& g )
-: gfx { g }
-, ambient_resources { gfx.swapchain }
+VkPipelineColorBlendAttachmentState get_color_blend()
 {
-	recreate_pipelines();
+	VkPipelineColorBlendAttachmentState color_blend_attachment = {};
+	color_blend_attachment.colorWriteMask =
+	    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	color_blend_attachment.blendEnable = VK_TRUE;
+	color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+	color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	color_blend_attachment.alphaBlendOp = VK_BLEND_OP_SUBTRACT;
+
+	return color_blend_attachment;
 }
 
 
-void Renderer::recreate_pipelines()
+VkPipelineColorBlendAttachmentState get_gui_color_blend()
 {
-	pipelines.clear();
+	VkPipelineColorBlendAttachmentState color_blend_attachment = {};
+	color_blend_attachment.blendEnable         = VK_TRUE;
+	color_blend_attachment.colorWriteMask      = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT;
+	color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	return color_blend_attachment;
+}
+
+
+std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
+{
+	std::vector<GraphicsPipeline> ret;
 
 	auto mesh_pipeline = GraphicsPipeline(
 		get_bindings<Vertex>(),
@@ -93,9 +113,10 @@ void Renderer::recreate_pipelines()
 		gfx.mesh_frag,
 		gfx.render_pass,
 		gfx.viewport.get_viewport(),
-		gfx.scissor );
+		gfx.scissor,
+		get_color_blend() );
 	mesh_pipeline.index = 0;
-	pipelines.emplace_back( std::move( mesh_pipeline ) );
+	ret.emplace_back( std::move( mesh_pipeline ) );
 
 	auto mesh_no_image_pipeline = GraphicsPipeline(
 		get_bindings<Vertex>(),
@@ -105,9 +126,10 @@ void Renderer::recreate_pipelines()
 		gfx.mesh_no_image_frag,
 		gfx.render_pass,
 		gfx.viewport.get_viewport(),
-		gfx.scissor );
+		gfx.scissor,
+		get_color_blend() );
 	mesh_no_image_pipeline.index = 1;
-	pipelines.emplace_back( std::move( mesh_no_image_pipeline ) );
+	ret.emplace_back( std::move( mesh_no_image_pipeline ) );
 
 	auto line_pipeline = GraphicsPipeline(
 		get_bindings<Dot>(),
@@ -118,9 +140,45 @@ void Renderer::recreate_pipelines()
 		gfx.render_pass,
 		gfx.viewport.get_viewport(),
 		gfx.scissor,
+		get_color_blend(),
+		VK_CULL_MODE_BACK_BIT,
+		VK_FALSE,
 		VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
 	line_pipeline.index = 2;
-	pipelines.emplace_back( std::move( line_pipeline ) );
+	ret.emplace_back( std::move( line_pipeline ) );
+	
+	auto gui_pipeline = GraphicsPipeline(
+		get_gui_bindings(),
+		get_gui_attributes(),
+		gfx.gui.layout,
+		gfx.gui.vert,
+		gfx.gui.frag,
+		gfx.render_pass,
+		gfx.viewport.get_viewport(),
+		gfx.scissor,
+		get_color_blend(),
+		VK_CULL_MODE_NONE,
+		VK_FALSE );
+	gui_pipeline.index = 3;
+	ret.emplace_back( std::move( gui_pipeline ) );
+
+	return ret;
+}
+
+void Renderer::recreate_pipelines()
+{
+	pipelines.clear();
+	pipelines = create_pipelines( gfx );
+}
+
+
+Renderer::Renderer( Graphics& g )
+: gfx { g }
+, pipelines{ create_pipelines( gfx ) }
+, ambient_resources { gfx.swapchain }
+/// @todo Fix this 3
+, gui_resources { pipelines[3], g.gui, uint32_t( gfx.swapchain.images.size() ) }
+{
 }
 
 
@@ -566,7 +624,11 @@ Renderer::add_descriptors( const Handle<Node>& node, const Handle<Material>& mat
 	bool ok;
 	std::tie( it, ok ) = descriptor_resources.emplace( key, std::move( resource ) );
 	assert( ok && "Cannot emplace primitive resource" );
-	logi( "Descriptor [node {}, material {}]\n", node.get_index(), material.get_index() );
+	logi( "Descriptor [node {} {}, mat {} {}]\n",
+		node.get_index(),
+		node->name,
+		material.get_index(),
+		material->name );
 	return it;
 }
 

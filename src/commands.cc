@@ -152,6 +152,14 @@ void CommandBuffer::set_scissor( const VkRect2D& scissor )
 }
 
 
+void CommandBuffer::push_constants( const PipelineLayout& layout, VkShaderStageFlags stages, uint32_t offset, uint32_t size, void* bytes )
+{
+	assert( size && "Cannot push 0 constants" );
+	assert( bytes && "Not constant memory to push" );
+	vkCmdPushConstants( handle, layout.handle, stages, offset, size, bytes );
+}
+
+
 void CommandBuffer::bind_vertex_buffer( Buffer& buffer, VkDeviceSize offset )
 {
 	VkDeviceSize offsets[] = { offset };
@@ -159,9 +167,9 @@ void CommandBuffer::bind_vertex_buffer( Buffer& buffer, VkDeviceSize offset )
 }
 
 
-void CommandBuffer::bind_vertex_buffers( DynamicBuffer& buffers )
+void CommandBuffer::bind_vertex_buffer( DynamicBuffer& buffer )
 {
-	vkCmdBindVertexBuffers( handle, 0, 1, &buffers.handle, &buffers.offset );
+	vkCmdBindVertexBuffers( handle, 0, 1, &buffer.handle, &buffer.offset );
 }
 
 
@@ -194,6 +202,18 @@ void CommandBuffer::draw_indexed( const uint32_t index_count )
 {
 	assert( index_count > 0 && "Cannot draw 0 indices" );
 	vkCmdDrawIndexed( handle, index_count, 1, 0, 0, 0 );
+}
+
+
+void CommandBuffer::draw_indexed(
+		const uint32_t index_count,
+		const uint32_t instance_count,
+		const uint32_t index_offset,
+		const uint32_t vertex_offset )
+{
+	assert( index_count > 0 && "Cannot draw 0 indices" );
+	assert( instance_count > 0 && "Cannot draw 0 instances" );
+	vkCmdDrawIndexed( handle, index_count, instance_count, index_offset, vertex_offset, 0 );
 }
 
 

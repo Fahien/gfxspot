@@ -19,5 +19,6 @@ add_demo( demo-11-animation )
 add_demo( demo-12-color-grid )
 add_demo( demo-13-cube )
 add_demo( demo-14-cubes )
+add_demo( demo-15-imgui )
 
 add_subdirectory( shader )

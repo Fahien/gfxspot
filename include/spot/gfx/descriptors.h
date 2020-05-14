@@ -4,6 +4,8 @@
 
 #include <vulkan/vulkan_core.h>
 
+#include <spot/handle.h>
+
 namespace spot::gfx
 {
 
@@ -42,6 +44,29 @@ class DescriptorPool
 	uint32_t size;
 
 	VkDescriptorPool handle = VK_NULL_HANDLE;
+};
+
+/// @todo Move somewhere else?
+class Renderer;
+class GraphicsPipeline;
+class Node;
+class Material;
+class Gui;
+struct DescriptorResources
+{
+	DescriptorResources(
+		const Renderer& renderer,
+		const GraphicsPipeline& gp,
+		const Handle<Node>& node,
+		const Handle<Material>& material = {} );
+
+	uint64_t pipeline;
+
+	/// Descriptor pool for descriptor sets
+	DescriptorPool descriptor_pool;
+
+	// Descriptor sets for each swapchain image
+	std::vector<VkDescriptorSet> descriptor_sets;
 };
 
 

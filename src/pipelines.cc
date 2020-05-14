@@ -3,21 +3,30 @@
 #include <cassert>
 
 #include "spot/gfx/graphics.h"
-#include "spot/gfx/renderer.h"
 #include "spot/gfx/hash.h"
+#include "spot/gfx/renderer.h"
 
 namespace spot::gfx
 {
-
-
-PipelineLayout::PipelineLayout( Device& d, const std::vector<VkDescriptorSetLayoutBinding>& bindings )
-: device { d }
-, descriptor_set_layout { d, std::move( bindings ) }
+PipelineLayout::PipelineLayout(
+	Device& d,
+	const std::vector<VkDescriptorSetLayoutBinding>& bindings,
+	std::optional<VkPushConstantRange> constants
+)
+    : device { d }
+    , descriptor_set_layout { d, std::move( bindings ) }
 {
 	VkPipelineLayoutCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+
 	info.setLayoutCount = 1;
 	info.pSetLayouts = &descriptor_set_layout.handle;
+
+	if ( constants )
+	{
+		info.pushConstantRangeCount = 1;
+		info.pPushConstantRanges = &constants.value();
+	}
 
 	const auto res = vkCreatePipelineLayout( device.handle, &info, nullptr, &handle );
 	assert( res == VK_SUCCESS && "Cannot create pipeline layout" );
@@ -33,18 +42,20 @@ PipelineLayout::~PipelineLayout()
 }
 
 
-GraphicsPipeline::GraphicsPipeline(
-	VkVertexInputBindingDescription bindings,
-	const std::vector<VkVertexInputAttributeDescription>& attributes,
-	PipelineLayout& layo,
-	ShaderModule& vert,
-	ShaderModule& frag,
-	RenderPass& render_pass,
-	const VkViewport& viewport,
-	const VkRect2D& scissor,
-	const VkPrimitiveTopology topology )
-: device { vert.device }
-, layout { layo }
+GraphicsPipeline::GraphicsPipeline( VkVertexInputBindingDescription                       bindings,
+                                    const std::vector<VkVertexInputAttributeDescription>& attributes,
+									PipelineLayout& layo,
+                                    ShaderModule& vert,
+									ShaderModule& frag,
+									RenderPass& render_pass,
+                                    const VkViewport& viewport,
+									const VkRect2D& scissor,
+									const VkPipelineColorBlendAttachmentState& color_blend_attachment,
+									VkCullModeFlags cull_mode,
+									VkBool32 depth_test,
+									const VkPrimitiveTopology topology )
+    : device { vert.device }
+    , layout { layo }
 {
 	VkPipelineVertexInputStateCreateInfo input_info = {};
 	input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -85,7 +96,7 @@ GraphicsPipeline::GraphicsPipeline(
 	rasterizer_info.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer_info.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizer_info.lineWidth = 1.0f;
-	rasterizer_info.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizer_info.cullMode = cull_mode;
 	rasterizer_info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer_info.depthBiasEnable = VK_FALSE;
 	rasterizer_info.depthBiasConstantFactor = 0.0f;
@@ -94,8 +105,8 @@ GraphicsPipeline::GraphicsPipeline(
 
 	VkPipelineDepthStencilStateCreateInfo depth_info = {};
 	depth_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	depth_info.depthTestEnable = VK_TRUE;
-	depth_info.depthWriteEnable = VK_TRUE;
+	depth_info.depthTestEnable = depth_test;
+	depth_info.depthWriteEnable = depth_test;
 	depth_info.depthCompareOp = VK_COMPARE_OP_LESS;
 	depth_info.depthBoundsTestEnable = VK_FALSE;
 	depth_info.stencilTestEnable = VK_FALSE;
@@ -104,41 +115,33 @@ GraphicsPipeline::GraphicsPipeline(
 	multisampling_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling_info.sampleShadingEnable = VK_FALSE;
 	multisampling_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-	multisampling_info.minSampleShading = 1.0f; // Optional
-	multisampling_info.pSampleMask = nullptr; // Optional
-	multisampling_info.alphaToCoverageEnable = VK_FALSE; // Optional
-	multisampling_info.alphaToOneEnable = VK_FALSE; // Optional
+	multisampling_info.minSampleShading = 1.0f;           // Optional
+	multisampling_info.pSampleMask = nullptr;             // Optional
+	multisampling_info.alphaToCoverageEnable = VK_FALSE;  // Optional
+	multisampling_info.alphaToOneEnable = VK_FALSE;       // Optional
 
-	VkPipelineColorBlendAttachmentState color_blend_attachment = {};
-	color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	color_blend_attachment.blendEnable = VK_TRUE;
-	color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-	color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	color_blend_attachment.alphaBlendOp = VK_BLEND_OP_SUBTRACT;
 
 	VkPipelineColorBlendStateCreateInfo color_blending = {};
 	color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	color_blending.logicOpEnable = VK_FALSE;
-	color_blending.logicOp = VK_LOGIC_OP_COPY; // Optional
+	color_blending.logicOp = VK_LOGIC_OP_COPY;  // Optional
 	color_blending.attachmentCount = 1;
 	color_blending.pAttachments = &color_blend_attachment;
-	color_blending.blendConstants[0] = 0.0f; // Optional
-	color_blending.blendConstants[1] = 0.0f; // Optional
-	color_blending.blendConstants[2] = 0.0f; // Optional
-	color_blending.blendConstants[3] = 0.0f; // Optional
+	color_blending.blendConstants[0] = 0.0f;  // Optional
+	color_blending.blendConstants[1] = 0.0f;  // Optional
+	color_blending.blendConstants[2] = 0.0f;  // Optional
+	color_blending.blendConstants[3] = 0.0f;  // Optional
 
-	VkDynamicState dynamic_states[] = {
-	    VK_DYNAMIC_STATE_VIEWPORT,
-	    VK_DYNAMIC_STATE_LINE_WIDTH
+	std::vector<VkDynamicState> dynamic_states = {
+	//	VK_DYNAMIC_STATE_VIEWPORT,
+		VK_DYNAMIC_STATE_SCISSOR,
+	//	VK_DYNAMIC_STATE_LINE_WIDTH
 	};
 
 	VkPipelineDynamicStateCreateInfo dynamic_state = {};
 	dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamic_state.dynamicStateCount = 2;
-	dynamic_state.pDynamicStates = dynamic_states;
+	dynamic_state.dynamicStateCount = uint32_t( dynamic_states.size() );
+	dynamic_state.pDynamicStates = dynamic_states.data();
 
 	VkGraphicsPipelineCreateInfo pipeline_info = {};
 	pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -152,7 +155,7 @@ GraphicsPipeline::GraphicsPipeline(
 	pipeline_info.pMultisampleState = &multisampling_info;
 	pipeline_info.pDepthStencilState = &depth_info;
 	pipeline_info.pColorBlendState = &color_blending;
-	pipeline_info.pDynamicState = nullptr; // Optional
+	pipeline_info.pDynamicState = &dynamic_state;
 
 	pipeline_info.layout = layout.handle;
 
@@ -174,10 +177,10 @@ GraphicsPipeline::~GraphicsPipeline()
 
 
 GraphicsPipeline::GraphicsPipeline( GraphicsPipeline&& other )
-: device { other.device }
-, layout { other.layout }
-, handle { other.handle }
-, index { other.index }
+    : device { other.device }
+    , layout { other.layout }
+    , handle { other.handle }
+    , index { other.index }
 {
 	other.handle = VK_NULL_HANDLE;
 }
@@ -193,4 +196,4 @@ GraphicsPipeline& GraphicsPipeline::operator=( GraphicsPipeline&& other )
 }
 
 
-} // namespace spot::gfx
+}  // namespace spot::gfx

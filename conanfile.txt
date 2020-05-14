@@ -1,6 +1,7 @@
 [requires]
 glfw/3.3.2@bincrafters/stable
 libpng/1.6.37
+imgui/1.73@bincrafters/stable
 
 [generators]
 cmake

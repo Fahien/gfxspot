@@ -32,8 +32,10 @@ class CommandBuffer
 
 	void begin_render_pass( RenderPass& rp, Framebuffer& fb );
 
+	void push_constants( const PipelineLayout& layout, VkShaderStageFlags stages, uint32_t offset, uint32_t size, void* bytes );
+
 	void bind_vertex_buffer( Buffer& b, VkDeviceSize offset = 0 );
-	void bind_vertex_buffers( DynamicBuffer& db );
+	void bind_vertex_buffer( DynamicBuffer& db );
 
 	void bind_index_buffer( Buffer& b, VkDeviceSize offset = 0 );
 	void bind_index_buffer( DynamicBuffer& b );
@@ -45,6 +47,11 @@ class CommandBuffer
 
 	void draw( const uint32_t vertex_count = 1 );
 	void draw_indexed( const uint32_t index_count );
+	void draw_indexed(
+		const uint32_t index_count,
+		const uint32_t instance_count,
+		const uint32_t index_offset,
+		const uint32_t vertex_offset );
 
 	void end_render_pass();
 

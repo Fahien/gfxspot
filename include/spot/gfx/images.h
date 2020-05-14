@@ -82,13 +82,16 @@ class Images
 	Images& operator=( Images&& o );
 
 	/// @brief Loads an image from file
-	/// @return an image view to that image
-	/// @todo Should I use std::string instead?
+	/// @return A handle of an image view into that image
 	Handle<ImageView> load( const char* path );
 
-	/// @brief Loads an image from memory
-	/// @return An image view to that image
+	/// @brief Loads an image from a vector of bytes
+	/// @return A handle of an image view into that image
 	Handle<ImageView> load( const char* name, std::vector<uint8_t>& mem );
+	
+	/// @brief Loads an image from raw memory
+	/// @return A handle of an image view into that image
+	Handle<ImageView> load( const char* name, const uint8_t* mem, size_t size, const VkExtent2D& extent );
 
 	/// Map of paths and Vulkan images and image views
 	std::vector<std::string> image_paths;

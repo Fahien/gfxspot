@@ -8,6 +8,7 @@
 #include <vulkan/vulkan_core.h>
 #include <spot/gltf/gltf.h>
 
+#include "spot/gfx/device.h"
 #include "spot/gfx/glfw.h"
 #include "spot/gfx/renderer.h"
 #include "spot/gfx/descriptors.h"
@@ -17,6 +18,8 @@
 #include "spot/gfx/camera.h"
 #include "spot/gfx/viewport.h"
 #include "spot/gfx/animations.h"
+#include "spot/gfx/shader.h"
+#include "spot/gfx/gui.h"
 
 
 namespace spot::gfx
@@ -56,92 +59,9 @@ template<typename T>
 std::vector<VkVertexInputAttributeDescription> get_attributes();
 
 
-struct ValidationLayers
-{
-	uint32_t count = 0;
-	const char** names = nullptr;
-};
-
-
-class PhysicalDevice
-{
-  public:
-	PhysicalDevice( VkPhysicalDevice h );
-
-	VkSurfaceCapabilitiesKHR get_capabilities( VkSurfaceKHR s );
-
-	/// @return Supported surface formats
-	std::vector<VkSurfaceFormatKHR> get_formats( VkSurfaceKHR s );
-
-	std::vector<VkPresentModeKHR> get_present_modes( VkSurfaceKHR s );
-	uint32_t get_memory_type( uint32_t type_filter, VkMemoryPropertyFlags f );
-	VkFormatProperties get_format_properties( VkFormat f ) const;
-
-	/// @return Whether a format is supported by the GPU
-	bool supports( VkFormat f ) const;
-
-	VkPhysicalDevice handle = VK_NULL_HANDLE;
-	VkPhysicalDeviceProperties properties;
-	VkPhysicalDeviceFeatures features;
-	std::vector<VkQueueFamilyProperties> queue_families;
-	std::vector<VkExtensionProperties> extensions;
-};
-
-
 class Device;
 class CommandBuffer;
 class Fence;
-
-class Queue
-{
-  public:
-	Queue( const Device& d, uint32_t family_index, uint32_t index );
-
-	bool supports_present( VkSurfaceKHR s );
-
-	void submit( CommandBuffer& command_buffer, const std::vector<VkSemaphore>& waits, const std::vector<VkSemaphore>& signals = {}, Fence* fence = nullptr );
-
-	VkResult present( const std::vector<VkSwapchainKHR>& swapchains, const std::vector<uint32_t>& image_index, const std::vector<VkSemaphore>& waits = {} );
-
-	const Device& device;
-	uint32_t family_index = 0;
-	uint32_t index = 0;
-	VkQueue handle = VK_NULL_HANDLE;
-	VkQueueFlags flags = 0;
-};
-
-
-class Device
-{
-  public:
-	Device( PhysicalDevice& p, VkSurfaceKHR s, RequiredExtensions required_extensions = {} );
-	~Device();
-
-	bool operator==( const Device& o ) const { return handle == o.handle; }
-
-	void wait_idle() const;
-	Queue& find_queue( VkQueueFlagBits flags );
-	Queue& find_graphics_queue();
-	Queue& find_present_queue( VkSurfaceKHR surface );
-
-	PhysicalDevice& physical_device;
-	VkSurfaceKHR surface;
-	VkDevice handle = VK_NULL_HANDLE;
-	std::vector<Queue> queues;
-};
-
-
-class Instance
-{
-  public:
-	Instance( RequiredExtensions req_ext = {}, ValidationLayers layers = {} );
-	~Instance();
-
-	VkInstance handle = VK_NULL_HANDLE;
-	std::vector<PhysicalDevice> physical_devices;
-};
-
-
 class Swapchain;
 
 
@@ -215,20 +135,6 @@ class Frames
 };
 
 
-class ShaderModule
-{
-  public:
-	ShaderModule( Device& d, const std::filesystem::path& path );
-	~ShaderModule();
-
-	ShaderModule( ShaderModule&& );
-	ShaderModule& operator=( ShaderModule&& );
-
-	Device& device;
-	VkShaderModule handle = VK_NULL_HANDLE;
-};
-
-
 class Semaphore
 {
   public:
@@ -273,6 +179,7 @@ class Graphics
 	void draw( const Handle<Node>& node, const Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const Handle<Node>& node, const math::Mat4& transform = math::Mat4::identity );
 	void draw( const Handle<Gltf>& model, const math::Mat4& transform = math::Mat4::identity );
+	void draw_gui();
 
 	Glfw glfw;
 	Instance instance;
@@ -298,6 +205,7 @@ class Graphics
 	PipelineLayout mesh_layout;
 	PipelineLayout mesh_no_image_layout;
 
+	Gui gui;
 	Camera camera;
 	Viewport viewport;
 	VkRect2D scissor = {};

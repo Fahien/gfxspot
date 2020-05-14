@@ -18,7 +18,10 @@ struct Primitive;
 class PipelineLayout
 {
   public:
-	PipelineLayout( Device& d, const std::vector<VkDescriptorSetLayoutBinding>& bindings );
+	PipelineLayout( Device& d,
+		const std::vector<VkDescriptorSetLayoutBinding>& bindings,
+		std::optional<VkPushConstantRange> constants = std::nullopt
+	);
 	~PipelineLayout();
 
 	Device& device;
@@ -40,6 +43,9 @@ class GraphicsPipeline
 		RenderPass& render_pass,
 		const VkViewport& viewport,
 		const VkRect2D& scissor,
+		const VkPipelineColorBlendAttachmentState& color_blend_attachment,
+		VkCullModeFlags cull_mode = VK_CULL_MODE_BACK_BIT,
+		VkBool32 depth_test = VK_TRUE,
 		VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST );
 	~GraphicsPipeline();
 

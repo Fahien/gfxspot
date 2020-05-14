@@ -7,6 +7,8 @@
 #include <vulkan/vulkan_core.h>
 #include <spot/math/math.h>
 
+#include "spot/gfx/vulkan_utils.h"
+
 struct GLFWwindow;
 
 
@@ -14,11 +16,6 @@ namespace spot::gfx
 {
 
 
-struct RequiredExtensions
-{
-	uint32_t count = 0;
-	const char** names = nullptr;
-};
 
 class Instance;
 

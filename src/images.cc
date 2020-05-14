@@ -305,6 +305,36 @@ Images::Images( Device& d )
 {}
 
 
+Handle<ImageView> Images::load( const char* name, const uint8_t* mem, size_t size, const VkExtent2D& extent )
+{
+	Handle<ImageView> ret = {};
+
+	auto it = std::find(
+		std::begin( image_paths ),
+		std::end( image_paths ),
+		name );
+	if ( it == std::end( image_paths ) )
+	{
+		auto staging_buffer = Buffer( device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT );
+		auto mapped_mem = reinterpret_cast<uint8_t*>( staging_buffer.map( size ) );
+		std::memcpy( mapped_mem, mem, size );
+		staging_buffer.unmap();
+
+		image_paths.emplace_back( name );
+		auto image = images.push( Image( device, extent, VK_FORMAT_R8G8B8A8_UNORM ) );
+		image->upload( staging_buffer );
+		ret = views.push( ImageView( image ) );
+	}
+	else
+	{
+		auto index = it - std::begin( image_paths );
+		ret = views.find( index );
+	}
+
+	return ret;
+}
+
+
 Handle<ImageView> Images::load( const char* name, std::vector<uint8_t>& mem )
 {
 	Handle<ImageView> ret = {};
@@ -312,7 +342,7 @@ Handle<ImageView> Images::load( const char* name, std::vector<uint8_t>& mem )
 	auto it = std::find(
 		std::begin( image_paths ),
 		std::end( image_paths ),
-		 name );
+		name );
 	if ( it == std::end( image_paths ) )
 	{
 		auto png = Png( mem );
@@ -367,6 +397,7 @@ Handle<ImageView> Images::load( const char* path )
 
 	return ret;
 }
+
 
 Images::Images( Images&& o )
 : device { o.device }

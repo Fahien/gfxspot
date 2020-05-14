@@ -9,6 +9,7 @@
 #include "spot/gfx/descriptors.h"
 #include "spot/gfx/images.h"
 #include "spot/gfx/pipelines.h"
+#include "spot/gfx/gui_resources.h"
 
 
 namespace spot::gfx
@@ -40,7 +41,6 @@ struct DynamicResources
 	DescriptorPool descriptor_pool;
 	// Descriptor sets for each swapchain image
 	std::vector<VkDescriptorSet> descriptor_sets;
-
 };
 
 
@@ -54,24 +54,6 @@ struct PrimitiveResources
 
 	Buffer vertex_buffer;
 	Buffer index_buffer;
-};
-
-
-struct DescriptorResources
-{
-	DescriptorResources(
-		const Renderer& renderer,
-		const GraphicsPipeline& gp,
-		const Handle<Node>& node,
-		const Handle<Material>& material = {} );
-
-	uint64_t pipeline;
-
-	/// Descriptor pool for descriptor sets
-	DescriptorPool descriptor_pool;
-
-	// Descriptor sets for each swapchain image
-	std::vector<VkDescriptorSet> descriptor_sets;
 };
 
 
@@ -156,6 +138,8 @@ class Renderer
 	/// @brief Key is hash of node and material
 	/// Value is descriptor sets for this node and material
 	std::unordered_map<size_t, DescriptorResources> descriptor_resources;
+
+	GuiResources gui_resources;
 
 	AmbientResources ambient_resources;
 

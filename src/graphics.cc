@@ -1,7 +1,6 @@
 #include "spot/gfx/graphics.h"
 
 #include <array>
-#include <filesystem>
 #include <limits>
 #include <algorithm>
 #include <cassert>
@@ -814,6 +813,7 @@ Graphics::Graphics()
 , mesh_no_image_frag { device, "shader/mesh-no-image.frag.spv" }
 , mesh_layout { device, get_mesh_bindings() }
 , mesh_no_image_layout { device, get_mesh_no_image_bindings() }
+, gui { device, VkExtent2D{ 320, 240 } }
 , viewport { window, camera }
 , scissor { create_scissor( window ) }
 , renderer { *this }
@@ -891,8 +891,48 @@ bool Graphics::render_begin()
 }
 
 
+void Graphics::draw_gui()
+{
+	auto [vertex_data, index_data] = gui_draw();
+	if ( vertex_data.empty() )
+	{
+		return;
+	}
+
+	/// @todo Draw gui, TRY with push constants for scale and translate
+	/// @todo Fix this 3
+	current_command_buffer->bind( renderer.pipelines[3] );
+
+	// UI scale and translate via push constants
+	Constants constants;
+	auto& display_size = ImGui::GetIO().DisplaySize;
+	constants.transform.scale( math::Vec3( 2.0f / display_size.x, 2.0f / display_size.y ) );
+	constants.transform.translate( math::Vec3( -1.0f ) );
+
+	current_command_buffer->push_constants( gui.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof( Constants ), &constants );
+
+	auto& gui_descriptor_sets = renderer.gui_resources.descriptor_sets[current_frame_index];
+	current_command_buffer->bind_descriptor_sets( gui.layout, gui_descriptor_sets );
+
+	auto& vertex_buffer = renderer.gui_resources.vertex_buffers[current_frame_index];
+	/// @todo Improve this approach with DynamicBuffers
+	vertex_buffer.set_count( vertex_data.size() );
+	vertex_buffer.upload( reinterpret_cast<uint8_t*>( vertex_data.data() ) );
+
+	auto& index_buffer = renderer.gui_resources.index_buffers[current_frame_index];
+	index_buffer.set_count( index_data.size() );
+	index_buffer.upload( reinterpret_cast<uint8_t*>( index_data.data() ) );
+
+	current_command_buffer->bind_vertex_buffer( vertex_buffer );
+	current_command_buffer->bind_index_buffer( index_buffer );
+
+	gui.draw( *current_command_buffer );
+}
+
 void Graphics::render_end()
 {
+	draw_gui();
+
 	current_command_buffer->end_render_pass();
 	current_command_buffer->end();
 
@@ -1017,7 +1057,6 @@ void Graphics::draw( const Handle<Gltf>& model, const math::Mat4& transform )
 {
 	if ( !model->scene )
 	{
-		loge( "Model has no scene" );
 		return;
 	}
 

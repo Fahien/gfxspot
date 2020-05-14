@@ -26,6 +26,7 @@ set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pipelines.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/models.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/graphics.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/glfw.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/animations.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/camera.cc
@@ -36,12 +37,21 @@ set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gltf.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/mesh.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/node.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/gui.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/gui_resources.cc
 )
 add_library( ${PROJECT_NAME} ${SOURCES} )
 target_include_directories( ${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${Vulkan_INCLUDE_DIRS} )
-target_link_libraries( ${PROJECT_NAME} ${Vulkan_LIBRARIES} CONAN_PKG::glfw CONAN_PKG::libpng corespot mathspot filespot )
+target_link_libraries( ${PROJECT_NAME}
+	${Vulkan_LIBRARIES}
+	CONAN_PKG::glfw
+	CONAN_PKG::libpng
+	CONAN_PKG::imgui
+	corespot
+	mathspot
+	filespot )
 target_compile_features( ${PROJECT_NAME} PUBLIC cxx_std_17 )
 
 add_subdirectory( test )
