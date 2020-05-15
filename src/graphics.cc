@@ -434,12 +434,10 @@ void Swapchain::create()
 
 	auto capabilities = device.physical_device.get_capabilities( device.surface );
 	info.minImageCount = 3;
-	assert( capabilities.maxImageCount == 0 || capabilities.maxImageCount > 2 &&
+	assert(
+		capabilities.maxImageCount == 0 ||
+		capabilities.maxImageCount > 2 &&
 		"Triple buffering is not supported");
-	if ( capabilities.maxImageCount > 0 && info.minImageCount > capabilities.maxImageCount )
-	{
-		info.minImageCount = capabilities.maxImageCount;
-	}
 
 	auto formats = device.physical_device.get_formats( device.surface );
 	auto surface_format = choose_format( formats );

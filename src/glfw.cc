@@ -6,6 +6,11 @@
 #include "spot/gfx/graphics.h"
 #include "spot/gfx/viewport.h"
 
+#define CHECK_KEY( K, k ) if ( key == GLFW_KEY_##K ) { \
+	if ( action == GLFW_PRESS ) { window->key.k = true; } \
+	else if ( action == GLFW_RELEASE ) { window->key.k = false; } }
+
+
 namespace spot::gfx
 {
 
@@ -126,6 +131,21 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 }
 
 
+/// @param key The keyboard keythat was pressed or released
+/// @param scancode The system-specific scancode of the key
+/// @param action `GLFW_PRESS`, `GLFW_RELEASE` or `GLFW_REPEAT`
+/// @param mods Bit field describing which modifier keys were held down
+void key_callback( GLFWwindow* handle, int key, int scancode, int action, int mods )
+{
+	auto window = reinterpret_cast<Window*>( glfwGetWindowUserPointer( handle ) );
+
+	CHECK_KEY( W, w );
+	CHECK_KEY( A, a );
+	CHECK_KEY( S, s );
+	CHECK_KEY( D, d );
+}
+
+
 Window::Window()
 {
 	glfwWindowHint( GLFW_CLIENT_API, GLFW_NO_API );
@@ -146,6 +166,7 @@ Window::Window()
 	glfwSetFramebufferSizeCallback( handle, set_framebuffer_size );
 	glfwSetScrollCallback( handle, scroll_callback );
 	glfwSetMouseButtonCallback( handle, mouse_callback );
+	glfwSetKeyCallback( handle, key_callback );
 }
 
 
