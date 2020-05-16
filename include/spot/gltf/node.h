@@ -48,7 +48,7 @@ class Node : public Handled<Node>
 	void remove_from_parent();
 
 	/// Unit quaternion
-	math::Quat rotation = math::Quat::identity;
+	math::Quat rotation = math::Quat::Identity;
 
 	/// Non-uniform scale
 	math::Vec3 scale = math::Vec3{ 1.0f, 1.0f, 1.0f };
@@ -77,7 +77,7 @@ class Node : public Handled<Node>
   private:
 
 	/// Floating-point 4x4 transformation matrix stored in column-major order
-	math::Mat4 matrix = math::Mat4::identity;
+	math::Mat4 matrix = math::Mat4::Identity;
 
 	/// Camera referenced by this node
 	GltfCamera* camera = nullptr;

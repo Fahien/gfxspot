@@ -627,12 +627,12 @@ Renderer::add_descriptors( const Handle<Node>& node, const Handle<Material>& mat
 	std::tie( it, ok ) = descriptor_resources.emplace( key, std::move( resource ) );
 	assert( ok && "Cannot emplace primitive resource" );
 
-	auto msg = fmt::format( "Descriptor [node {} {}", node.get_index(), node->name );
-	if ( material )
-	{
-		fmt::format( "{}, mat {} {}", msg, material.get_index(), material->name );
-	}
-	logi( "{}]\n", msg );
+	//auto msg = fmt::format( "Descriptor [node {} {}", node.get_index(), node->name );
+	//if ( material )
+	//{
+	//	fmt::format( "{}, mat {} {}", msg, material.get_index(), material->name );
+	//}
+	//logi( "{}]\n", msg );
 
 	return it;
 }

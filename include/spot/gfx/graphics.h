@@ -37,9 +37,9 @@ struct alignas(16) Dot
 
 struct MvpUbo
 {
-	math::Mat4 model = math::Mat4::identity;
-	math::Mat4 view  = math::Mat4::identity;
-	math::Mat4 proj  = math::Mat4::identity;
+	math::Mat4 model = math::Mat4::Identity;
+	math::Mat4 view  = math::Mat4::Identity;
+	math::Mat4 proj  = math::Mat4::Identity;
 };
 
 
@@ -175,10 +175,10 @@ class Graphics
 	bool render_begin();
 	void render_end();
 
-	void draw( const Handle<Node>& node, const Handle<Mesh>& mesh, const math::Mat4& transform = math::Mat4::identity );
-	void draw( const Handle<Node>& node, const Primitive& prim, const math::Mat4& transform = math::Mat4::identity );
-	void draw( const Handle<Node>& node, const math::Mat4& transform = math::Mat4::identity );
-	void draw( const Handle<Gltf>& model, const math::Mat4& transform = math::Mat4::identity );
+	void draw( const Handle<Node>& node, const Handle<Mesh>& mesh, const math::Mat4& transform = math::Mat4::Identity );
+	void draw( const Handle<Node>& node, const Primitive& prim, const math::Mat4& transform = math::Mat4::Identity );
+	void draw( const Handle<Node>& node, const math::Mat4& transform = math::Mat4::Identity );
+	void draw( const Handle<Gltf>& model, const math::Mat4& transform = math::Mat4::Identity );
 	void draw_gui();
 
 	Glfw glfw;

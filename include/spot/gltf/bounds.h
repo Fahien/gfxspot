@@ -13,11 +13,8 @@ namespace spot::gfx
 
 class Gltf;
 class Node;
+struct Rect;
 
-
-/// @todo 
-/// As it is really coupled with it
-/// How about subclasses deriving from both this and math::ConcreteShapes?
 struct Shape
 {
 	Shape()          = default;
@@ -30,15 +27,22 @@ struct Shape
 	void add_collision( const Shape& s );
 	void remove_collision( const Shape& s );
 
-	virtual bool intersects( const Shape& s ) const { assert( false && "unimplemented" ); return false; }
-	virtual bool contains( const math::Vec2& p ) const { assert( false && "unimplemented" ); return false; }
+	virtual bool intersects( const Shape& s,
+		const math::Mat4& transform = math::Mat4::Identity ) const
+		{ assert( false && "unimplemented" ); return false; }
 
-	/// @brief Node this shape belongs to
-	Handle<Node> node = {};
+	virtual bool intersects( const Rect& s,
+		const math::Mat4& transform = math::Mat4::Identity ) const
+		{ assert( false && "unimplemented" ); return false; }
+
+
+	virtual bool contains( const math::Vec2& p,
+		const math::Mat4& transform = math::Mat4::Identity ) const
+		{ assert( false && "unimplemented" ); return false; }
 
 	/// @todo This should be derived from node.absolute_transform()
 	/// which recursively go up the tree to get parents' transforms
-	math::Mat4 matrix = math::Mat4::identity;
+	math::Mat4 matrix = math::Mat4::Identity;
 
 	std::vector<const Shape*> collisions = {};
 
@@ -51,8 +55,15 @@ struct Shape
 struct Rect : public math::Rect, public Handled<Rect>, Shape
 {
 	using math::Rect::Rect;
-
-	bool contains( const math::Vec2& p ) const override;
+	
+	bool intersects( const Shape& s,
+		const math::Mat4& transform = math::Mat4::Identity ) const override;
+	
+	bool intersects( const Rect& r,
+		const math::Mat4& transform = math::Mat4::Identity ) const override;
+	
+	bool contains( const math::Vec2& p,
+		const math::Mat4& transform = math::Mat4::Identity ) const override;
 };
 
 
@@ -81,6 +92,8 @@ struct Bounds : public Handled<Bounds>
 	};
 
 	Shape& get_shape() const;
+
+	std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> clone_shape() const;
 
 	Type type = Type::Rect;
 	std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> shape;

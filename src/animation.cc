@@ -39,7 +39,7 @@ math::Quat Animation::find_last_rotation() const
 		}
 	}
 
-	return math::Quat::identity;
+	return math::Quat::Identity;
 }
 
 

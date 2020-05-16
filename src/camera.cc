@@ -51,7 +51,7 @@ void Camera::set_orthographic( float xmag, float ymag, float near, float far )
 	scale.y = 2.0f / orthographic.ymag;
 	scale.z = 1.0f / ( orthographic.znear - orthographic.zfar );
 
-	proj = math::Mat4::identity;
+	proj = math::Mat4::Identity;
 	proj.matrix[14] = ( orthographic.znear ) / ( orthographic.znear - orthographic.zfar );
 	proj.matrix[0] = scale.x;
 	proj.matrix[5] = -scale.y; /// @todo Understand why
@@ -75,7 +75,7 @@ void Camera::set_perspective( const float a, const float y, const float f, const
 	perspective.znear = n;
 
 	// Calculate projection matrix
-	proj = math::Mat4::identity;
+	proj = math::Mat4::Identity;
 
 	float cotfov = 1.0f / std::tan( 0.5f * y );
 	proj.matrix[0] = cotfov / a;

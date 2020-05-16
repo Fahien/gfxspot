@@ -39,6 +39,7 @@ set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/node.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gui.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gui_resources.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/collisions.cc
 )
 add_library( ${PROJECT_NAME} ${SOURCES} )
 target_include_directories( ${PROJECT_NAME} PUBLIC

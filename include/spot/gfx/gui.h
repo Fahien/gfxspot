@@ -13,7 +13,7 @@ namespace spot::gfx
 
 struct Constants
 {
-	math::Mat4 transform = math::Mat4::identity;
+	math::Mat4 transform = math::Mat4::Identity;
 };
 
 

@@ -171,7 +171,7 @@ int main()
 	gfx.viewport.set_offset( -1.0f, -1.0f );
 	gfx.camera.set_orthographic( gfx.viewport );
 
-	const auto rot45 = math::Mat4::identity.rotateZ( math::radians( 45.0f ) );
+	const auto rot45 = math::Mat4::Identity.rotateZ( math::radians( 45.0f ) );
 
 	while ( gfx.window.is_alive() )
 	{
