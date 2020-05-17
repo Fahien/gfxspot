@@ -69,4 +69,14 @@ void Node::remove_from_parent()
 }
 
 
+Bounds* Node::get_bounds() const
+{
+	if ( bounds )
+	{
+		return &*bounds;
+	}
+	return nullptr;
+}
+
+
 }  // namespace spot::gfx

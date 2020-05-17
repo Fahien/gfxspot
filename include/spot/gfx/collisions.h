@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <spot/handle.h>
 #include <spot/math/math.h>
 
 
@@ -19,11 +18,11 @@ class Collisions
 {
   public:
 	/// @brief Updates collisions
-	void update( const Handle<Node>& node, const math::Mat4& transform = math::Mat4::Identity );
+	void update( const Node& node, const math::Mat4& transform = math::Mat4::Identity );
 
 	void resolve();
 
-	std::vector<Handle<Bounds>> boundss;
+	std::vector<Bounds*> boundss;
 };
 
 

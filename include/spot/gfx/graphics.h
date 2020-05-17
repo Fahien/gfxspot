@@ -175,10 +175,10 @@ class Graphics
 	bool render_begin();
 	void render_end();
 
-	void draw( const Handle<Node>& node, const Handle<Mesh>& mesh, const math::Mat4& transform = math::Mat4::Identity );
-	void draw( const Handle<Node>& node, const Primitive& prim, const math::Mat4& transform = math::Mat4::Identity );
-	void draw( const Handle<Node>& node, const math::Mat4& transform = math::Mat4::Identity );
-	void draw( const Handle<Gltf>& model, const math::Mat4& transform = math::Mat4::Identity );
+	void draw( const Node& node, const Mesh& mesh, const math::Mat4& transform = math::Mat4::Identity );
+	void draw( const Node& node, const Primitive& prim, const math::Mat4& transform = math::Mat4::Identity );
+	void draw( const Node& node, const math::Mat4& transform = math::Mat4::Identity );
+	void draw( const Gltf& model, const math::Mat4& transform = math::Mat4::Identity );
 	void draw_gui();
 
 	Glfw glfw;

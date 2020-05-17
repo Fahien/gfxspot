@@ -377,7 +377,7 @@ PrimitiveResources::PrimitiveResources( const Device& device, const Primitive& p
 DescriptorResources::DescriptorResources(
 	const Renderer& renderer,
 	const GraphicsPipeline& pipel,
-	const Handle<Node>& node,
+	const Node& node,
 	const Handle<Material>& material )
 : pipeline { pipel.index }
 , descriptor_pool {
@@ -392,8 +392,8 @@ DescriptorResources::DescriptorResources(
 		)
 	}
 {
-	assert( renderer.node_resources.count( node ) && "Node resources were not created" );
-	const auto& node_res = renderer.node_resources.at( node );
+	assert( renderer.node_resources.count( node.handle ) && "Node resources were not created" );
+	const auto& node_res = renderer.node_resources.at( node.handle );
 
 	for ( size_t i = 0; i < renderer.gfx.swapchain.images.size(); ++i )
 	{
@@ -550,7 +550,7 @@ uint64_t select_pipeline( const Handle<Material>& material )
 }
 
 
-void Renderer::add( const Handle<Node>& node, const Primitive& prim )
+void Renderer::add( const Node& node, const Primitive& prim )
 {
 	// We need vertex and index buffers. These are stored in primitive resources
 	auto hash_prim = std::hash<Primitive>()( prim );
@@ -564,30 +564,30 @@ void Renderer::add( const Handle<Node>& node, const Primitive& prim )
 }
 
 
-void Renderer::add( const Handle<Node>& node )
+void Renderer::add( const Node& node )
 {
-	if ( !node->mesh && !node->light )
+	if ( !node.mesh && !node.light )
 	{
 		return; // no mesh or light to add
 	}
 
 	// The node has a mesh or a light, therefore we need UBOs for the MVP matrix
 	// MVP ubos are store in node resources
-	if ( !FIND( node_resources, node ) )
+	if ( !FIND( node_resources, node.handle ) )
 	{
-		node_resources.emplace( node, NodeResources( gfx.swapchain ) );
+		node_resources.emplace( node.handle, NodeResources( gfx.swapchain ) );
 	}
 
-	if ( node->light )
+	if ( node.light )
 	{
 		// Create resources for the light
-		light_resources.emplace( node->light.get_index(), LightResources( gfx.swapchain ) );
+		light_resources.emplace( node.light.get_index(), LightResources( gfx.swapchain ) );
 	}
 
-	if ( node->mesh )
+	if ( node.mesh )
 	{
 		// Now get the mesh, and its primitives
-		for ( auto& prim : node->mesh->primitives )
+		for ( auto& prim : node.mesh->primitives )
 		{
 			add( node, prim );
 		}
@@ -596,14 +596,14 @@ void Renderer::add( const Handle<Node>& node )
 
 
 std::unordered_map<size_t, DescriptorResources>::iterator
-Renderer::add_descriptors( const Handle<Node>& node, const Handle<Material>& material )
+Renderer::add_descriptors( const Node& node, const Handle<Material>& material )
 {
 	// We need descriptors for the MVP ubos and material textures
 	// A node may have a mesh with multiple primitives with different materials
 	// And the same material may appear into multiple primitives of different nodes
 	// So we hash combine both node and material
 	/// @todo Use handles to include generations when hash combining
-	auto key = std::hash_combine( node.get_index(), material.get_index() );
+	auto key = std::hash_combine( node.handle.get_index(), material.get_index() );
 	auto it = descriptor_resources.find( key );
 	if ( it != std::end( descriptor_resources ) )
 	{

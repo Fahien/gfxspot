@@ -45,7 +45,11 @@ class Node : public Handled<Node>
 	/// @brief Add a new child to this node
 	void add_child( const Handle<Node>& child );
 
+	/// @brief Set this node free!
 	void remove_from_parent();
+
+	/// @return The bounds of the node, nullptr otherwise
+	Bounds* get_bounds() const;
 
 	/// Unit quaternion
 	math::Quat rotation = math::Quat::Identity;

@@ -57,7 +57,7 @@ struct DescriptorResources
 	DescriptorResources(
 		const Renderer& renderer,
 		const GraphicsPipeline& gp,
-		const Handle<Node>& node,
+		const Node& node,
 		const Handle<Material>& material = {} );
 
 	uint64_t pipeline;

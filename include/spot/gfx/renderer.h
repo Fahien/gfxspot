@@ -115,10 +115,10 @@ class Renderer
 
 	void recreate_pipelines();
 
-	void add( const Handle<Node>& node );
-	void add( const Handle<Node>& node, const Primitive& prim );
+	void add( const Node& node );
+	void add( const Node& node, const Primitive& prim );
 
-	std::unordered_map<size_t, DescriptorResources>::iterator add_descriptors( const Handle<Node>& node, const Handle<Material>& material );
+	std::unordered_map<size_t, DescriptorResources>::iterator add_descriptors( const Node& node, const Handle<Material>& material );
 
 	Graphics& gfx;
 

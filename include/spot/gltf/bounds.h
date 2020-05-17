@@ -95,7 +95,11 @@ struct Bounds : public Handled<Bounds>
 
 	std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> clone_shape() const;
 
+	/// @brief Whether the bounds are dynamic or not
+	bool dynamic = false;
+
 	Type type = Type::Rect;
+
 	std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> shape;
 };
 

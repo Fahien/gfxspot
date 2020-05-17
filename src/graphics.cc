@@ -942,18 +942,18 @@ void Graphics::render_end()
 }
 
 
-void Graphics::draw( const Handle<Node>& node, const Handle<Mesh>& mesh, const math::Mat4& transform )
+void Graphics::draw( const Node& node, const Mesh& mesh, const math::Mat4& transform )
 {
-	for ( auto& prim : mesh->primitives )
+	for ( auto& prim : mesh.primitives )
 	{
 		draw( node, prim, transform );
 	}
 }
 
 
-void Graphics::draw( const Handle<Node>& node, const Primitive& primitive, const math::Mat4& transform )
+void Graphics::draw( const Node& node, const Primitive& primitive, const math::Mat4& transform )
 {
-	auto node_pair = renderer.node_resources.find( node );
+	auto node_pair = renderer.node_resources.find( node.handle );
 	if ( node_pair == std::end( renderer.node_resources ) )
 	{
 		renderer.add( node );
@@ -975,7 +975,7 @@ void Graphics::draw( const Handle<Node>& node, const Primitive& primitive, const
 	auto& uniform_buffer = node_resources.ubos[current_frame_index];
 	uniform_buffer.upload( data, sizeof( MvpUbo ) );
 
-	size_t hash_desc = std::hash_combine( node, primitive.material );
+	size_t hash_desc = std::hash_combine( node.handle, primitive.material );
 	auto desc_it = renderer.descriptor_resources.find( hash_desc );
 	if ( desc_it == std::end( renderer.descriptor_resources ) )
 	{
@@ -1028,22 +1028,22 @@ void Graphics::draw( const Handle<Node>& node, const Primitive& primitive, const
 }
 
 
-void Graphics::draw( const Handle<Node>& node, const math::Mat4& transform )
+void Graphics::draw( const Node& node, const math::Mat4& transform )
 {
 	// Current transform
-	auto temp_transform = node->get_matrix();
+	auto temp_transform = node.get_matrix();
 	temp_transform = transform * temp_transform;
 
 	// Render its children
-	for ( auto& child : node->children )
+	for ( auto& child : node.children )
 	{
-		draw( child, temp_transform );
+		draw( *child, temp_transform );
 	}
 
 	// Render the node
-	if ( node->mesh )
+	if ( node.mesh )
 	{
-		for ( auto& primitive : node->mesh->primitives )
+		for ( auto& primitive : node.mesh->primitives )
 		{
 			draw( node, primitive, temp_transform );
 		}
@@ -1051,16 +1051,16 @@ void Graphics::draw( const Handle<Node>& node, const math::Mat4& transform )
 }
 
 
-void Graphics::draw( const Handle<Gltf>& model, const math::Mat4& transform )
+void Graphics::draw( const Gltf& model, const math::Mat4& transform )
 {
-	if ( !model->scene )
+	if ( !model.scene )
 	{
 		return;
 	}
 
-	for ( auto& node : model->scene->nodes )
+	for ( auto& node : model.scene->nodes )
 	{
-		draw( node, transform );
+		draw( *node, transform );
 	}
 }
 

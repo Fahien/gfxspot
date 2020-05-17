@@ -6,22 +6,22 @@ namespace spot::gfx
 {
 
 
-void Collisions::update( const Handle<Node>& node, const math::Mat4& transform )
+void Collisions::update( const Node& node, const math::Mat4& transform )
 {
 	// Current transform
-	auto temp_transform = transform * node->get_matrix();
+	auto temp_transform = transform * node.get_matrix();
 
-	for ( auto& child : node->children )
+	for ( auto& child : node.children )
 	{
-		update( child, temp_transform );
+		update( *child, temp_transform );
 	}
 
 	// Save its shape
-	if ( node->bounds )
+	if ( auto bounds = node.get_bounds() )
 	{
-		auto& shape = node->bounds->get_shape();
+		auto& shape = bounds->get_shape();
 		shape.set_matrix( temp_transform );
-		boundss.emplace_back( node->bounds );
+		boundss.emplace_back( bounds );
 	}
 }
 
@@ -34,6 +34,11 @@ void Collisions::resolve()
 
 		for ( size_t j = i + 1; j < boundss.size(); ++j )
 		{
+			if ( !boundss[i]->dynamic && !boundss[j]->dynamic )
+			{
+				continue;
+			}
+
 			auto& other       = boundss[j]->get_shape();
 			auto is_colliding = box.is_colliding_with( other );
 
