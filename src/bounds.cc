@@ -33,9 +33,10 @@ std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> Bounds::clone_shape() co
 }
 
 
-void Shape::set_matrix( const math::Mat4& m )
+void Shape::set_node( Node& n )
 {
-	matrix = m;
+	node = &n;
+	matrix = n.get_transform();
 }
 
 
@@ -62,8 +63,7 @@ void Shape::remove_collision( const Shape& s )
 }
 
 
-bool Rect::intersects( const Shape& s,
-		const math::Mat4& transform ) const
+bool Rect::intersects( const Shape& s ) const
 {
 	auto rect = *this;
 	rect.a = matrix * rect.a;
@@ -72,13 +72,31 @@ bool Rect::intersects( const Shape& s,
 }
 
 
-bool Rect::intersects( const Rect& r,
-		const math::Mat4& transform ) const
+bool Rect::intersects( const Rect& r ) const
 {
 	math::Rect rect = *this;
 	rect.a = matrix * rect.a;
 	rect.b = matrix * rect.b;
 	return rect.intersects( r );
+}
+
+
+math::Vec2 Rect::distance( const Shape& s ) const
+{
+	auto rect = *this;
+	/// @todo matrix * rect
+	rect.a = matrix * rect.a;
+	rect.b = matrix * rect.b;
+	return s.distance( rect );
+}
+
+
+math::Vec2 Rect::distance( const Rect& r ) const
+{
+	math::Rect rect = *this;
+	rect.a = matrix * rect.a;
+	rect.b = matrix * rect.b;
+	return rect.distance( r );
 }
 
 

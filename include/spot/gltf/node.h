@@ -32,8 +32,11 @@ class Node : public Handled<Node>
 	/// @return A newly created Node
 	Node( const std::string& name );
 
+	/// @brief Updates transform matrices of this node and its children
+	void update_transforms( const math::Mat4& transform = math::Mat4::Identity );
+
 	/// @return The current transform
-	math::Mat4 get_matrix() const;
+	const math::Mat4& get_transform() const;
 
 	/// @return A matrix representing the absolute transform of this node
 	math::Mat4 get_absolute_matrix() const;
@@ -51,6 +54,9 @@ class Node : public Handled<Node>
 	/// @return The bounds of the node, nullptr otherwise
 	Bounds* get_bounds() const;
 
+	/// @param b Set new bounds for this node
+	void set_bounds( const Handle<Bounds>& b );
+
 	/// Unit quaternion
 	math::Quat rotation = math::Quat::Identity;
 
@@ -66,9 +72,6 @@ class Node : public Handled<Node>
 	/// Handle of light contained by this node
 	Handle<Light> light = {};
 
-	/// This node's bounds handle
-	Handle<Bounds> bounds = {};
-
 	/// User-defined name of this object
 	std::string name = "Unknown";
 
@@ -79,9 +82,11 @@ class Node : public Handled<Node>
 	std::vector<Handle<Node>> children;
 
   private:
-
 	/// Floating-point 4x4 transformation matrix stored in column-major order
 	math::Mat4 matrix = math::Mat4::Identity;
+
+	/// This node's bounds handle
+	Handle<Bounds> bounds = {};
 
 	/// Camera referenced by this node
 	GltfCamera* camera = nullptr;

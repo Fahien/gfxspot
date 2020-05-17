@@ -20,19 +20,23 @@ struct Shape
 	Shape()          = default;
 	virtual ~Shape() = default;
 
-	/// @brief Sets a new transform matrix, in case the shape moves
-	void set_matrix( const math::Mat4& m );
+	/// @brief Sets the node and its transform, in case the shape moves
+	void set_node( Node& n );
 
 	bool is_colliding_with( const Shape& s ) const;
 	void add_collision( const Shape& s );
 	void remove_collision( const Shape& s );
 
-	virtual bool intersects( const Shape& s,
-		const math::Mat4& transform = math::Mat4::Identity ) const
+	virtual bool intersects( const Shape& s ) const
 		{ assert( false && "unimplemented" ); return false; }
 
-	virtual bool intersects( const Rect& s,
-		const math::Mat4& transform = math::Mat4::Identity ) const
+	virtual bool intersects( const Rect& s ) const
+		{ assert( false && "unimplemented" ); return false; }
+
+	virtual math::Vec2 distance( const Shape& s ) const
+		{ assert( false && "unimplemented" ); return false; }
+
+	virtual math::Vec2 distance( const Rect& s ) const
 		{ assert( false && "unimplemented" ); return false; }
 
 
@@ -40,15 +44,17 @@ struct Shape
 		const math::Mat4& transform = math::Mat4::Identity ) const
 		{ assert( false && "unimplemented" ); return false; }
 
+	Node* node = nullptr;
+
 	/// @todo This should be derived from node.absolute_transform()
 	/// which recursively go up the tree to get parents' transforms
 	math::Mat4 matrix = math::Mat4::Identity;
 
 	std::vector<const Shape*> collisions = {};
 
-	std::function<void(const Shape& s)> start_colliding_with = {};
-	std::function<void(const Shape& s)> colliding_with = {};
-	std::function<void(const Shape& s)> end_colliding_with = {};
+	std::function<void( const Shape& s, const Shape& o )> start_colliding_with = {};
+	std::function<void( const Shape& s, const Shape& o )> colliding_with = {};
+	std::function<void( const Shape& s, const Shape& o )> end_colliding_with = {};
 };
 
 
@@ -56,12 +62,14 @@ struct Rect : public math::Rect, public Handled<Rect>, Shape
 {
 	using math::Rect::Rect;
 	
-	bool intersects( const Shape& s,
-		const math::Mat4& transform = math::Mat4::Identity ) const override;
+	bool intersects( const Shape& s ) const override;
 	
-	bool intersects( const Rect& r,
-		const math::Mat4& transform = math::Mat4::Identity ) const override;
+	bool intersects( const Rect& r ) const override;
 	
+	math::Vec2 distance( const Shape& s ) const override;
+
+	math::Vec2 distance( const Rect& s ) const override;
+
 	bool contains( const math::Vec2& p,
 		const math::Mat4& transform = math::Mat4::Identity ) const override;
 };

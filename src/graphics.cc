@@ -897,7 +897,6 @@ void Graphics::draw_gui()
 		return;
 	}
 
-	/// @todo Draw gui, TRY with push constants for scale and translate
 	/// @todo Fix this 3
 	current_command_buffer->bind( renderer.pipelines[3] );
 
@@ -942,16 +941,16 @@ void Graphics::render_end()
 }
 
 
-void Graphics::draw( const Node& node, const Mesh& mesh, const math::Mat4& transform )
+void Graphics::draw( const Node& node, const Mesh& mesh )
 {
 	for ( auto& prim : mesh.primitives )
 	{
-		draw( node, prim, transform );
+		draw( node, prim );
 	}
 }
 
 
-void Graphics::draw( const Node& node, const Primitive& primitive, const math::Mat4& transform )
+void Graphics::draw( const Node& node, const Primitive& primitive )
 {
 	auto node_pair = renderer.node_resources.find( node.handle );
 	if ( node_pair == std::end( renderer.node_resources ) )
@@ -965,7 +964,7 @@ void Graphics::draw( const Node& node, const Primitive& primitive, const math::M
 
 	// Upload MVP UBO
 	MvpUbo ubo;
-	ubo.model = transform;
+	ubo.model = node.get_transform();
 	ubo.view  = camera.get_view();
 	ubo.proj  = camera.get_proj();
 
@@ -1028,30 +1027,23 @@ void Graphics::draw( const Node& node, const Primitive& primitive, const math::M
 }
 
 
-void Graphics::draw( const Node& node, const math::Mat4& transform )
+void Graphics::draw( const Node& node )
 {
-	// Current transform
-	auto temp_transform = node.get_matrix();
-	temp_transform = transform * temp_transform;
-
 	// Render its children
 	for ( auto& child : node.children )
 	{
-		draw( *child, temp_transform );
+		draw( *child );
 	}
 
 	// Render the node
 	if ( node.mesh )
 	{
-		for ( auto& primitive : node.mesh->primitives )
-		{
-			draw( node, primitive, temp_transform );
-		}
+		draw( node, *node.mesh );
 	}
 }
 
 
-void Graphics::draw( const Gltf& model, const math::Mat4& transform )
+void Graphics::draw( const Gltf& model )
 {
 	if ( !model.scene )
 	{
@@ -1060,7 +1052,7 @@ void Graphics::draw( const Gltf& model, const math::Mat4& transform )
 
 	for ( auto& node : model.scene->nodes )
 	{
-		draw( *node, transform );
+		draw( *node );
 	}
 }
 

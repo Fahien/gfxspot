@@ -1,26 +1,27 @@
 #include "spot/gfx/collisions.h"
+
+#include <spot/math/math.h>
+
 #include "spot/gltf/bounds.h"
 #include "spot/gltf/node.h"
+
 
 namespace spot::gfx
 {
 
 
-void Collisions::update( const Node& node, const math::Mat4& transform )
+void Collisions::update( Node& node )
 {
-	// Current transform
-	auto temp_transform = transform * node.get_matrix();
-
 	for ( auto& child : node.children )
 	{
-		update( *child, temp_transform );
+		update( *child );
 	}
 
-	// Save its shape
+	// Save its shape updating the node it refers to
 	if ( auto bounds = node.get_bounds() )
 	{
 		auto& shape = bounds->get_shape();
-		shape.set_matrix( temp_transform );
+		shape.set_node( node );
 		boundss.emplace_back( bounds );
 	}
 }
@@ -50,21 +51,21 @@ void Collisions::resolve()
 					other.add_collision( box );
 					if ( box.start_colliding_with )
 					{
-						box.start_colliding_with( other );
+						box.start_colliding_with( box, other );
 					}
 					if ( other.start_colliding_with )
 					{
-						other.start_colliding_with( box );
+						other.start_colliding_with( other, box );
 					}
 				}
 
 				if ( box.colliding_with )
 				{
-					box.colliding_with( other );
+					box.colliding_with( box, other );
 				}
 				if ( other.colliding_with )
 				{
-					other.colliding_with( box );
+					other.colliding_with( other, box );
 				}
 			}
 			else if ( is_colliding )
@@ -73,15 +74,18 @@ void Collisions::resolve()
 				other.remove_collision( box );
 				if ( box.end_colliding_with )
 				{
-					box.end_colliding_with( other );
+					box.end_colliding_with( box, other );
 				}
 				if ( other.end_colliding_with )
 				{
-					other.end_colliding_with( box );
+					other.end_colliding_with( other, box );
 				}
 			}
 		}
 	}
+
+	// Clear everything once finished
+	boundss.clear();
 }
 
 

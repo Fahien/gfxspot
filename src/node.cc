@@ -24,13 +24,19 @@ Handle<Node> Scene::create_node( const std::string& name )
 }
 
 
-math::Mat4 Node::get_matrix() const
+const math::Mat4& Node::get_transform() const
 {
-	auto transform = matrix;
-	transform.scale( scale );
-	transform.rotate( rotation );
-	transform.translate( translation );
-	return transform;
+	return matrix;
+}
+
+
+void Node::update_transforms( const math::Mat4& transform )
+{
+	matrix = transform.scale( scale ).rotate( rotation ).translate( translation );
+	for ( auto& child : children )
+	{
+		child->update_transforms( matrix );
+	}
 }
 
 
@@ -38,9 +44,10 @@ math::Mat4 Node::get_absolute_matrix() const
 {
 	if ( parent )
 	{
-		return parent->get_absolute_matrix() * get_matrix();
+		return parent->get_absolute_matrix() * matrix;
 	}
-	return get_matrix();
+
+	return matrix;
 }
 
 
@@ -76,6 +83,13 @@ Bounds* Node::get_bounds() const
 		return &*bounds;
 	}
 	return nullptr;
+}
+
+
+void Node::set_bounds( const Handle<Bounds>& b )
+{
+	bounds.invalidate();
+	bounds = b;
 }
 
 
