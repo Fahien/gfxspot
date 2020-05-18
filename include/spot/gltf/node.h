@@ -32,6 +32,8 @@ class Node : public Handled<Node>
 	/// @return A newly created Node
 	Node( const std::string& name );
 
+	void invalidate() override;
+
 	/// @brief Updates transform matrices of this node and its children
 	void update_transforms( const math::Mat4& transform = math::Mat4::Identity );
 
@@ -81,12 +83,12 @@ class Node : public Handled<Node>
 	/// This node's children
 	std::vector<Handle<Node>> children;
 
+	/// This node's bounds handle
+	Handle<Bounds> bounds = {};
+
   private:
 	/// Floating-point 4x4 transformation matrix stored in column-major order
 	math::Mat4 matrix = math::Mat4::Identity;
-
-	/// This node's bounds handle
-	Handle<Bounds> bounds = {};
 
 	/// Camera referenced by this node
 	GltfCamera* camera = nullptr;

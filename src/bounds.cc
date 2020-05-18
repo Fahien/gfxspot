@@ -7,32 +7,6 @@ namespace spot::gfx
 {
 
 
-Shape& Bounds::get_shape() const
-{
-	switch ( type )
-	{
-	case Type::Rect:   return *std::get<Handle<Rect>>( shape );
-	case Type::Box:    return *std::get<Handle<Box>>( shape );
-	case Type::Sphere: return *std::get<Handle<Sphere>>( shape );
-	default:
-		assert( false && "Bounds shape type not supported" );
-	}
-}
-
-
-std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> Bounds::clone_shape() const
-{
-	switch ( type )
-	{
-	case Type::Rect:   return std::get<Handle<Rect>>( shape ).clone();
-	case Type::Box:    return std::get<Handle<Box>>( shape ).clone();
-	case Type::Sphere: return std::get<Handle<Sphere>>( shape ).clone();
-	default:
-		assert( false && "Bounds shape type not supported" );
-	}
-}
-
-
 void Shape::set_node( Node& n )
 {
 	node = &n;
@@ -106,6 +80,47 @@ bool Rect::contains( const math::Vec2& p, const math::Mat4& transform ) const
 	rect.a = transform * rect.a;
 	rect.b = transform * rect.b;
 	return rect.contains( p );
+}
+
+
+Shape& Bounds::get_shape() const
+{
+	switch ( type )
+	{
+	case Type::Rect:   return *std::get<Handle<Rect>>( shape );
+	case Type::Box:    return *std::get<Handle<Box>>( shape );
+	case Type::Sphere: return *std::get<Handle<Sphere>>( shape );
+	default:
+		assert( false && "Bounds shape type not supported" );
+	}
+}
+
+
+std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> Bounds::clone_shape() const
+{
+	switch ( type )
+	{
+	case Type::Rect:   return std::get<Handle<Rect>>( shape ).clone();
+	case Type::Box:    return std::get<Handle<Box>>( shape ).clone();
+	case Type::Sphere: return std::get<Handle<Sphere>>( shape ).clone();
+	default:
+		assert( false && "Bounds shape type not supported" );
+	}
+}
+
+
+
+void Bounds::invalidate()
+{
+	Handled<Bounds>::invalidate();
+	switch ( type )
+	{
+	case Type::Rect:   return std::get<Handle<Rect>>( shape )->invalidate();
+	case Type::Box:    return std::get<Handle<Box>>( shape )->invalidate();
+	case Type::Sphere: return std::get<Handle<Sphere>>( shape )->invalidate();
+	default:
+		assert( false && "Bounds shape type not supported" );
+	}
 }
 
 

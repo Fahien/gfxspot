@@ -99,6 +99,8 @@ struct Bounds : public Handled<Bounds>
 		Max,
 	};
 
+	void invalidate() override;
+
 	Shape& get_shape() const;
 
 	std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> clone_shape() const;

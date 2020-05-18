@@ -16,6 +16,16 @@ Node::Node( const std::string& name )
 {}
 
 
+void Node::invalidate()
+{
+	Handled<Node>::invalidate();
+	if ( bounds )
+	{
+		bounds->invalidate();
+	}
+}
+
+
 Handle<Node> Scene::create_node( const std::string& name )
 {
 	auto node = model->nodes.push( Node( name ) );
@@ -88,7 +98,6 @@ Bounds* Node::get_bounds() const
 
 void Node::set_bounds( const Handle<Bounds>& b )
 {
-	bounds.invalidate();
 	bounds = b;
 }
 

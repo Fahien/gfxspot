@@ -17,75 +17,83 @@ void Collisions::update( Node& node )
 		update( *child );
 	}
 
-	// Save its shape updating the node it refers to
+	// Save nodes containing bounds
 	if ( auto bounds = node.get_bounds() )
 	{
 		auto& shape = bounds->get_shape();
 		shape.set_node( node );
-		boundss.emplace_back( bounds );
+		nodes.emplace_back( &node );
 	}
 }
 
 
 void Collisions::resolve()
 {
-	for ( size_t i = 0; i < boundss.size(); ++i )
+	for ( size_t i = 0; i < nodes.size(); ++i )
 	{
-		auto& box = boundss[i]->get_shape();
+		auto first_node = nodes[i];
+		auto first_bounds = first_node->get_bounds();
 
-		for ( size_t j = i + 1; j < boundss.size(); ++j )
+		for ( size_t j = i + 1; j < nodes.size(); ++j )
 		{
-			if ( !boundss[i]->dynamic && !boundss[j]->dynamic )
+			auto second_node = nodes[j];
+			auto second_bounds = second_node->get_bounds();
+
+			if ( !first_bounds->dynamic && !second_bounds->dynamic )
 			{
 				continue;
 			}
 
-			auto& other       = boundss[j]->get_shape();
-			auto is_colliding = box.is_colliding_with( other );
+			auto& first_shape = first_bounds->get_shape();
+			auto& second_shape = second_bounds->get_shape();
 
-			if ( box.intersects( other ) )
+			auto is_colliding = first_shape.is_colliding_with( second_shape );
+
+			if ( first_shape.intersects( second_shape ) )
 			{
 				if ( !is_colliding )
 				{
-					box.add_collision( other );
-					other.add_collision( box );
-					if ( box.start_colliding_with )
+					first_shape.add_collision( second_shape );
+					second_shape.add_collision( first_shape );
+
+					if ( first_shape.start_colliding_with )
 					{
-						box.start_colliding_with( box, other );
+						first_shape.start_colliding_with( first_shape, second_shape );
 					}
-					if ( other.start_colliding_with )
+					if ( second_shape.start_colliding_with )
 					{
-						other.start_colliding_with( other, box );
+						second_shape.start_colliding_with( second_shape, first_shape );
 					}
 				}
 
-				if ( box.colliding_with )
+				if ( first_shape.colliding_with )
 				{
-					box.colliding_with( box, other );
+					first_shape.colliding_with( first_shape, second_shape );
 				}
-				if ( other.colliding_with )
+				if ( second_shape.colliding_with )
 				{
-					other.colliding_with( other, box );
+					second_shape.colliding_with( second_shape, first_shape );
 				}
 			}
 			else if ( is_colliding )
 			{
-				box.remove_collision( other );
-				other.remove_collision( box );
-				if ( box.end_colliding_with )
+				first_shape.remove_collision( second_shape );
+				second_shape.remove_collision( first_shape );
+
+				if ( first_shape.end_colliding_with )
 				{
-					box.end_colliding_with( box, other );
+					first_shape.end_colliding_with( first_shape, second_shape );
 				}
-				if ( other.end_colliding_with )
+				if ( second_shape.end_colliding_with )
 				{
-					other.end_colliding_with( other, box );
+					second_shape.end_colliding_with( second_shape, first_shape );
 				}
 			}
 		}
 	}
 
 	// Clear everything once finished
-	boundss.clear();
+	nodes.clear();
 }
 
 

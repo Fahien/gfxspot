@@ -8,7 +8,6 @@ namespace spot::gfx
 
 
 class Node;
-class Bounds;
 
 
 /// @brief Collisions system
@@ -27,8 +26,8 @@ class Collisions
 	void resolve();
 
   private:
-	/// @brief List of active bounds to resolve
-	std::vector<Bounds*> boundss;
+	/// @brief List of active nodes with bounds to check
+	std::vector<Node*> nodes;
 };
 
 

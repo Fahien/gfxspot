@@ -603,7 +603,7 @@ Renderer::add_descriptors( const Node& node, const Handle<Material>& material )
 	// And the same material may appear into multiple primitives of different nodes
 	// So we hash combine both node and material
 	/// @todo Use handles to include generations when hash combining
-	auto key = std::hash_combine( node.handle.get_index(), material.get_index() );
+	auto key = std::hash_combine( node.handle, material.get_index() );
 	auto it = descriptor_resources.find( key );
 	if ( it != std::end( descriptor_resources ) )
 	{
