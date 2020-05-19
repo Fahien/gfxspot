@@ -15,6 +15,7 @@ class Light;
 class Script;
 class Shape;
 class Bounds;
+class Rect;
 
 
 /// Node in the node hierarchy
@@ -53,12 +54,6 @@ class Node : public Handled<Node>
 	/// @brief Set this node free!
 	void remove_from_parent();
 
-	/// @return The bounds of the node, nullptr otherwise
-	Bounds* get_bounds() const;
-
-	/// @param b Set new bounds for this node
-	void set_bounds( const Handle<Bounds>& b );
-
 	/// Unit quaternion
 	math::Quat rotation = math::Quat::Identity;
 
@@ -83,8 +78,8 @@ class Node : public Handled<Node>
 	/// This node's children
 	std::vector<Handle<Node>> children;
 
-	/// This node's bounds handle
-	Handle<Bounds> bounds = {};
+	/// This node's rectangle bounds
+	Handle<Rect> rect;
 
   private:
 	/// Floating-point 4x4 transformation matrix stored in column-major order

@@ -50,7 +50,9 @@ struct Shape
 	/// which recursively go up the tree to get parents' transforms
 	math::Mat4 matrix = math::Mat4::Identity;
 
-	std::vector<const Shape*> collisions = {};
+	bool dynamic = false;
+
+	std::vector<const Shape*> collisions;
 
 	std::function<void( const Shape& s, const Shape& o )> start_colliding_with = {};
 	std::function<void( const Shape& s, const Shape& o )> colliding_with = {};
@@ -58,7 +60,7 @@ struct Shape
 };
 
 
-struct Rect : public math::Rect, public Handled<Rect>, Shape
+struct Rect : public math::Rect, public Handled<Rect>, public Shape
 {
 	using math::Rect::Rect;
 	
@@ -75,14 +77,14 @@ struct Rect : public math::Rect, public Handled<Rect>, Shape
 };
 
 
-struct Box : public math::Box, public Handled<Box>, Shape
+struct Box : public math::Box, public Handled<Box>, public Shape
 {
 	using math::Box::Box;
 
 };
 
 
-struct Sphere : public math::Sphere, public Handled<Sphere>, Shape
+struct Sphere : public math::Sphere, public Handled<Sphere>, public Shape
 {
 	using math::Sphere::Sphere;
 };

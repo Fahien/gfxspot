@@ -43,7 +43,7 @@ void Glfw::poll()
 double Glfw::get_delta()
 {
 	auto current = glfwGetTime();
-	auto delta = current - time;
+	auto delta = std::min( current - time, 0.125 );
 	time = current;
 	return delta;
 }

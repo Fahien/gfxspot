@@ -19,9 +19,9 @@ Node::Node( const std::string& name )
 void Node::invalidate()
 {
 	Handled<Node>::invalidate();
-	if ( bounds )
+	if ( rect )
 	{
-		bounds->invalidate();
+		rect->invalidate();
 	}
 }
 
@@ -83,22 +83,6 @@ void Node::remove_from_parent()
 
 		parent = {};
 	}
-}
-
-
-Bounds* Node::get_bounds() const
-{
-	if ( bounds )
-	{
-		return &*bounds;
-	}
-	return nullptr;
-}
-
-
-void Node::set_bounds( const Handle<Bounds>& b )
-{
-	bounds = b;
 }
 
 

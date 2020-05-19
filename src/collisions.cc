@@ -18,10 +18,9 @@ void Collisions::update( Node& node )
 	}
 
 	// Save nodes containing bounds
-	if ( auto bounds = node.get_bounds() )
+	if ( node.rect )
 	{
-		auto& shape = bounds->get_shape();
-		shape.set_node( node );
+		node.rect->set_node( node );
 		nodes.emplace_back( &node );
 	}
 }
@@ -32,20 +31,17 @@ void Collisions::resolve()
 	for ( size_t i = 0; i < nodes.size(); ++i )
 	{
 		auto first_node = nodes[i];
-		auto first_bounds = first_node->get_bounds();
+		auto& first_shape = *first_node->rect;
 
 		for ( size_t j = i + 1; j < nodes.size(); ++j )
 		{
 			auto second_node = nodes[j];
-			auto second_bounds = second_node->get_bounds();
+			auto& second_shape = *second_node->rect;
 
-			if ( !first_bounds->dynamic && !second_bounds->dynamic )
+			if ( !first_shape.dynamic && !second_shape.dynamic )
 			{
 				continue;
 			}
-
-			auto& first_shape = first_bounds->get_shape();
-			auto& second_shape = second_bounds->get_shape();
 
 			auto is_colliding = first_shape.is_colliding_with( second_shape );
 

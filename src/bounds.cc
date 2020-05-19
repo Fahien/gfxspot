@@ -51,7 +51,12 @@ bool Rect::intersects( const Rect& r ) const
 	math::Rect rect = *this;
 	rect.a = matrix * rect.a;
 	rect.b = matrix * rect.b;
-	return rect.intersects( r );
+
+	math::Rect other = r;
+	other.a = r.matrix * other.a;
+	other.b = r.matrix * other.b;
+
+	return rect.intersects( other );
 }
 
 

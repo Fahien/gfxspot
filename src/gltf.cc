@@ -973,7 +973,8 @@ void Gltf::init_nodes( const nlohmann::json& j )
 			if ( extras.count( "bounds" ) )
 			{
 				auto bounds_index = extras["bounds"].get<size_t>();
-				node->bounds = bounds.find( bounds_index );
+				/// @todo Fix this
+				// node->bounds = bounds.find( bounds_index );
 			}
 
 			// Scripts
