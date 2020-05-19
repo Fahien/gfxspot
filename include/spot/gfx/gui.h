@@ -23,13 +23,14 @@ class Window;
 class Gui
 {
   public:
-	Gui( Device& d, const VkExtent2D& extent );
+	Gui( Device& d, Window& window );
 	~Gui();
 
-	void update( const float delta_time, Window& window );
+	void update( float delta_time );
 
 	void draw( CommandBuffer& cb );
 
+	Window& window;
 	Images images;
 
 	ShaderModule vert;

@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <GLFW/glfw3.h>
+#include <imgui.h>
 
 #include "spot/gfx/graphics.h"
 #include "spot/gfx/viewport.h"
@@ -131,13 +132,23 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 }
 
 
-/// @param key The keyboard keythat was pressed or released
+/// @param key The keyboard key that was pressed or released
 /// @param scancode The system-specific scancode of the key
 /// @param action `GLFW_PRESS`, `GLFW_RELEASE` or `GLFW_REPEAT`
 /// @param mods Bit field describing which modifier keys were held down
 void key_callback( GLFWwindow* handle, int key, int scancode, int action, int mods )
 {
 	auto window = reinterpret_cast<Window*>( glfwGetWindowUserPointer( handle ) );
+
+	auto& io = ImGui::GetIO();
+	if ( action == GLFW_PRESS )
+	{
+		io.KeysDown[key] = true;
+	}
+	if ( action == GLFW_RELEASE )
+	{
+		io.KeysDown[key] = false;
+	}
 
 	CHECK_KEY( W, w );
 	CHECK_KEY( A, a );

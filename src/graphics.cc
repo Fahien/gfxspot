@@ -811,7 +811,7 @@ Graphics::Graphics()
 , mesh_no_image_frag { device, "shader/mesh-no-image.frag.spv" }
 , mesh_layout { device, get_mesh_bindings() }
 , mesh_no_image_layout { device, get_mesh_no_image_bindings() }
-, gui { device, window.frame }
+, gui { device, window }
 , viewport { window, camera }
 , scissor { create_scissor( window ) }
 , renderer { *this }
