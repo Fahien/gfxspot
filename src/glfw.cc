@@ -157,19 +157,18 @@ void key_callback( GLFWwindow* handle, int key, int scancode, int action, int mo
 }
 
 
-Window::Window()
+Window::Window( VkExtent2D ext )
+: extent { ext }
 {
 	glfwWindowHint( GLFW_CLIENT_API, GLFW_NO_API );
 	glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
-	uint32_t scale = 6;
-	extent.width = 320 * scale;
-	extent.height = 240 * scale;
+
 	handle = glfwCreateWindow( extent.width, extent.height, "Graphics", nullptr, nullptr );
 
 	int width, height;
 	glfwGetFramebufferSize( handle, &width, &height );
-	frame.width = static_cast<uint32_t>( width );
-	frame.height = static_cast<uint32_t>( height );
+	frame.width = uint32_t( width );
+	frame.height = uint32_t( height );
 
 	// Callbacks
 	glfwSetWindowUserPointer( handle, this );

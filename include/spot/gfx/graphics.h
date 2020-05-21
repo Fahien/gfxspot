@@ -170,7 +170,7 @@ class Fence
 class Graphics
 {
   public:
-	Graphics();
+	Graphics( VkExtent2D extent = { 320, 240 } );
 
 	bool render_begin();
 	void render_end();

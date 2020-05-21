@@ -934,22 +934,22 @@ void Gltf::init_nodes( const nlohmann::json& j )
 		// Rotation
 		if ( n.count( "rotation" ) )
 		{
-			auto qvec     = n["rotation"].get<std::vector<float>>();
-			node->rotation = math::Quat{ qvec[3], qvec[0], qvec[1], qvec[2] };
+			auto qvec = n["rotation"].get<std::vector<float>>();
+			node->set_rotation( { qvec[3], qvec[0], qvec[1], qvec[2] } );
 		}
 
 		// Scale
 		if ( n.count( "scale" ) )
 		{
-			auto s     = n["scale"].get<std::vector<float>>();
-			node->scale = math::Vec3{ s[0], s[1], s[2] };
+			auto s = n["scale"].get<std::vector<float>>();
+			node->set_scaling( { s[0], s[1], s[2] } );
 		}
 
 		// Translation
 		if ( n.count( "translation" ) )
 		{
-			auto t           = n["translation"].get<std::vector<float>>();
-			node->translation = math::Vec3{ t[0], t[1], t[2] };
+			auto t = n["translation"].get<std::vector<float>>();
+			node->set_translation( { t[0], t[1], t[2] } );
 		}
 
 		// Estensions

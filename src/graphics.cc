@@ -13,8 +13,6 @@
 
 #include "spot/gfx/hash.h"
 
-namespace gtf = spot::gfx;
-
 
 namespace spot::gfx
 {
@@ -405,16 +403,8 @@ VkExtent2D choose_extent( const VkSurfaceCapabilitiesKHR& capabilities )
 }
 
 
-VkPresentModeKHR choose_present_mode( const std::vector<VkPresentModeKHR>& present_modes)
+VkPresentModeKHR choose_present_mode( const std::vector<VkPresentModeKHR>& present_modes )
 {
-	for ( auto mode : present_modes )
-	{
-		if ( mode == VK_PRESENT_MODE_MAILBOX_KHR )
-		{
-			return mode;
-		}
-	}
-
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
@@ -797,8 +787,9 @@ std::vector<VkDescriptorSetLayoutBinding> get_mesh_bindings()
 }
 
 
-Graphics::Graphics()
+Graphics::Graphics( VkExtent2D extent )
 : instance { glfw.required_extensions, get_validation_layers() }
+, window { extent }
 , surface { instance, window }
 , device { instance.physical_devices.at( 0 ), surface.handle, device_required_extensions }
 , swapchain { device }
@@ -1003,7 +994,7 @@ void Graphics::draw( const Node& node, const Primitive& primitive )
 
 			// Upload Light UBO
 			LightUbo light_ubo = {};
-			light_ubo.position = light_node->translation;
+			light_ubo.position = light_node->get_translation();
 			light_ubo.color = light_node->light->color;
 			auto light_data = reinterpret_cast<const uint8_t*>( &light_ubo );
 			auto& light_res = renderer.light_resources.begin()->second;

@@ -35,8 +35,29 @@ class Node : public Handled<Node>
 
 	void invalidate() override;
 
+	const math::Vec3& get_translation() const { return translation; }
+	const math::Quat& get_rotation() const { return rotation; }
+	const math::Vec3& get_scaling() const { return scaling; }
+
+	void set_translation( const math::Vec3& t ) { dirty = true; translation = t; };
+	void set_translation( const math::Vec2& t ) { dirty = true; translation = t; };
+	void set_translation_x( float v ) { dirty = true; translation.x = v; };
+	void set_translation_y( float v ) { dirty = true; translation.y = v; };
+	void set_translation_z( float v ) { dirty = true; translation.z = v; };
+
+	void set_rotation( const math::Quat& r ) { dirty = true; rotation = r; };
+	void set_scaling( const math::Vec3& s ) { dirty = true; scaling = s; };
+
+	Node& translate( const math::Vec3& translation );
+	Node& rotate( const math::Quat& rotation );
+	Node& scale( const math::Vec3& scale );
+	Node& scale( const float s ) { dirty = true; scaling *= s; return *this; }
+
 	/// @brief Updates transform matrices of this node and its children
 	void update_transforms( const math::Mat4& transform = math::Mat4::Identity );
+
+	/// @brief Updates transform matrices of this node and its children
+	void recalculate( math::Mat4 transform = math::Mat4::Identity );
 
 	/// @return The current transform
 	const math::Mat4& get_transform() const;
@@ -53,15 +74,6 @@ class Node : public Handled<Node>
 
 	/// @brief Set this node free!
 	void remove_from_parent();
-
-	/// Unit quaternion
-	math::Quat rotation = math::Quat::Identity;
-
-	/// Non-uniform scale
-	math::Vec3 scale = math::Vec3{ 1.0f, 1.0f, 1.0f };
-
-	/// Translation
-	math::Vec3 translation = math::Vec3{ 0.0f, 0.0f, 0.0f };
 
 	/// Handle of the mesh of the node
 	Handle<Mesh> mesh = {};
@@ -82,8 +94,20 @@ class Node : public Handled<Node>
 	Handle<Rect> rect;
 
   private:
+	/// Whether node's transform needs recalculation
+	bool dirty = true;
+
 	/// Floating-point 4x4 transformation matrix stored in column-major order
 	math::Mat4 matrix = math::Mat4::Identity;
+
+	/// Unit quaternion
+	math::Quat rotation = math::Quat::Identity;
+
+	/// Non-uniform scale
+	math::Vec3 scaling = { 1.0f, 1.0f, 1.0f };
+
+	/// Translation
+	math::Vec3 translation = { 0.0f, 0.0f, 0.0f };
 
 	/// Camera referenced by this node
 	GltfCamera* camera = nullptr;

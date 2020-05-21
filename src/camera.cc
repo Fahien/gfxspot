@@ -11,8 +11,7 @@ Camera::Camera()
 {
 	look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
 	set_orthographic( 2.0f, 2.0f, 0.125f, 8.0f );
-	node.translation.x = -1.0f;
-	node.translation.y = -1.0f;
+	node.set_translation( math::Vec2( -1.0f, -1.0f ) );
 }
 
 
@@ -29,8 +28,9 @@ void Camera::update( const Viewport& viewport )
 void Camera::set_orthographic( const Viewport& viewport )
 {
 	auto& abstract = viewport.get_abstract();
-	node.translation.x = abstract.x + abstract.width / 2.0f;
-	node.translation.y = abstract.y + abstract.height / 2.0f;
+	node.set_translation(
+		math::Vec2(
+			abstract.x + abstract.width / 2.0f, abstract.y + abstract.height / 2.0f ) );
 
 	set_orthographic(
 		abstract.width, abstract.height,
@@ -88,7 +88,7 @@ void Camera::set_perspective( const float a, const float y, const float f, const
 
 void Camera::look_at( const math::Vec3& eye, const math::Vec3& center, const math::Vec3& up_arg )
 {
-	node.translation = eye;
+	node.set_translation( eye );
 
 	up = up_arg;
 
@@ -110,15 +110,15 @@ math::Mat4 Camera::get_view() const
 	view( 0, 0 ) = right.x;
 	view( 0, 1 ) = right.y;
 	view( 0, 2 ) = right.z;
-	view( 0, 3 ) = -math::Vec3::dot( right, node.translation );
+	view( 0, 3 ) = -math::Vec3::dot( right, node.get_translation() );
 	view( 1, 0 ) = up.x;
 	view( 1, 1 ) = up.y;
 	view( 1, 2 ) = up.z;
-	view( 1, 3 ) = -math::Vec3::dot( up, node.translation );
+	view( 1, 3 ) = -math::Vec3::dot( up, node.get_translation() );
 	view( 2, 0 ) = forward.x;
 	view( 2, 1 ) = forward.y;
 	view( 2, 2 ) = forward.z;
-	view( 2, 3 ) = -math::Vec3::dot( forward, node.translation );
+	view( 2, 3 ) = -math::Vec3::dot( forward, node.get_translation() );
 	view( 3, 0 ) = 0.0f;
 	view( 3, 1 ) = 0.0f;
 	view( 3, 2 ) = 0.0f;

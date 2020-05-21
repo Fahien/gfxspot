@@ -148,7 +148,7 @@ int main()
 
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( node );
+			gfx.draw( *node );
 			gfx.render_end();
 		}
 	}

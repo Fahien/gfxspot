@@ -26,6 +26,30 @@ void Node::invalidate()
 }
 
 
+Node& Node::translate( const math::Vec3& t )
+{
+	dirty = true;
+	translation += t;
+	return *this;
+}
+
+
+Node& Node::rotate( const math::Quat& r )
+{
+	dirty = true;
+	rotation *= r;
+	return *this;
+}
+
+
+Node& Node::scale( const math::Vec3& s )
+{
+	dirty = true;
+	scaling *= s;
+	return *this;
+}
+
+
 Handle<Node> Scene::create_node( const std::string& name )
 {
 	auto node = model->nodes.push( Node( name ) );
@@ -42,10 +66,27 @@ const math::Mat4& Node::get_transform() const
 
 void Node::update_transforms( const math::Mat4& transform )
 {
-	matrix = transform.scale( scale ).rotate( rotation ).translate( translation );
+	if ( dirty )
+	{
+		recalculate( transform );
+	}
+	else
+	{
+		for ( auto& child : children )
+		{
+			child->update_transforms( matrix );
+		}
+	}
+}
+
+
+void Node::recalculate( math::Mat4 transform )
+{
+	dirty = false;
+	matrix = transform.scale( scaling ).rotate( rotation ).translate( translation );
 	for ( auto& child : children )
 	{
-		child->update_transforms( matrix );
+		child->recalculate( matrix );
 	}
 }
 

@@ -15,11 +15,11 @@ void update( const double dt, Handle<Node>& node )
 	auto radians = math::radians( dt * 128.0f );
 	auto z = math::Vec3( 0.0f, 0.0f, 1.0f );
 	auto quat = math::Quat( z, radians );
-	node->rotation *= quat;
+	node->rotate( quat );
 
 	static float acc = 0;
 	acc += dt;
-	node->translation.z = std::cos( math::radians( acc * 256.0f ) ) + 4.0f;
+	node->set_translation_z( std::cos( math::radians( acc * 256.0f ) ) + 4.0f );
 }
 
 
@@ -83,10 +83,11 @@ int main()
 		auto dt = gfx.glfw.get_delta();
 
 		update( dt, card );
+		card->update_transforms();
 
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( card );
+			gfx.draw( *card );
 			gfx.render_end();
 		}
 	}

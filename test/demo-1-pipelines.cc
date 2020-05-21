@@ -10,10 +10,10 @@ namespace spot::gfx
 {
 
 
-void update( const double dt, Handle<Node>& node )
+void update( const double dt, Node& node )
 {
 	auto angle = -math::radians( dt * 16.0f );
-	node->rotation *= math::Quat( math::Vec3::Z, angle );
+	node.rotate( math::Quat( math::Vec3::Z, angle ) );
 }
 
 } // namespace spot::gfx
@@ -55,15 +55,19 @@ int main()
 		gfx.glfw.poll();
 		auto dt = gfx.glfw.get_delta();
 
-		update( dt, triangle );
-		update( dt, square );
-		update( dt, quad );
+		update( dt, *triangle );
+		update( dt, *square );
+		update( dt, *quad );
+
+		triangle->update_transforms();
+		square->update_transforms();
+		quad->update_transforms();
 
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( quad );
-			gfx.draw( square );
-			gfx.draw( triangle );
+			gfx.draw( *quad );
+			gfx.draw( *square );
+			gfx.draw( *triangle );
 			gfx.render_end();
 		}
 	}

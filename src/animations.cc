@@ -84,21 +84,21 @@ void Animations::update( const float delta_time, const Handle<Gltf>& model )
 				case spot::gfx::Animation::Target::Path::Rotation:
 				{
 					std::vector<math::Quat> quats = animation.get_rotations( channel.sampler );
-					node->rotation = math::slerp( quats[keyframe - 1], quats[keyframe], norm_time );
+					node->set_rotation( math::slerp( quats[keyframe - 1], quats[keyframe], norm_time ) );
 					break;
 				}
 				case spot::gfx::Animation::Target::Path::Scale:
 				{
 					std::vector<math::Vec3> scales( values->count );
 					std::memcpy( scales.data(), values->get_data(), values->count * sizeof( math::Vec3 ) );
-					node->scale = math::lerp( scales[keyframe - 1], scales[keyframe], norm_time );
+					node->set_scaling( math::lerp( scales[keyframe - 1], scales[keyframe], norm_time ) );
 					break;
 				}
 				case spot::gfx::Animation::Target::Path::Translation:
 				{
 					std::vector<math::Vec3> trans( values->count );
 					std::memcpy( trans.data(), values->get_data(), values->count * sizeof( math::Vec3 ) );
-					node->translation = math::lerp( trans[keyframe - 1], trans[keyframe], norm_time );
+					node->set_translation( math::lerp( trans[keyframe - 1], trans[keyframe], norm_time ) );
 					break;
 				}
 				case spot::gfx::Animation::Target::Path::Weights:

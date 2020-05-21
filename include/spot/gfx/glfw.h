@@ -39,7 +39,7 @@ class Glfw
 class Window
 {
   public:
-	Window();
+	Window( VkExtent2D ext = { 320, 240 } );
 	~Window();
 
 	bool is_alive();
@@ -50,9 +50,10 @@ class Window
 	/// @return Window space cursor coordinates converted to viewport space coordinates
 	math::Vec2 cursor_to( const VkViewport& vp ) const;
 
+	VkExtent2D extent = { 320, 240 };
+
 	GLFWwindow* handle = nullptr;
 
-	VkExtent2D extent = { 512, 512 };
 	VkExtent2D frame = extent;
 
 	math::Vec2 scroll = {};
