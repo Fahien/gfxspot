@@ -953,7 +953,13 @@ void Graphics::draw( const Node& node, const Primitive& primitive )
 	}
 
 	auto hash_prim = std::hash<Primitive>()( primitive );
-	auto& resources = renderer.primitive_resources.at( hash_prim );
+	auto res_pair = renderer.primitive_resources.find( hash_prim );
+	if ( res_pair == std::end( renderer.primitive_resources ) )
+	{
+		renderer.add( node, primitive );
+		return;
+	}
+	auto& resources = res_pair->second;
 
 	// Upload MVP UBO
 	MvpUbo ubo;

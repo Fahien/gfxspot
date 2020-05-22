@@ -142,8 +142,8 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.scissor,
 		get_color_blend(),
 		{ VK_DYNAMIC_STATE_LINE_WIDTH },
-		VK_CULL_MODE_BACK_BIT,
-		VK_TRUE,
+		VK_CULL_MODE_NONE,
+		VK_FALSE,
 		VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
 	line_pipeline.index = 2;
 	ret.emplace_back( std::move( line_pipeline ) );
@@ -566,11 +566,6 @@ void Renderer::add( const Node& node, const Primitive& prim )
 
 void Renderer::add( const Node& node )
 {
-	if ( !node.mesh && !node.light )
-	{
-		return; // no mesh or light to add
-	}
-
 	// The node has a mesh or a light, therefore we need UBOs for the MVP matrix
 	// MVP ubos are store in node resources
 	if ( !FIND( node_resources, node.handle ) )
