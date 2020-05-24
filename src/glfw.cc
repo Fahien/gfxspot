@@ -154,6 +154,7 @@ void key_callback( GLFWwindow* handle, int key, int scancode, int action, int mo
 	CHECK_KEY( A, a );
 	CHECK_KEY( S, s );
 	CHECK_KEY( D, d );
+	CHECK_KEY( ENTER, enter );
 }
 
 

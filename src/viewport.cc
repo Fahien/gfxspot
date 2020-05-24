@@ -38,7 +38,7 @@ Viewport::Viewport( const Window& win, Camera& cam )
 , camera { cam }
 , abstract { create_abstract() }
 {
-	camera.update( *this );
+	camera.update( abstract );
 }
 
 
@@ -53,7 +53,7 @@ void Viewport::set_offset( const float x, const float y )
 	abstract.x = x;
 	abstract.y = y;
 
-	camera.update( *this );
+	camera.update( abstract );
 }
 
 
@@ -62,7 +62,7 @@ void Viewport::set_extent( const float width, const float height )
 	abstract.width = width;
 	abstract.height = height;
 
-	camera.update( *this );
+	camera.update( abstract );
 }
 
 

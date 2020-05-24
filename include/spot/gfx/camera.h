@@ -7,8 +7,6 @@
 namespace spot::gfx
 {
 
-class Viewport;
-
 class Camera
 {
   public:
@@ -54,7 +52,7 @@ class Camera
 	Camera();
 
 	/// @brief Update the camera according to the new viewport
-	void update( const Viewport& v );
+	void update( const VkViewport& v );
 
 	/// @return Computes and returns a view matrix
 	math::Mat4 get_view() const;
@@ -68,13 +66,13 @@ class Camera
 	void set_orthographic( float xmag, float ymag, float near, float far );
 
 	/// @param v Virtual vieport
-	void set_orthographic( const Viewport& v );
+	void set_orthographic( const VkViewport& v );
 
 	/// @brief Sets the camera as perspective
 	void set_perspective( const float aspect_ratio, const float yfov, const float far, const float near );
 
 	/// @param v Virtual vieport
-	void set_perspective( const Viewport& v, const float yfov = math::radians( 60.0f ) );
+	void set_perspective( const VkViewport& v, const float yfov = math::radians( 60.0f ) );
 
 	/// Eye of the camera is node's translation
 	Node node = {};

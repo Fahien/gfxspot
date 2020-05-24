@@ -1,5 +1,4 @@
 #include "spot/gfx/camera.h"
-#include "spot/gfx/viewport.h"
 
 #include <cmath>
 
@@ -15,7 +14,7 @@ Camera::Camera()
 }
 
 
-void Camera::update( const Viewport& viewport )
+void Camera::update( const VkViewport& viewport )
 {
 	switch ( type )
 	{
@@ -25,16 +24,14 @@ void Camera::update( const Viewport& viewport )
 }
 
 
-void Camera::set_orthographic( const Viewport& viewport )
+void Camera::set_orthographic( const VkViewport& viewport )
 {
-	auto& abstract = viewport.get_abstract();
-	node.set_translation(
-		math::Vec2(
-			abstract.x + abstract.width / 2.0f, abstract.y + abstract.height / 2.0f ) );
+	// Put node camera in the middle
+	const float x = viewport.x + viewport.width / 2.0f;
+	const float y = viewport.y + viewport.height / 2.0f;
+	node.set_translation( math::Vec2( x, y ) );
 
-	set_orthographic(
-		abstract.width, abstract.height,
-		abstract.minDepth, abstract.maxDepth );
+	set_orthographic( viewport.width, viewport.height, viewport.minDepth, viewport.maxDepth );
 }
 
 
@@ -59,9 +56,10 @@ void Camera::set_orthographic( float xmag, float ymag, float near, float far )
 }
 
 
-void Camera::set_perspective( const Viewport& viewport, const float yfov )
+void Camera::set_perspective( const VkViewport& viewport, const float yfov )
 {
-	set_perspective( viewport.get_aspect_ratio(), yfov, viewport.get_abstract().maxDepth, viewport.get_abstract().minDepth );
+	const float aspect_ratio = viewport.width / viewport.height;
+	set_perspective( aspect_ratio, yfov, viewport.maxDepth, viewport.minDepth );
 }
 
 

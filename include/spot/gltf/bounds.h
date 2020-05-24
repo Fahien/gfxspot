@@ -46,12 +46,14 @@ struct Shape
 
 	Node* node = nullptr;
 
-	/// @todo This should be derived from node.absolute_transform()
-	/// which recursively go up the tree to get parents' transforms
+	/// @brief This is set by the owner node on updating transforms of the node hierarchy
 	math::Mat4 matrix = math::Mat4::Identity;
 
+	/// @brief Whether the shape is expected to move or not.
+	/// A shape is static by default to achieve better performance.
 	bool dynamic = false;
 
+	/// @brief List of shapes currently colliding with this shape
 	std::vector<const Shape*> collisions;
 
 	std::function<void( const Shape& s, const Shape& o )> start_colliding_with = {};
@@ -80,7 +82,6 @@ struct Rect : public math::Rect, public Handled<Rect>, public Shape
 struct Box : public math::Box, public Handled<Box>, public Shape
 {
 	using math::Box::Box;
-
 };
 
 

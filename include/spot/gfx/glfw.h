@@ -86,6 +86,7 @@ class Window
 		bool a = false;
 		bool s = false;
 		bool d = false;
+		bool enter = false;
 	} key;
 
 	std::function<void( const VkExtent2D& )> on_resize = {};
