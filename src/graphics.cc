@@ -795,13 +795,13 @@ Graphics::Graphics( VkExtent2D extent )
 , swapchain { device }
 , frames { swapchain }
 , render_pass { swapchain }
-, line_vert { device, "shader/line.vert.spv" }
-, line_frag { device, "shader/line.frag.spv" }
+, line_vert { device, "res/shader/line.vert.spv" }
+, line_frag { device, "res/shader/line.frag.spv" }
 , line_layout { device, get_line_bindings() }
-, mesh_vert { device, "shader/mesh.vert.spv" }
-, mesh_frag { device, "shader/mesh.frag.spv" }
-, mesh_no_image_vert { device, "shader/mesh-no-image.vert.spv" }
-, mesh_no_image_frag { device, "shader/mesh-no-image.frag.spv" }
+, mesh_vert { device, "res/shader/mesh.vert.spv" }
+, mesh_frag { device, "res/shader/mesh.frag.spv" }
+, mesh_no_image_vert { device, "res/shader/mesh-no-image.vert.spv" }
+, mesh_no_image_frag { device, "res/shader/mesh-no-image.frag.spv" }
 , mesh_layout { device, get_mesh_bindings() }
 , mesh_no_image_layout { device, get_mesh_no_image_bindings() }
 , gui { device, window }

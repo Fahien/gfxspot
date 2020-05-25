@@ -59,6 +59,9 @@ struct Shape
 	std::function<void( const Shape& s, const Shape& o )> start_colliding_with = {};
 	std::function<void( const Shape& s, const Shape& o )> colliding_with = {};
 	std::function<void( const Shape& s, const Shape& o )> end_colliding_with = {};
+
+	/// @brief Callback which can be set to trigger some action
+	std::function<void()> trigger = {};
 };
 
 

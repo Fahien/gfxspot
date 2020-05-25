@@ -39,8 +39,8 @@ void char_callback( GLFWwindow* window, unsigned int c )
 Gui::Gui( Device& device, Window& w )
     : images { device }
     , window { w }
-    , vert { device, "shader/imgui.vert.spv" }
-    , frag { device, "shader/imgui.frag.spv" }
+    , vert { device, "res/shader/imgui.vert.spv" }
+    , frag { device, "res/shader/imgui.frag.spv" }
     , layout { device, get_imgui_bindings(), get_constants() }
     , sampler { device }
 {
