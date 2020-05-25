@@ -11,7 +11,7 @@ function( compile_shader SHADER_NAME )
 	add_custom_command(
 		TARGET shaders
 		POST_BUILD
-		COMMAND ${GLSLV} ${SHADER_NAME} -V -o ${CMAKE_CURRENT_BINARY_DIR}/res/${SHADER_NAME}.spv
+		COMMAND ${GLSLV} ${SHADER_NAME} -V -o ${CMAKE_CURRENT_BINARY_DIR}/${SHADER_NAME}.spv
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Compiling ${SHADER_NAME}" )
 endfunction()
