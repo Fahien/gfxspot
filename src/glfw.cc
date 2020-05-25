@@ -210,7 +210,7 @@ bool Window::is_alive()
 }
 
 
-void Window::update( const float dt )
+void Window::update()
 {
 	auto current = get_cursor_position();
 
