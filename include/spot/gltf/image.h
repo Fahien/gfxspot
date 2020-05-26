@@ -1,7 +1,8 @@
 #pragma once
 
 #include <string>
-#include "spot/handle.h"
+
+#include <spot/handle.h>
 
 namespace spot::gfx
 {
@@ -10,6 +11,8 @@ namespace spot::gfx
 /// @brief Image data used to create a texture
 struct Image : public Handled<Image>
 {
+	Image( const std::string& path = "" ) : uri { path } {}
+
 	/// Uri of the image
 	std::string uri = "";
 

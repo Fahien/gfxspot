@@ -177,6 +177,7 @@ void Renderer::recreate_pipelines()
 Renderer::Renderer( Graphics& g )
 : gfx { g }
 , pipelines{ create_pipelines( gfx ) }
+, images { g.device }
 , ambient_resources { gfx.swapchain }
 /// @todo Fix this 3
 , gui_resources { pipelines[3], g.gui, uint32_t( gfx.swapchain.images.size() ) }
@@ -315,9 +316,10 @@ NodeResources::NodeResources( const Swapchain& swapchain )
 {}
 
 
-MaterialResources::MaterialResources( const Swapchain& swapchain )
+MaterialResources::MaterialResources( const Swapchain& swapchain, const Handle<ImageView>& view )
 : ubos { create_mat_ubos( swapchain ) }
 , sampler { swapchain.device }
+, texture { view }
 {}
 
 
@@ -441,13 +443,13 @@ DescriptorResources::DescriptorResources(
 		}
 
 		VkDescriptorImageInfo image_info = {};
-		if ( material && material->texture )
+		if ( material && material->texture_handle )
 		{
 			assert( renderer.material_resources.count( material ) && "Material resources were not created" );
 			auto& mat_res = renderer.material_resources.at( material );
 
 			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			image_info.imageView = material->texture->vkhandle;
+			image_info.imageView = mat_res.texture->vkhandle;
 			image_info.sampler = mat_res.sampler.handle;
 
 			VkWriteDescriptorSet write = {};
@@ -538,7 +540,7 @@ uint64_t select_pipeline( const Handle<Material>& material )
 {
 	if ( material )
 	{
-		if ( material->texture )
+		if ( material->texture_handle )
 		{
 			return get_mesh_pipeline();
 		}
@@ -597,8 +599,7 @@ Renderer::add_descriptors( const Node& node, const Handle<Material>& material )
 	// A node may have a mesh with multiple primitives with different materials
 	// And the same material may appear into multiple primitives of different nodes
 	// So we hash combine both node and material
-	/// @todo Use handles to include generations when hash combining
-	auto key = std::hash_combine( node.handle, material.get_index() );
+	auto key = std::hash_combine( node.handle, material->handle );
 	auto it = descriptor_resources.find( key );
 	if ( it != std::end( descriptor_resources ) )
 	{
@@ -611,7 +612,12 @@ Renderer::add_descriptors( const Node& node, const Handle<Material>& material )
 		// Add ubo for this material
 		if ( material_resources.find( material ) == std::end( material_resources ) )
 		{
-			material_resources.emplace( material, gfx.swapchain );
+			Handle<ImageView> view;
+			if ( material->texture_handle )
+			{
+				view = images.load( material->texture_handle->source->uri.c_str() );
+			}
+			material_resources.emplace( material, MaterialResources( gfx.swapchain, view ) );
 		}
 	}
 

@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <spot/file/ifstream.h>
 
-#include "spot/gltf/gltf.h"
+#include "spot/gfx/model.h"
 #include "spot/gltf/node.h"
 
 
@@ -15,7 +15,6 @@ Model::Model( Model&& other )
 , path{ std::move( other.path ) }
 , buffers_cache{ std::move( other.buffers_cache ) }
 , cameras{ std::move( other.cameras ) }
-, images{ std::move( other.images ) }
 , lights{ std::move( other.lights ) }
 , scripts{ std::move( other.scripts ) }
 , scenes{ std::move( other.scenes ) }
@@ -32,7 +31,6 @@ Model& Model::operator=( Model&& other )
 	path          = std::move( other.path );
 	buffers_cache = std::move( other.buffers_cache );
 	cameras       = std::move( other.cameras );
-	std::swap( images, other.images );
 	std::swap( lights, other.lights );
 	scripts       = std::move( other.scripts );
 	scenes        = std::move( other.scenes );
@@ -56,14 +54,13 @@ nlohmann::json read_json( const std::string& path )
 }
 
 
-Model::Model( Device& d, const std::string& path )
-: Model( d, read_json( path ), path )
+Model::Model( const std::string& path )
+: Model( read_json( path ), path )
 {}
 
 
 
-Model::Model( Device& d, const nlohmann::json& j, const std::string& pth )
-: Model( d )
+Model::Model( const nlohmann::json& j, const std::string& pth )
 {
 	// Get the directory path
 	auto index = pth.find_last_of( "/\\" );

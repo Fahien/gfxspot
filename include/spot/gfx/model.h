@@ -4,8 +4,6 @@
 #include <spot/math/shape.h>
 #include <nlohmann/json.hpp>
 
-#include "spot/gfx/images.h"
-
 #include "spot/gltf/buffer.h"
 #include "spot/gltf/camera.h"
 #include "spot/gltf/image.h"
@@ -61,17 +59,17 @@ class Model : public Handled<Model>
 	friend class Node;
 	friend class Scene;
 
-	Model( Device& d ) : images { d } {}
+	Model() = default;
 
 	/// Loads a GLtf model from path
 	/// @param path Gltf file path
 	/// @return A Gltf model
-	Model( Device& d, const std::string& path );
+	Model( const std::string& path );
 
 	/// Constructs a Gltf object
 	/// @param j Json object describing the model
 	/// @param path Gltf file path
-	Model( Device& d, const nlohmann::json& j, const std::string& path = "." );
+	Model( const nlohmann::json& j, const std::string& path = "." );
 
 	/// Move contructs a Gltf object
 	/// @param g Gltf object
@@ -184,11 +182,8 @@ class Model : public Handled<Model>
 	/// List of images
 	Uvec<Image> gltf_images;
 
-	/// Images manager
-	Images images;
-
 	/// List of textures
-	Uvec<GltfTexture> textures;
+	Uvec<Texture> textures;
 
 	/// List of accessors
 	Uvec<Accessor> accessors;

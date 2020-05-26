@@ -6,7 +6,7 @@
 #include <array>
 
 #include <vulkan/vulkan_core.h>
-#include <spot/gltf/gltf.h>
+#include <spot/gfx/model.h>
 
 #include "spot/gfx/device.h"
 #include "spot/gfx/glfw.h"

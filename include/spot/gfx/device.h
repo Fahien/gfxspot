@@ -6,6 +6,7 @@ namespace spot::gfx
 {
 class CommandBuffer;
 class Fence;
+class Device;
 
 class Queue
 {

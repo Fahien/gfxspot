@@ -70,13 +70,16 @@ struct NodeResources
 /// @brief Rendering resources for Materials
 struct MaterialResources
 {
-	MaterialResources( const Swapchain& swapchain );
+	MaterialResources( const Swapchain& swapchain, const Handle<ImageView>& texture = {} );
 
 	/// Material uniform buffer objects for each swapchain image
 	std::vector<Buffer> ubos;
 
 	/// A sampler for the diffuse texture
 	Sampler sampler;
+
+	/// Image view for diffuse texture
+	Handle<ImageView> texture;
 };
 
 
@@ -122,20 +125,23 @@ class Renderer
 
 	Graphics& gfx;
 
-	/// @brief Collection of pipelines
+	/// Collection of pipelines
 	std::vector<GraphicsPipeline> pipelines;
 
-	/// @brief The key is a hash value of the primitive
+	/// The key is a hash value of the primitive
 	/// Meshes with the same primitive will use the same resources
 	std::unordered_map<size_t, PrimitiveResources> primitive_resources;
 
-	/// @brief Key is material handle, value is ubos for material
+	/// Store vulkan images and image views for materials
+	Images images;
+
+	/// Key is material handle, value is ubos for material
 	std::unordered_map<Handle<Material>, MaterialResources> material_resources;
 
-	/// @brief Key is node handle, value is ubos for frames
+	/// Key is node handle, value is ubos for frames
 	std::unordered_map<Handle<Node>, NodeResources> node_resources;
 
-	/// @brief Key is hash of node and material
+	/// Key is hash of node and material
 	/// Value is descriptor sets for this node and material
 	std::unordered_map<size_t, DescriptorResources> descriptor_resources;
 
@@ -143,7 +149,7 @@ class Renderer
 
 	AmbientResources ambient_resources;
 
-	/// @brief Key is hash of node and light
+	/// Key is hash of node and light
 	/// The same light may be attached to multiple nodes
 	/// Value is ubos for frames
 	std::unordered_map<size_t, LightResources> light_resources;

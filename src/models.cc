@@ -1,7 +1,7 @@
 #include "spot/gfx/models.h"
 
 #include <cassert>
-#include <spot/gltf/gltf.h>
+#include <spot/gfx/model.h>
 
 #include "spot/gfx/graphics.h"
 
@@ -30,7 +30,7 @@ Handle<Node> Models::create_text( const std::string& text )
 
 Handle<Model> Graphics::load_model( const std::string& path )
 {
-	auto model = models.push( Model( device, path ) );
+	auto model = models.push( Model( path ) );
 
 	// Load materials
 	for ( auto& material : *model->materials )
@@ -39,7 +39,7 @@ Handle<Model> Graphics::load_model( const std::string& path )
 		{
 			auto& source = material.texture_handle->source;
 			assert( source && "Texture has no source" );
-			material.texture = model->images.load( source->uri.c_str() );
+			//material.texture = model->images.load( source->uri.c_str() );
 		}
 	}
 

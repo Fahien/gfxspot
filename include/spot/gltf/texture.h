@@ -11,9 +11,11 @@ struct GltfSampler;
 struct Image;
 
 
-/// Texture and its sampler
-struct GltfTexture : public Handled<GltfTexture>
+/// @brief Texture and its sampler
+struct Texture : public Handled<Texture>
 {
+	Texture( const Handle<Image>& image = {} ) : source { image } {}
+
 	/// Sampler used by this texture
 	Handle<GltfSampler> sampler;
 

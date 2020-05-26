@@ -34,7 +34,7 @@ set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/animation.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/bounds.cc
-	${CMAKE_CURRENT_SOURCE_DIR}/src/gltf.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/model.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/mesh.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/node.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gui.cc

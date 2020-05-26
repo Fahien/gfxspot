@@ -1,7 +1,7 @@
 #include "spot/gfx/animations.h"
 
 #include <algorithm>
-#include <spot/gltf/gltf.h>
+#include <spot/gfx/model.h>
 #include <spot/gltf/node.h>
 
 

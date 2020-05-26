@@ -5,7 +5,7 @@
 
 #include <spot/math/math.h>
 #include <spot/math/shape.h>
-#include <spot/gltf/gltf.h>
+#include <spot/gfx/model.h>
 
 #include "spot/gfx/images.h"
 

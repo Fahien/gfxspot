@@ -1,6 +1,6 @@
 #include "spot/gltf/mesh.h"
 
-#include "spot/gltf/gltf.h"
+#include "spot/gfx/model.h"
 #include "spot/gltf/node.h"
 
 

@@ -2,22 +2,20 @@
 
 #include <string>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 
 #include "spot/handle.h"
 #include "spot/gltf/color.h"
 
 namespace spot::gfx
 {
-struct GltfTexture;
-class ImageView;
+struct Texture;
 
 /// Material appearance of a primitive
 struct Material : public Handled<Material>
 {
 	Material() = default;
 	Material( const Color& c ) : pbr { c } {}
-	Material( const Handle<ImageView>& t ) : texture { t } {}
+	Material( const Handle<Texture>& t ) : texture_handle { t } {}
 
 	/// Metallic-Roughness Material
 	struct alignas(16) PbrMetallicRoughness
@@ -41,9 +39,7 @@ struct Material : public Handled<Material>
 	PbrMetallicRoughness pbr;
 
 	/// Base color texture
-	Handle<GltfTexture> texture_handle = {};
-
-	Handle<ImageView> texture = {};
+	Handle<Texture> texture_handle = {};
 };
 
 
