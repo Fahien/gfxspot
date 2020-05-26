@@ -511,7 +511,7 @@ Frames::Frames( Swapchain& swapchain )
 		color_images.emplace_back( swapchain.images[i] );
 		color_views.emplace_back( swapchain.views[i] );
 
-		auto depth = Image( swapchain.device, swapchain.extent, VK_FORMAT_D32_SFLOAT );
+		auto depth = VulkanImage( swapchain.device, swapchain.extent, VK_FORMAT_D32_SFLOAT );
 		depth.transition( VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
 		auto view = ImageView( depth );
 		depth_images.emplace_back( std::move( depth ) );

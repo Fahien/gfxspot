@@ -34,7 +34,7 @@ VkImageAspectFlags get_aspect_mask( const VkImageLayout layout )
 	return VK_IMAGE_ASPECT_COLOR_BIT;
 }
 
-void CommandBuffer::transition( Image& image, const VkImageLayout layout )
+void CommandBuffer::transition( VulkanImage& image, const VkImageLayout layout )
 {
 	VkImageMemoryBarrier barrier = {};
 
@@ -90,7 +90,7 @@ void CommandBuffer::transition( Image& image, const VkImageLayout layout )
 }
 
 
-void CommandBuffer::copy( const Buffer& from_buffer, const Image& dest_image )
+void CommandBuffer::copy( const Buffer& from_buffer, const VulkanImage& dest_image )
 {
 	VkBufferImageCopy region = {};
 	region.bufferOffset = 0;

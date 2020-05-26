@@ -30,12 +30,12 @@ VkFormat get_format( Png& png )
 }
 
 
-Image::Image( Device& d, Png& png )
-: Image { d, { png.width, png.height }, get_format( png ) }
+VulkanImage::VulkanImage( Device& d, Png& png )
+: VulkanImage { d, { png.width, png.height }, get_format( png ) }
 {}
 
 
-Image::Image( Device& d, const VkExtent2D ext, const VkFormat fmt )
+VulkanImage::VulkanImage( Device& d, const VkExtent2D ext, const VkFormat fmt )
 : device { d }
 , extent { ext.width, ext.height, 1 }
 , format { fmt }
@@ -103,7 +103,7 @@ Image::Image( Device& d, const VkExtent2D ext, const VkFormat fmt )
 }
 
 
-Image::~Image()
+VulkanImage::~VulkanImage()
 {
 	if ( vkhandle != VK_NULL_HANDLE )
 	{
@@ -113,7 +113,7 @@ Image::~Image()
 }
 
 
-Image::Image( Image&& other )
+VulkanImage::VulkanImage( VulkanImage&& other )
 : device { other.device }
 , extent { other.extent }
 , format { other.format }
@@ -127,7 +127,7 @@ Image::Image( Image&& other )
 }
 
 
-Image& Image::operator=( Image&& other )
+VulkanImage& VulkanImage::operator=( VulkanImage&& other )
 {
 	assert( device.handle == other.device.handle && "Cannot move images from different device" );
 	std::swap( extent, other.extent );
@@ -141,7 +141,7 @@ Image& Image::operator=( Image&& other )
 }
 
 
-void Image::transition( const VkImageLayout new_layout )
+void VulkanImage::transition( const VkImageLayout new_layout )
 {
 	auto cmds = command_pool.allocate_command_buffers();
 	auto& cmd = cmds[0];
@@ -157,7 +157,7 @@ void Image::transition( const VkImageLayout new_layout )
 }
 
 
-void Image::upload( Buffer& buffer )
+void VulkanImage::upload( Buffer& buffer )
 {
 	auto cmds = command_pool.allocate_command_buffers();
 	auto& cmd = cmds[0];
@@ -177,7 +177,7 @@ void Image::upload( Buffer& buffer )
 }
 
 
-VkImageAspectFlags get_aspect( const Image& image )
+VkImageAspectFlags get_aspect( const VulkanImage& image )
 {
 	if ( image.format == VK_FORMAT_D32_SFLOAT )
 	{
@@ -190,14 +190,14 @@ VkImageAspectFlags get_aspect( const Image& image )
 }
 
 
-ImageView::ImageView( const Handle<Image>& img )
+ImageView::ImageView( const Handle<VulkanImage>& img )
 : ImageView( *img )
 {
 	image = img;
 }
 
 
-ImageView::ImageView( const Image& image )
+ImageView::ImageView( const VulkanImage& image )
 : device { image.device }
 {
 	VkImageViewCreateInfo info = {};
@@ -321,7 +321,7 @@ Handle<ImageView> Images::load( const char* name, const uint8_t* mem, size_t siz
 		staging_buffer.unmap();
 
 		image_paths.emplace_back( name );
-		auto image = images.push( Image( device, extent, VK_FORMAT_R8G8B8A8_UNORM ) );
+		auto image = images.push( VulkanImage( device, extent, VK_FORMAT_R8G8B8A8_UNORM ) );
 		image->upload( staging_buffer );
 		ret = views.push( ImageView( image ) );
 	}
@@ -353,7 +353,7 @@ Handle<ImageView> Images::load( const char* name, std::vector<uint8_t>& mem )
 		staging_buffer.unmap();
 
 		image_paths.emplace_back( name );
-		auto image = images.push( Image( device, png ) );
+		auto image = images.push( VulkanImage( device, png ) );
 		image->upload( staging_buffer );
 		ret = views.push( ImageView( image ) );
 	}
@@ -385,7 +385,7 @@ Handle<ImageView> Images::load( const char* path )
 		staging_buffer.unmap();
 
 		image_paths.emplace_back( path );
-		auto image = images.push( Image( device, png ) );
+		auto image = images.push( VulkanImage( device, png ) );
 		image->upload( staging_buffer );
 		ret = views.push( ImageView( image ) );
 	}

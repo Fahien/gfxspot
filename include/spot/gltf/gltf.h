@@ -182,7 +182,7 @@ class Model : public Handled<Model>
 	Uvec<GltfSampler> samplers;
 
 	/// List of images
-	Uvec<GltfImage> gltf_images;
+	Uvec<Image> gltf_images;
 
 	/// Images manager
 	Images images;

@@ -8,7 +8,7 @@ namespace spot::gfx
 {
 
 struct GltfSampler;
-struct GltfImage;
+struct Image;
 
 
 /// Texture and its sampler
@@ -18,7 +18,7 @@ struct GltfTexture : public Handled<GltfTexture>
 	Handle<GltfSampler> sampler;
 
 	/// Image used by this texture
-	Handle<GltfImage> source;
+	Handle<Image> source;
 
 	/// User-defined name of this object
 	std::string name = "Unknown";

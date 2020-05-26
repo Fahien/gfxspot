@@ -15,16 +15,16 @@ class Device;
 class Png;
 class Buffer;
 
-class Image : public Handled<Image>
+class VulkanImage : public Handled<VulkanImage>
 {
   public:
 	/// @param p PNG file to load into the Vulkan image
-	Image( Device& d, Png& p );
-	Image( Device& d, VkExtent2D e, VkFormat f );
-	~Image();
+	VulkanImage( Device& d, Png& p );
+	VulkanImage( Device& d, VkExtent2D e, VkFormat f );
+	~VulkanImage();
 
-	Image( Image&& o );
-	Image& operator=( Image&& o );
+	VulkanImage( VulkanImage&& o );
+	VulkanImage& operator=( VulkanImage&& o );
 
 	void transition( const VkImageLayout l );
 	void upload( Buffer& b );
@@ -44,15 +44,15 @@ class Image : public Handled<Image>
 class ImageView : public Handled<ImageView>
 {
   public:
-	ImageView( const Image& i );
-	ImageView( const Handle<Image>& i );
+	ImageView( const VulkanImage& i );
+	ImageView( const Handle<VulkanImage>& i );
 	~ImageView();
 
 	ImageView( ImageView&& o );
 	ImageView& operator=( ImageView&& o );
 
 	Device& device;
-	Handle<Image> image = {};
+	Handle<VulkanImage> image = {};
 
 	VkImageView vkhandle = VK_NULL_HANDLE;
 };
@@ -72,7 +72,7 @@ class Sampler
 };
 
 
-/// @brief Image repository
+/// @brief VulkanImage repository
 class Images
 {
   public:
@@ -95,7 +95,7 @@ class Images
 
 	/// Map of paths and Vulkan images and image views
 	std::vector<std::string> image_paths;
-	Uvec<Image> images;
+	Uvec<VulkanImage> images;
 	Uvec<ImageView> views;
 
 	Device& device;

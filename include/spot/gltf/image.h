@@ -8,7 +8,7 @@ namespace spot::gfx
 
 
 /// @brief Image data used to create a texture
-struct GltfImage : public Handled<GltfImage>
+struct Image : public Handled<Image>
 {
 	/// Uri of the image
 	std::string uri = "";

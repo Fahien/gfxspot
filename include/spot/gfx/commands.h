@@ -15,7 +15,7 @@ class Buffer;
 class DynamicBuffer;
 class GraphicsPipeline;
 class PipelineLayout;
-class Image;
+class VulkanImage;
 
 class CommandBuffer
 {
@@ -24,8 +24,8 @@ class CommandBuffer
 
 	void begin( VkCommandBufferUsageFlags usage_flags = 0 );
 
-	void transition( Image& image, VkImageLayout layout );
-	void copy( const Buffer& from, const Image& dest );
+	void transition( VulkanImage& image, VkImageLayout layout );
+	void copy( const Buffer& from, const VulkanImage& dest );
 
 	void set_viewport( const VkViewport& vp );
 	void set_scissor( const VkRect2D& scissor );

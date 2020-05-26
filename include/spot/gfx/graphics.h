@@ -130,7 +130,7 @@ class Frames
 	std::vector<VkImage> color_images;
 	std::vector<VkImageView> color_views;
 
-	std::vector<Image> depth_images;
+	std::vector<VulkanImage> depth_images;
 	std::vector<ImageView> depth_views;
 };
 
