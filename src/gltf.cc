@@ -10,7 +10,7 @@ namespace spot::gfx
 {
 
 
-Gltf::Gltf( Gltf&& other )
+Model::Model( Model&& other )
 : asset{ std::move( other.asset ) }
 , path{ std::move( other.path ) }
 , buffers_cache{ std::move( other.buffers_cache ) }
@@ -26,7 +26,7 @@ Gltf::Gltf( Gltf&& other )
 }
 
 
-Gltf& Gltf::operator=( Gltf&& other )
+Model& Model::operator=( Model&& other )
 {
 	asset         = std::move( other.asset );
 	path          = std::move( other.path );
@@ -56,14 +56,14 @@ nlohmann::json read_json( const std::string& path )
 }
 
 
-Gltf::Gltf( Device& d, const std::string& path )
-: Gltf( d, read_json( path ), path )
+Model::Model( Device& d, const std::string& path )
+: Model( d, read_json( path ), path )
 {}
 
 
 
-Gltf::Gltf( Device& d, const nlohmann::json& j, const std::string& pth )
-: Gltf( d )
+Model::Model( Device& d, const nlohmann::json& j, const std::string& pth )
+: Model( d )
 {
 	// Get the directory path
 	auto index = pth.find_last_of( "/\\" );
@@ -181,7 +181,7 @@ Gltf::Gltf( Device& d, const nlohmann::json& j, const std::string& pth )
 }
 
 
-void Gltf::init_asset( const nlohmann::json& j )
+void Model::init_asset( const nlohmann::json& j )
 {
 	// Version (mandatory)
 	asset.version = j["version"].get<std::string>();
@@ -200,7 +200,7 @@ void Gltf::init_asset( const nlohmann::json& j )
 }
 
 
-void Gltf::init_buffers( const nlohmann::json& j )
+void Model::init_buffers( const nlohmann::json& j )
 {
 	for ( const auto& b : j )
 	{
@@ -224,7 +224,7 @@ void Gltf::init_buffers( const nlohmann::json& j )
 }
 
 
-void Gltf::init_buffer_views( const nlohmann::json& j )
+void Model::init_buffer_views( const nlohmann::json& j )
 {
 	for ( const auto& v : j )
 	{
@@ -261,7 +261,7 @@ void Gltf::init_buffer_views( const nlohmann::json& j )
 }
 
 
-void Gltf::init_cameras( const nlohmann::json& j )
+void Model::init_cameras( const nlohmann::json& j )
 {
 	for ( const auto& c : j )
 	{
@@ -368,7 +368,7 @@ std::string to_string<Primitive::Mode>( const Primitive::Mode& m )
 	}
 }
 
-void Gltf::init_samplers( const nlohmann::json& j )
+void Model::init_samplers( const nlohmann::json& j )
 {
 	for ( const auto& s : j )
 	{
@@ -409,7 +409,7 @@ void Gltf::init_samplers( const nlohmann::json& j )
 }
 
 
-void Gltf::init_images( const nlohmann::json& j )
+void Model::init_images( const nlohmann::json& j )
 {
 	for ( const auto& i : j )
 	{
@@ -438,7 +438,7 @@ void Gltf::init_images( const nlohmann::json& j )
 }
 
 
-void Gltf::init_textures( const nlohmann::json& j )
+void Model::init_textures( const nlohmann::json& j )
 {
 	for ( const auto& t : j )
 	{
@@ -597,7 +597,7 @@ size_t Accessor::get_stride() const
 }
 
 
-void Gltf::init_accessors( const nlohmann::json& j )
+void Model::init_accessors( const nlohmann::json& j )
 {
 	for ( const auto& a : j )
 	{
@@ -646,7 +646,7 @@ void Gltf::init_accessors( const nlohmann::json& j )
 }
 
 
-void Gltf::init_materials( const nlohmann::json& j )
+void Model::init_materials( const nlohmann::json& j )
 {
 	for ( const auto& m : j )
 	{
@@ -778,7 +778,7 @@ std::string to_string<Primitive::Semantic>( const Primitive::Semantic& s )
 }
 
 
-void Gltf::init_meshes( const nlohmann::json& j )
+void Model::init_meshes( const nlohmann::json& j )
 {
 	for ( const auto& m : j )
 	{
@@ -827,7 +827,7 @@ void Gltf::init_meshes( const nlohmann::json& j )
 }
 
 
-void Gltf::init_lights( const nlohmann::json& j )
+void Model::init_lights( const nlohmann::json& j )
 {
 	for ( const auto& l : j )
 	{
@@ -896,7 +896,7 @@ void Gltf::init_lights( const nlohmann::json& j )
 }
 
 
-void Gltf::init_nodes( const nlohmann::json& j )
+void Model::init_nodes( const nlohmann::json& j )
 {
 	size_t i = 0;
 
@@ -1051,7 +1051,7 @@ Animation::Target::Path from_string<Animation::Target::Path>( const std::string&
 }
 
 
-void Gltf::init_animations( const nlohmann::json& j )
+void Model::init_animations( const nlohmann::json& j )
 {
 	for ( auto& a : j )
 	{
@@ -1125,7 +1125,7 @@ Bounds::Type from_string<Bounds::Type>( const std::string& b )
 }
 
 
-void Gltf::init_shapes( const nlohmann::json& ss )
+void Model::init_shapes( const nlohmann::json& ss )
 {
 	for ( auto& s : ss )
 	{
@@ -1156,7 +1156,7 @@ void Gltf::init_shapes( const nlohmann::json& ss )
 }
 
 
-void Gltf::init_scripts( const nlohmann::json& ss )
+void Model::init_scripts( const nlohmann::json& ss )
 {
 	// Init scripts
 	Script script;
@@ -1179,7 +1179,7 @@ void Gltf::init_scripts( const nlohmann::json& ss )
 }
 
 
-void Gltf::load_nodes()
+void Model::load_nodes()
 {
 	for ( auto& node : *nodes )
 	{
@@ -1204,7 +1204,7 @@ void Gltf::load_nodes()
 }
 
 
-Handle<Node> Gltf::create_node( const Handle<Node>& parent )
+Handle<Node> Model::create_node( const Handle<Node>& parent )
 {
 	auto node = nodes.push();
 	parent->add_child( node );
@@ -1212,7 +1212,7 @@ Handle<Node> Gltf::create_node( const Handle<Node>& parent )
 }
 
 
-Accessor* Gltf::get_accessor( const size_t accessor )
+Accessor* Model::get_accessor( const size_t accessor )
 {
 	if ( accessor < accessors->size() )
 	{
@@ -1222,7 +1222,7 @@ Accessor* Gltf::get_accessor( const size_t accessor )
 }
 
 
-void Gltf::init_scenes( const nlohmann::json& j )
+void Model::init_scenes( const nlohmann::json& j )
 {
 	for ( const auto& s : j )
 	{

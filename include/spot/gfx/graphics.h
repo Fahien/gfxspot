@@ -178,7 +178,7 @@ class Graphics
 	void draw( const Node& node, const Mesh& mesh );
 	void draw( const Node& node, const Primitive& prim );
 	void draw( const Node& node );
-	void draw( const Gltf& model );
+	void draw( const Model& model );
 	void draw_gui();
 
 	Glfw glfw;
@@ -233,11 +233,11 @@ class Graphics
 
 	/// @brief Loads a gltf file
 	/// @return A handle to the gltf model
-	Handle<Gltf> load_model( const std::string& path );
+	Handle<Model> load_model( const std::string& path );
 
 	Animations animations;
 
-	Uvec<Gltf> models;
+	Uvec<Model> models;
 
 	/// @todo Move into a scene?
 	Ambient ambient = {};

@@ -10,7 +10,7 @@
 namespace spot::gfx
 {
 
-Handle<Node> create_line( const Handle<Gltf>& model, gfx::Dot a, gfx::Dot b )
+Handle<Node> create_line( const Handle<Model>& model, gfx::Dot a, gfx::Dot b )
 {
 	auto node = model->nodes.push();
 
@@ -29,7 +29,7 @@ Handle<Node> create_line( const Handle<Gltf>& model, gfx::Dot a, gfx::Dot b )
 }
 
 
-Handle<Node> create_lena( const Handle<Gltf>& model )
+Handle<Node> create_lena( const Handle<Model>& model )
 {
 	return model->nodes.push( Node(
 		model->meshes.push( Mesh::create_quad(
@@ -58,14 +58,14 @@ int main( const int argc, const char** argv )
 
 	auto gfx = gfx::Graphics();
 
-	Handle<gfx::Gltf> loaded_model;
+	Handle<gfx::Model> loaded_model;
 	if ( argc > 1 )
 	{
 		auto path = std::string( argv[1] );
 		loaded_model = gfx.load_model( path );
 	}
 
-	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
+	auto model = gfx.models.push( gfx::Model( gfx.device ) );
 	auto x = create_line( model,
 		gfx::Dot( math::Vec3( 0.0f, 0.0f, 0.0f ), gfx::Color( 1.0f, 0.0f, 0.0f, 1.0f) ),
 		gfx::Dot( math::Vec3( 1.0f, 0.0f, 0.0f ), gfx::Color( 1.0f, 0.0f, 0.0f, 1.0f ) ) );

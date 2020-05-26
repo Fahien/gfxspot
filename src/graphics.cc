@@ -1042,7 +1042,7 @@ void Graphics::draw( const Node& node )
 }
 
 
-void Graphics::draw( const Gltf& model )
+void Graphics::draw( const Model& model )
 {
 	if ( !model.scene )
 	{

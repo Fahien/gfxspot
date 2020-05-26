@@ -10,7 +10,7 @@ const float spacing = unit / 16.0f;
 
 struct SolidMaterials
 {
-	SolidMaterials( const Handle<Gltf>& model );
+	SolidMaterials( const Handle<Model>& model );
 
 	Handle<Material> red;
 	Handle<Material> green;
@@ -18,14 +18,14 @@ struct SolidMaterials
 };
 
 
-SolidMaterials::SolidMaterials( const Handle<Gltf>& model )
+SolidMaterials::SolidMaterials( const Handle<Model>& model )
 : red   { model->materials.push( Material( Color::Red  ) ) }
 , green { model->materials.push( Material( Color::Green ) ) }
 , blue  { model->materials.push( Material( Color::Blue  ) ) }
 {}
 
 
-Handle<Mesh> create_mesh( const Handle<Material>& material, const Handle<Gltf>& model )
+Handle<Mesh> create_mesh( const Handle<Material>& material, const Handle<Model>& model )
 {
 	auto hs = unit / 2.0f - spacing / 2.0f;
 	return model->meshes.push(
@@ -40,7 +40,7 @@ Handle<Mesh> create_mesh( const Handle<Material>& material, const Handle<Gltf>& 
 
 struct SolidMeshes
 {
-	SolidMeshes( const Handle<Gltf>& model );
+	SolidMeshes( const Handle<Model>& model );
 
 	const SolidMaterials materials;
 
@@ -50,7 +50,7 @@ struct SolidMeshes
 };
 
 
-SolidMeshes::SolidMeshes( const Handle<Gltf>& model )
+SolidMeshes::SolidMeshes( const Handle<Model>& model )
 : materials { model }
 , red { create_mesh( materials.red, model ) }
 , green { create_mesh( materials.green, model ) }
@@ -59,7 +59,7 @@ SolidMeshes::SolidMeshes( const Handle<Gltf>& model )
 
 
 // 2x2 block
-Handle<Node> create_tetris_el( const Handle<Mesh>& mesh, const Handle<Gltf>& model )
+Handle<Node> create_tetris_el( const Handle<Mesh>& mesh, const Handle<Model>& model )
 {
 	auto block = model->nodes.push();
 	block->translation.y = 2.0;
@@ -88,7 +88,7 @@ int main()
 	using namespace spot;
 
 	auto gfx = gfx::Graphics();
-	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
+	auto model = gfx.models.push( gfx::Model( gfx.device ) );
 	auto meshes = gfx::SolidMeshes( model );
 
 	auto el = create_tetris_el( meshes.green, model );

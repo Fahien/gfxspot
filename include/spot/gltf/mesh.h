@@ -12,7 +12,6 @@
 
 namespace spot::gfx
 {
-class Gltf;
 struct Accessor;
 struct Material;
 class Mesh;

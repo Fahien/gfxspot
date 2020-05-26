@@ -8,7 +8,7 @@
 
 namespace spot::gfx
 {
-class Gltf;
+class Model;
 class GltfCamera;
 class Mesh;
 class Light;
@@ -118,7 +118,7 @@ class Node : public Handled<Node>
 	/// This node's scripts
 	std::vector<Script*> scripts;
 
-	friend class Gltf;
+	friend class Model;
 };
 
 

@@ -14,7 +14,7 @@ const float spacing = unit / 16.0f;
 
 struct SolidMaterials
 {
-	SolidMaterials( const Handle<Gltf>& model );
+	SolidMaterials( const Handle<Model>& model );
 
 	const Handle<Material> black;
 	const Handle<Material> white;
@@ -24,7 +24,7 @@ struct SolidMaterials
 };
 
 
-SolidMaterials::SolidMaterials( const Handle<Gltf>& model )
+SolidMaterials::SolidMaterials( const Handle<Model>& model )
 : white { model->materials.push( Material( Color::White ) ) }
 , black { model->materials.push( Material( Color::Black ) ) }
 , red   { model->materials.push( Material( Color::Red  ) ) }
@@ -33,7 +33,7 @@ SolidMaterials::SolidMaterials( const Handle<Gltf>& model )
 {}
 
 
-Handle<Mesh> create_mesh( const Handle<Material>& material, const Handle<Gltf>& model )
+Handle<Mesh> create_mesh( const Handle<Material>& material, const Handle<Model>& model )
 {
 	auto hs = unit / 2.0f - spacing / 2.0f;
 	return model->meshes.push(
@@ -48,7 +48,7 @@ Handle<Mesh> create_mesh( const Handle<Material>& material, const Handle<Gltf>& 
 
 struct SolidMeshes
 {
-	SolidMeshes( const Handle<Gltf>& model );
+	SolidMeshes( const Handle<Model>& model );
 
 	const SolidMaterials materials;
 
@@ -60,7 +60,7 @@ struct SolidMeshes
 };
 
 
-SolidMeshes::SolidMeshes( const Handle<Gltf>& model )
+SolidMeshes::SolidMeshes( const Handle<Model>& model )
 : materials { model }
 , black { create_mesh( materials.black, model ) }
 , white { create_mesh( materials.white, model ) }
@@ -71,7 +71,7 @@ SolidMeshes::SolidMeshes( const Handle<Gltf>& model )
 
 
 // 2x2 block
-Handle<Node> create_chess_board( const Handle<Gltf>& model )
+Handle<Node> create_chess_board( const Handle<Model>& model )
 {
 	auto block = model->nodes.push();
 
@@ -114,7 +114,7 @@ int main()
 	using namespace spot;
 
 	auto gfx = gfx::Graphics();
-	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
+	auto model = gfx.models.push( gfx::Model( gfx.device ) );
 
 	auto meshes = gfx::SolidMeshes( model );
 

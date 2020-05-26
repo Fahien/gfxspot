@@ -17,7 +17,7 @@ struct Colors
 };
 
 
-Colors create_colors( Handle<Gltf>& model )
+Colors create_colors( Handle<Model>& model )
 {
 	Colors ret;
 
@@ -53,7 +53,7 @@ const float width = screen_width / 128.0f;
 const float step = width * 2.0f;
 
 
-Handle<Node> create_lines( const Colors& colors, const Handle<Gltf>& model )
+Handle<Node> create_lines( const Colors& colors, const Handle<Model>& model )
 {
 	auto root = model->nodes.push();
 
@@ -114,7 +114,7 @@ Handle<Node> create_lines( const Colors& colors, const Handle<Gltf>& model )
 }
 
 
-Handle<Node> create_red_lines( const Colors& colors, const Handle<Gltf>& model )
+Handle<Node> create_red_lines( const Colors& colors, const Handle<Model>& model )
 {
 	auto root = model->nodes.push();
 
@@ -157,7 +157,7 @@ int main()
 	using namespace spot;
 
 	auto gfx = gfx::Graphics();
-	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
+	auto model = gfx.models.push( gfx::Model( gfx.device ) );
 
 	gfx::Colors colors = create_colors( model );
 

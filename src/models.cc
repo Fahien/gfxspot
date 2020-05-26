@@ -28,9 +28,9 @@ Handle<Node> Models::create_text( const std::string& text )
 }
 
 
-Handle<Gltf> Graphics::load_model( const std::string& path )
+Handle<Model> Graphics::load_model( const std::string& path )
 {
-	auto model = models.push( Gltf( device, path ) );
+	auto model = models.push( Model( device, path ) );
 
 	// Load materials
 	for ( auto& material : *model->materials )

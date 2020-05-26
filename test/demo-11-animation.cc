@@ -7,7 +7,7 @@ int main( const int argc, const char** argv )
 {
 	using namespace spot;
 	gfx::Graphics gfx;
-	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
+	auto model = gfx.models.push( gfx::Model( gfx.device ) );
 
 	auto quad = model->nodes.push( gfx::Node(
 			model->meshes.push( gfx::Mesh::create_quad(

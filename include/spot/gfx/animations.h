@@ -1,16 +1,15 @@
 #pragma once
 
-#include <spot/handle.h>
 
 namespace spot::gfx
 {
 
-class Gltf;
+class Model;
 
 class Animations
 {
   public:
-	void update( float dt, const Handle<Gltf>& model );
+	void update( float dt, const Model& model );
 
 	bool pause = false;
 };

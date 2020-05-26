@@ -25,7 +25,7 @@ class Models
 
 	/// @brief Loads a gltf file
 	/// @return A handle to the gltf model
-	Handle<Gltf> load( const std::string& path );
+	Handle<Model> load( const std::string& path );
 
 	/// @return A node index for the text
 	Handle<Node> create_text( const std::string& text );

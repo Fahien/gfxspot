@@ -11,7 +11,7 @@ namespace spot::gfx
 {
 
 
-class Gltf;
+class Model;
 class Node;
 
 
@@ -76,7 +76,7 @@ struct Animation : public Handled<Animation>
 		Target target;
 	};
 
-	Animation( const Handle<Gltf>& m ) : model { m } {}
+	Animation( const Handle<Model>& m ) : model { m } {}
 
 	/// @return The max keyframe time of the animation
 	float find_max_time();
@@ -102,7 +102,7 @@ struct Animation : public Handled<Animation>
 	/// @brief Adds a new rotation to this animation from a to b in time seconds
 	void add_rotation( const Handle<Node>& node, const float time, const math::Quat& a, const math::Quat& b );
 
-	Handle<Gltf> model = {};
+	Handle<Model> model = {};
 
 	/// Name of the animation
 	std::string name = "Unknown";

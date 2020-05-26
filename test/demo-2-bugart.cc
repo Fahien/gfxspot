@@ -16,7 +16,7 @@ void update( const double dt, gfx::MvpUbo& ubo )
 }
 
 
-Handle<Mesh> create_bugart( const Handle<Gltf>& model )
+Handle<Mesh> create_bugart( const Handle<Model>& model )
 {
 	using namespace spot;
 
@@ -132,7 +132,7 @@ int main()
 	using namespace spot;
 
 	auto gfx = gfx::Graphics();
-	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
+	auto model = gfx.models.push( gfx::Model( gfx.device ) );
 
 	auto bugart = create_bugart( model );
 

@@ -23,13 +23,13 @@ namespace spot::gfx
 {
 
 class Images;
-class Gltf;
+class Model;
 
-/// Root nodes of a scene
+/// @brief Root nodes of a scene
 struct Scene
 {
-	/// Gltf owning the scene
-	Gltf* model = nullptr;
+	/// Model owning the scene
+	Model* model = nullptr;
 	
 	/// Indices of each root node
 	std::vector<Handle<Node>> nodes;
@@ -43,8 +43,8 @@ struct Scene
 };
 
 
-/// GL Transmission Format
-class Gltf : public Handled<Gltf>
+/// @brief GL Transmission Format
+class Model : public Handled<Model>
 {
   public:
 	/// Metadata about the glTF asset
@@ -61,31 +61,31 @@ class Gltf : public Handled<Gltf>
 	friend class Node;
 	friend class Scene;
 
-	Gltf( Device& d ) : images { d } {}
+	Model( Device& d ) : images { d } {}
 
 	/// Loads a GLtf model from path
 	/// @param path Gltf file path
 	/// @return A Gltf model
-	Gltf( Device& d, const std::string& path );
+	Model( Device& d, const std::string& path );
 
 	/// Constructs a Gltf object
 	/// @param j Json object describing the model
 	/// @param path Gltf file path
-	Gltf( Device& d, const nlohmann::json& j, const std::string& path = "." );
+	Model( Device& d, const nlohmann::json& j, const std::string& path = "." );
 
 	/// Move contructs a Gltf object
 	/// @param g Gltf object
-	Gltf( Gltf&& g );
+	Model( Model&& g );
 
 	/// Move assign a Gltf object
 	/// @param g Gltf object
-	Gltf& operator=( Gltf&& g );
+	Model& operator=( Model&& g );
 
 	/// Delete copy constructor
-	Gltf( const Gltf& ) = delete;
+	Model( const Model& ) = delete;
 
 	/// Delete copy assignment
-	Gltf& operator=( const Gltf& ) = delete;
+	Model& operator=( const Model& ) = delete;
 
 	/// @return A new child node of the provided parent
 	Handle<Node> create_node( const Handle<Node>& parent );

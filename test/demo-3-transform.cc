@@ -23,7 +23,7 @@ void update( const double dt, Handle<Node>& node )
 }
 
 
-Handle<Node> create_card( const Handle<Gltf>& model )
+Handle<Node> create_card( const Handle<Model>& model )
 {
 	std::vector<Vertex> vertices = {
 		Vertex(
@@ -71,7 +71,7 @@ int main()
 
 	auto gfx = gfx::Graphics();
 
-	auto card = create_card( gfx.models.push( gfx::Gltf( gfx.device ) ) );
+	auto card = create_card( gfx.models.push( gfx::Model( gfx.device ) ) );
 
 	gfx.window.on_resize = [&gfx]( const VkExtent2D& extent ) { gfx.viewport.set_extent( extent ); };
 	gfx.camera.set_perspective( gfx.viewport );

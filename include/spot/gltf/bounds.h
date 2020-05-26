@@ -11,7 +11,6 @@
 namespace spot::gfx
 {
 
-class Gltf;
 class Node;
 struct Rect;
 

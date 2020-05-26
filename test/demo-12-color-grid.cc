@@ -9,11 +9,11 @@ constexpr size_t height = width;
 namespace spot::gfx
 {
 
-Handle<Node> create_grid( const Handle<Gltf>& model )
+Handle<Node> create_grid( Model& model )
 {
 	using namespace spot::math;
 
-	auto grid = model->nodes.push();
+	auto grid = model.nodes.push();
 
 	float step = width / 6.0f;
 
@@ -58,14 +58,14 @@ Handle<Node> create_grid( const Handle<Gltf>& model )
 			color.b += j / float( height );
 			color.g += j / float( height );
 
-			auto material = model->materials.push( Material( color ) );
-			auto mesh = model->meshes.push(
+			auto material = model.materials.push( Material( color ) );
+			auto mesh = model.meshes.push(
 				Mesh::create_rect(
 					Rect( Vec2::Zero, Vec2::One ),
 					material
 				)
 			);
-			auto cell = model->nodes.push( Node( mesh ) );
+			auto cell = model.nodes.push( Node( mesh ) );
 			cell->translation.x += i;
 			cell->translation.y += j;
 			grid->add_child( cell );
@@ -89,7 +89,7 @@ int main()
 	gfx.viewport.set_extent( width, height );
 	gfx.viewport.set_offset( Vec2::Zero );
 
-	auto grid = create_grid( gfx.models.push( gfx::Gltf( gfx.device ) ) );
+	auto grid = create_grid( *gfx.models.push( gfx::Model( gfx.device ) ) );
 
 	while ( gfx.window.is_alive() )
 	{
@@ -98,7 +98,7 @@ int main()
 
 		if ( gfx.render_begin() )
 		{
-			gfx.draw( grid );
+			gfx.draw( *grid );
 			gfx.render_end();
 		}
 	}

@@ -24,7 +24,7 @@ int main()
 	using namespace spot;
 
 	auto gfx = gfx::Graphics();
-	auto model = gfx.models.push( gfx::Gltf( gfx.device ) );
+	auto model = gfx.models.push( gfx::Model( gfx.device ) );
 
 	auto square = model->nodes.push( gfx::Node(
 		model->meshes.push( gfx::Mesh::create_rect(
