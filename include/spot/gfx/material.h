@@ -15,7 +15,7 @@ struct Material : public Handled<Material>
 {
 	Material() = default;
 	Material( const Color& c ) : pbr { c } {}
-	Material( const Handle<Texture>& t ) : texture_handle { t } {}
+	Material( const Handle<Texture>& t ) : texture { t } {}
 
 	/// Metallic-Roughness Material
 	struct alignas(16) PbrMetallicRoughness
@@ -39,7 +39,7 @@ struct Material : public Handled<Material>
 	PbrMetallicRoughness pbr;
 
 	/// Base color texture
-	Handle<Texture> texture_handle = {};
+	Handle<Texture> texture = {};
 };
 
 

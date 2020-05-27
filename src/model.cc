@@ -410,7 +410,7 @@ void Model::init_images( const nlohmann::json& j )
 {
 	for ( const auto& i : j )
 	{
-		auto image = gltf_images.push();
+		auto image = images.push();
 
 		if ( i.count( "uri" ) )
 		{
@@ -452,7 +452,7 @@ void Model::init_textures( const nlohmann::json& j )
 		if ( t.count( "source" ) )
 		{
 			auto index = t["source"].get<int32_t>();
-			texture->source = gltf_images.find( index );
+			texture->source = images.find( index );
 		}
 
 		// Name
@@ -672,7 +672,7 @@ void Model::init_materials( const nlohmann::json& j )
 			if ( mr.count( "baseColorTexture" ) )
 			{
 				auto index = mr["baseColorTexture"]["index"].get<size_t>();
-				material->texture_handle = textures.find( index );
+				material->texture = textures.find( index );
 			}
 
 			if ( mr.count( "metallicFactor" ) )

@@ -3,7 +3,7 @@
 #include <unordered_map>
 
 #include <spot/math/math.h>
-#include <spot/gltf/mesh.h>
+#include <spot/gfx/mesh.h>
 
 #include "spot/gfx/buffers.h"
 #include "spot/gfx/descriptors.h"

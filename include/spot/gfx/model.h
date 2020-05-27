@@ -6,13 +6,13 @@
 
 #include "spot/gltf/buffer.h"
 #include "spot/gltf/camera.h"
-#include "spot/gltf/image.h"
+#include "spot/gfx/image.h"
 #include "spot/gltf/light.h"
-#include "spot/gltf/material.h"
-#include "spot/gltf/mesh.h"
+#include "spot/gfx/material.h"
+#include "spot/gfx/mesh.h"
 #include "spot/gltf/sampler.h"
 #include "spot/gltf/script.h"
-#include "spot/gltf/texture.h"
+#include "spot/gfx/texture.h"
 #include "spot/gltf/bounds.h"
 #include "spot/gltf/animation.h"
 #include "spot/handle.h"
@@ -180,7 +180,7 @@ class Model : public Handled<Model>
 	Uvec<GltfSampler> samplers;
 
 	/// List of images
-	Uvec<Image> gltf_images;
+	Uvec<Image> images;
 
 	/// List of textures
 	Uvec<Texture> textures;

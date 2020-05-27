@@ -32,7 +32,7 @@ void read_status( png_struct* png, uint32_t row, int pass )
 	
 	uint32_t percent = row * 100.0f / obj->height;
 	std::printf("\r");
-	logi( "Read\t{}%", percent );
+	logi( "Loading\t{}%", percent );
 	std::fflush( stdout );
 }
 
@@ -104,7 +104,6 @@ Png::Png( const std::string& path )
 	/// @todo Support different bit depths
 	assert( bit_depth == 8 && "PNG bit depth not supported" );
 	channels = png_get_channels( png, info );
-	print_info();
 }
 
 
@@ -169,7 +168,6 @@ Png::Png( std::vector<uint8_t>& mem )
 
 	assert( bit_depth == 8 && "PNG bit depth not supported" );
 	channels = png_get_channels( png, info );
-	print_info();
 }
 
 

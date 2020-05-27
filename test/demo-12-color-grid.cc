@@ -1,6 +1,6 @@
 #include <cstdlib>
 
-#include <spot/gltf/mesh.h>
+#include <spot/gfx/mesh.h>
 #include <spot/gfx/graphics.h>
 
 constexpr size_t width = 64;

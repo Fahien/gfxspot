@@ -21,6 +21,7 @@ set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/buffers.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/commands.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/descriptors.cc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/image.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/images.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/renderer.cc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pipelines.cc

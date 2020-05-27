@@ -11,7 +11,7 @@ namespace spot::gfx
 /// @brief Image data used to create a texture
 struct Image : public Handled<Image>
 {
-	Image( const std::string& path = "" ) : uri { path } {}
+	Image( const std::string& path = "" );
 
 	/// Uri of the image
 	std::string uri = "";
@@ -24,6 +24,9 @@ struct Image : public Handled<Image>
 
 	/// Name
 	std::string name = "Unknown";
+
+	uint32_t width = 0;
+	uint32_t height = 0;
 };
 
 

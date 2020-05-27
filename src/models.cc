@@ -35,9 +35,9 @@ Handle<Model> Graphics::load_model( const std::string& path )
 	// Load materials
 	for ( auto& material : *model->materials )
 	{
-		if ( material.texture_handle )
+		if ( material.texture )
 		{
-			auto& source = material.texture_handle->source;
+			auto& source = material.texture->source;
 			assert( source && "Texture has no source" );
 			//material.texture = model->images.load( source->uri.c_str() );
 		}

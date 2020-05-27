@@ -1,7 +1,7 @@
 #pragma once
 
 #include <spot/gltf/color.h>
-#include <spot/gltf/mesh.h>
+#include <spot/gfx/mesh.h>
 #include <spot/hash.h>
 #include <spot/math/math.h>
 

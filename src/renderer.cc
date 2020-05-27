@@ -3,7 +3,7 @@
 #include <cassert>
 #include <spot/log.h>
 
-#include "spot/gltf/material.h"
+#include "spot/gfx/material.h"
 #include "spot/gltf/node.h"
 #include "spot/gfx/graphics.h"
 #include "spot/gfx/hash.h"
@@ -443,7 +443,7 @@ DescriptorResources::DescriptorResources(
 		}
 
 		VkDescriptorImageInfo image_info = {};
-		if ( material && material->texture_handle )
+		if ( material && material->texture )
 		{
 			assert( renderer.material_resources.count( material ) && "Material resources were not created" );
 			auto& mat_res = renderer.material_resources.at( material );
@@ -540,7 +540,7 @@ uint64_t select_pipeline( const Handle<Material>& material )
 {
 	if ( material )
 	{
-		if ( material->texture_handle )
+		if ( material->texture )
 		{
 			return get_mesh_pipeline();
 		}
@@ -613,9 +613,9 @@ Renderer::add_descriptors( const Node& node, const Handle<Material>& material )
 		if ( material_resources.find( material ) == std::end( material_resources ) )
 		{
 			Handle<ImageView> view;
-			if ( material->texture_handle )
+			if ( material->texture )
 			{
-				view = images.load( material->texture_handle->source->uri.c_str() );
+				view = images.load( material->texture->source->uri.c_str() );
 			}
 			material_resources.emplace( material, MaterialResources( gfx.swapchain, view ) );
 		}
