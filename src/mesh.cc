@@ -149,10 +149,10 @@ Mesh Mesh::create_rect( const math::Rect& r, const Color& color )
 }
 
 
-Mesh Mesh::create_quad( const Handle<Material>& material, const math::Vec3& a, const math::Vec3& b )
+Mesh Mesh::create_quad( const Material& material, const math::Vec3& a, const math::Vec3& b )
 {
-	assert( material && "Cannot create a quad with invalid material" );
-	Mesh ret = create_rect( a, b, material );
+	assert( material.handle && "Cannot create a quad with invalid material" );
+	Mesh ret = create_rect( a, b, material.handle );
 
 	auto& vertices = ret.primitives[0].vertices;
 

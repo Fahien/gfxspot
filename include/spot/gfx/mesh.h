@@ -113,7 +113,7 @@ struct Mesh : public Handled<Mesh>
 
 	/// @return A quad mesh, which is a unit square with a material
 	static Mesh create_quad(
-		const Handle<Material>& material,
+		const Material& material,
 		const math::Vec3& a = { -0.5f, -0.5f, 0.0f },
 		const math::Vec3& b = { 0.5f, 0.5f, 0.0f }
 	);
