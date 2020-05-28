@@ -1,4 +1,4 @@
-#include "spot/gltf/node.h"
+#include "spot/gfx/node.h"
 
 #include "spot/gfx/model.h"
 

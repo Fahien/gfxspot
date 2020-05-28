@@ -49,9 +49,10 @@ class Node : public Handled<Node>
 	void set_scaling( const math::Vec3& s ) { dirty = true; scaling = s; };
 
 	Node& translate( const math::Vec3& translation );
+	Node& translate( float x, float y ) { dirty = true; translation.x += x; translation.y += y; return *this; }
 	Node& rotate( const math::Quat& rotation );
 	Node& scale( const math::Vec3& scale );
-	Node& scale( const float s ) { dirty = true; scaling *= s; return *this; }
+	Node& scale( float s ) { dirty = true; scaling *= s; return *this; }
 
 	/// @brief Updates transform matrices of this node and its children
 	void update_transforms( const math::Mat4& transform = math::Mat4::Identity );

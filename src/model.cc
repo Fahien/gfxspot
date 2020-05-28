@@ -3,7 +3,7 @@
 #include <spot/file/ifstream.h>
 
 #include "spot/gfx/model.h"
-#include "spot/gltf/node.h"
+#include "spot/gfx/node.h"
 
 
 namespace spot::gfx

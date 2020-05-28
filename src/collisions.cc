@@ -3,7 +3,7 @@
 #include <spot/math/math.h>
 
 #include "spot/gltf/bounds.h"
-#include "spot/gltf/node.h"
+#include "spot/gfx/node.h"
 
 
 namespace spot::gfx

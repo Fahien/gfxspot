@@ -4,7 +4,7 @@
 #include <spot/log.h>
 
 #include "spot/gfx/material.h"
-#include "spot/gltf/node.h"
+#include "spot/gfx/node.h"
 #include "spot/gfx/graphics.h"
 #include "spot/gfx/hash.h"
 

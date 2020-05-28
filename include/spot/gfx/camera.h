@@ -1,7 +1,7 @@
 #pragma once
 
 #include <spot/math/math.h>
-#include <spot/gltf/node.h>
+#include <spot/gfx/node.h>
 #include <vulkan/vulkan_core.h>
 
 namespace spot::gfx
