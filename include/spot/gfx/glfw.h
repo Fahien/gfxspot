@@ -5,8 +5,8 @@
 #include <functional>
 
 #include <vulkan/vulkan_core.h>
-#include <spot/math/math.h>
 
+#include "spot/gfx/input.h"
 #include "spot/gfx/vulkan_utils.h"
 
 struct GLFWwindow;
@@ -14,8 +14,6 @@ struct GLFWwindow;
 
 namespace spot::gfx
 {
-
-
 
 class Instance;
 
@@ -56,38 +54,7 @@ class Window
 
 	VkExtent2D frame = extent;
 
-	math::Vec2 scroll = {};
-
-	math::Vec2 swipe = {};
-
-	math::Vec2 cursor = {};
-
-	struct Press
-	{
-		bool left = false;
-		bool middle = false;
-		bool right = false;
-
-	} press;
-	
-	struct Click
-	{
-		bool left = false;
-		bool middle = false;
-		bool right = false;
-
-		/// Origin of click
-		math::Vec2 pos = {};
-	} click;
-
-	struct Key
-	{
-		bool w = false;
-		bool a = false;
-		bool s = false;
-		bool d = false;
-		bool enter = false;
-	} key;
+	Input input;
 
 	std::function<void( const VkExtent2D& )> on_resize = {};
 

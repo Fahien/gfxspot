@@ -107,9 +107,9 @@ void Gui::update( const float delta_time )
 
 	auto cursor = window.cursor_to( gui_viewport );
 	io.MousePos = ImVec2( cursor.x, gui_viewport.height - cursor.y );
-	io.MouseDown[0] = window.press.left;
-	io.MouseDown[1] = window.press.right;
-	io.MouseDown[2] = window.press.middle;
+	io.MouseDown[0] = window.input.press.left;
+	io.MouseDown[1] = window.input.press.right;
+	io.MouseDown[2] = window.input.press.middle;
 
 	ImGui::Render();
 }

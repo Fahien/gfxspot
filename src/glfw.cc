@@ -8,8 +8,8 @@
 #include "spot/gfx/viewport.h"
 
 #define CHECK_KEY( K, k ) if ( key == GLFW_KEY_##K ) { \
-	if ( action == GLFW_PRESS ) { window->key.k = true; } \
-	else if ( action == GLFW_RELEASE ) { window->key.k = false; } }
+	if ( action == GLFW_PRESS ) { window->input.key.k = true; } \
+	else if ( action == GLFW_RELEASE ) { window->input.key.k = false; } }
 
 
 namespace spot::gfx
@@ -73,8 +73,8 @@ void set_framebuffer_size( GLFWwindow* handle, const int width, const int height
 void scroll_callback( GLFWwindow* handle, double xoffset, double yoffset )
 {
 	auto window = reinterpret_cast<Window*>( glfwGetWindowUserPointer( handle ) );
-	window->scroll.x = xoffset;
-	window->scroll.y = yoffset;
+	window->input.scroll.x = xoffset;
+	window->input.scroll.y = yoffset;
 }
 
 
@@ -89,14 +89,14 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 	{
 		if ( action == GLFW_PRESS )
 		{
-			window->click.pos = window->get_cursor_position();
-			window->press.left = true;
-			window->click.left = true;
+			window->input.click.pos = window->get_cursor_position();
+			window->input.press.left = true;
+			window->input.click.left = true;
 		}
 		else if ( action == GLFW_RELEASE )
 		{
-			window->press.left = false;
-			window->swipe = {};
+			window->input.press.left = false;
+			window->input.swipe = {};
 		}
 	}
 
@@ -104,14 +104,14 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 	{
 		if ( action == GLFW_PRESS )
 		{
-			window->click.pos = window->get_cursor_position();
-			window->press.right = true;
-			window->click.right = true;
+			window->input.click.pos = window->get_cursor_position();
+			window->input.press.right = true;
+			window->input.click.right = true;
 		}
 		else if ( action == GLFW_RELEASE )
 		{
-			window->press.right = false;
-			window->swipe = {};
+			window->input.press.right = false;
+			window->input.swipe = {};
 		}
 	}
 
@@ -119,14 +119,14 @@ void mouse_callback( GLFWwindow* handle, int button, int action, int mods )
 	{
 		if ( action == GLFW_PRESS )
 		{
-			window->click.pos = window->get_cursor_position();
-			window->press.middle = true;
-			window->click.middle = true;
+			window->input.click.pos = window->get_cursor_position();
+			window->input.press.middle = true;
+			window->input.click.middle = true;
 		}
 		else if ( action == GLFW_RELEASE )
 		{
-			window->press.middle = false;
-			window->swipe = {};
+			window->input.press.middle = false;
+			window->input.swipe = {};
 		}
 	}
 }
@@ -192,8 +192,8 @@ math::Vec2 Window::cursor_to( const VkViewport& viewport ) const
 	math::Vec2 viewport_coords;
 
 	// In window space (0,0) is up left. Increments right and down.
-	viewport_coords.x = cursor.x / extent.width * viewport.width + viewport.x;
-	viewport_coords.y = ( -cursor.y + extent.height ) / extent.height * viewport.height + viewport.y;
+	viewport_coords.x = input.cursor.x / extent.width * viewport.width + viewport.x;
+	viewport_coords.y = ( -input.cursor.y + extent.height ) / extent.height * viewport.height + viewport.y;
 
 	return viewport_coords;
 }
@@ -202,9 +202,9 @@ math::Vec2 Window::cursor_to( const VkViewport& viewport ) const
 bool Window::is_alive()
 {
 	// Reset internal state
-	scroll = {};
-	swipe = {};
-	click = Click();
+	input.scroll = {};
+	input.swipe = {};
+	input.click = Input::Click();
 
 	return !glfwWindowShouldClose( handle );
 }
@@ -214,14 +214,14 @@ void Window::update()
 {
 	auto current = get_cursor_position();
 
-	if ( press.left || press.middle || press.right )
+	if ( input.press.left || input.press.middle || input.press.right )
 	{
-		swipe.x = current.x - cursor.x;
-		swipe.y = -(current.y - cursor.y);
+		input.swipe.x = current.x - input.cursor.x;
+		input.swipe.y = -(current.y - input.cursor.y);
 	}
 
 	// Then update cursor position
-	cursor = get_cursor_position();
+	input.cursor = get_cursor_position();
 }
 
 
