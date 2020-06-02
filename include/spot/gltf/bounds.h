@@ -56,7 +56,7 @@ struct Shape
 	/// @brief List of shapes currently colliding with this shape
 	std::vector<const Shape*> collisions;
 
-	std::function<void( const Shape& s, const Shape& o )> start_colliding_with = {};
+	std::function<void( const Shape& s, const Shape& o )> begin_colliding_with = {};
 	std::function<void( const Shape& s, const Shape& o )> colliding_with = {};
 	std::function<void( const Shape& s, const Shape& o )> end_colliding_with = {};
 
@@ -128,7 +128,7 @@ struct Bounds : public Handled<Bounds>
 	std::vector<const Bounds*> collisions;
 
 	/// Collisions callback
-	std::function<void( Node& self, Node& other )> start_colliding_with;
+	std::function<void( Node& self, Node& other )> begin_colliding_with;
 	std::function<void( Node& self, Node& other )> colliding_with;
 	std::function<void( Node& self, Node& other )> end_colliding_with;
 

@@ -51,13 +51,13 @@ void Collisions::update()
 					first_shape.add_collision( second_shape );
 					second_shape.add_collision( first_shape );
 
-					if ( first_shape.start_colliding_with )
+					if ( first_shape.begin_colliding_with )
 					{
-						first_shape.start_colliding_with( first_node, second_node );
+						first_shape.begin_colliding_with( first_node, second_node );
 					}
-					if ( second_shape.start_colliding_with )
+					if ( second_shape.begin_colliding_with )
 					{
-						second_shape.start_colliding_with( second_node, first_node );
+						second_shape.begin_colliding_with( second_node, first_node );
 					}
 				}
 
