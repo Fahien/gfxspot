@@ -19,7 +19,7 @@ VkViewport create_viewport( const Window& window )
 }
 
 
-VkViewport create_abstract( const math::Vec2& offset = { -1.0f, -1.0f }, const math::Vec2& extent = { 2.0f, 2.0f } )
+VkViewport create_abstract( const math::Vec2& offset = { .0f, .0f }, const math::Vec2& extent = { 320.0f, 240.0f } )
 {
 	VkViewport abstract = {};
 	abstract.x = offset.x;

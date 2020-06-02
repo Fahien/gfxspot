@@ -835,13 +835,15 @@ std::vector<VkDescriptorSetLayoutBinding> get_presentation_bindings()
 }
 
 
-Graphics::Graphics( VkExtent2D extent )
-: instance { glfw.required_extensions, get_validation_layers() }
+Graphics::Graphics( VkExtent2D extent, const bool offscr )
+: offscreen { offscr }
+, instance { glfw.required_extensions, get_validation_layers() }
 , window { extent }
 , surface { instance, window }
 , device { instance.physical_devices.at( 0 ), surface.handle, device_required_extensions }
 , swapchain { device }
-, offscreen_frames { swapchain, extent }
+, viewport { window, camera }
+, offscreen_frames { swapchain, { viewport.get_abstract().width, viewport.get_abstract().height } }
 , frames { swapchain }
 , offscreen_render_pass { swapchain, offscreen_frames }
 , render_pass { swapchain, frames }
@@ -857,8 +859,7 @@ Graphics::Graphics( VkExtent2D extent )
 , quad_vert { device, "res/shader/quad.vert.spv" }
 , quad_frag { device, "res/shader/quad.frag.spv" }
 , presentation_layout { device, get_presentation_bindings() }
-, gui { device, window }
-, viewport { window, camera }
+, gui { device, window, { viewport.get_abstract().width, viewport.get_abstract().height } }
 , scissor { create_scissor( window ) }
 , renderer { *this }
 , command_pool { device }
@@ -932,10 +933,11 @@ bool Graphics::render_begin()
 	current_frame_in_flight->reset();
 
 	current_command_buffer = &command_buffers[image_index];
-	current_framebuffer = &offscreen_framebuffers[image_index];
+	current_framebuffer = offscreen ? &offscreen_framebuffers[image_index] : &framebuffers[image_index];
 
 	current_command_buffer->begin();
-	current_command_buffer->begin_render_pass( offscreen_render_pass, *current_framebuffer );
+	RenderPass& rpass = offscreen ? offscreen_render_pass : render_pass;
+	current_command_buffer->begin_render_pass( rpass, *current_framebuffer );
 
 	return true;
 }
@@ -984,22 +986,19 @@ void Graphics::render_end()
 
 	current_command_buffer->end_render_pass();
 
-//	VkImageMemoryBarrier barrier = {};
-//	barrier.oldLayout = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
-//	VkPipelineStageFlags src;
-//	VkPipelineStageFlags dst;
-//	current_command_buffer->image_memory_barrier( barrier, src, dst );
+	if ( offscreen )
+	{
+		auto& framebuffer = framebuffers[current_frame_index];
+		current_command_buffer->begin_render_pass( render_pass, framebuffer );
 
-	auto& framebuffer = framebuffers[current_frame_index];
-	current_command_buffer->begin_render_pass( render_pass, framebuffer );
+		/// @todo Fix this 4
+		current_command_buffer->bind( renderer.pipelines[4] );
+		auto& descriptor_sets = renderer.presentation_resources.descriptor_sets[current_frame_index];
+		current_command_buffer->bind_descriptor_sets( presentation_layout, descriptor_sets );
+		current_command_buffer->draw( 3 );
 
-	/// @todo Fix this 4
-	current_command_buffer->bind( renderer.pipelines[4] );
-	auto& descriptor_sets = renderer.presentation_resources.descriptor_sets[current_frame_index];
-	current_command_buffer->bind_descriptor_sets( presentation_layout, descriptor_sets );
-	current_command_buffer->draw( 3 );
-
-	current_command_buffer->end_render_pass();
+		current_command_buffer->end_render_pass();
+	}
 
 	current_command_buffer->end();
 

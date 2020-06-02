@@ -24,7 +24,7 @@ class Window;
 class Gui
 {
   public:
-	Gui( Device& d, Window& window );
+	Gui( Device& d, Window& window, VkExtent2D extent );
 	~Gui();
 
 	void update( float delta_time );

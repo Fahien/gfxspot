@@ -13,8 +13,8 @@ PipelineLayout::PipelineLayout(
 	const std::vector<VkDescriptorSetLayoutBinding>& bindings,
 	std::optional<VkPushConstantRange> constants
 )
-    : device { d }
-    , descriptor_set_layout { d, std::move( bindings ) }
+	: device { d }
+	, descriptor_set_layout { d, std::move( bindings ) }
 {
 	VkPipelineLayoutCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -42,21 +42,22 @@ PipelineLayout::~PipelineLayout()
 }
 
 
-GraphicsPipeline::GraphicsPipeline( const std::vector<VkVertexInputBindingDescription>& bindings,
-                                    const std::vector<VkVertexInputAttributeDescription>& attributes,
-									PipelineLayout& layo,
-                                    ShaderModule& vert,
-									ShaderModule& frag,
-									RenderPass& render_pass,
-                                    const VkViewport& viewport,
-									const VkRect2D& scissor,
-									const VkPipelineColorBlendAttachmentState& color_blend_attachment,
-									std::vector<VkDynamicState> dynamic_states,
-									VkCullModeFlags cull_mode,
-									VkBool32 depth_test,
-									const VkPrimitiveTopology topology )
-    : device { vert.device }
-    , layout { layo }
+GraphicsPipeline::GraphicsPipeline(
+	const std::vector<VkVertexInputBindingDescription>& bindings,
+	const std::vector<VkVertexInputAttributeDescription>& attributes,
+	PipelineLayout& layo,
+	ShaderModule& vert,
+	ShaderModule& frag,
+	RenderPass& render_pass,
+	const VkViewport& viewport,
+	const VkRect2D& scissor,
+	const VkPipelineColorBlendAttachmentState& color_blend_attachment,
+	std::vector<VkDynamicState> dynamic_states,
+	VkCullModeFlags cull_mode,
+	VkBool32 depth_test,
+	const VkPrimitiveTopology topology )
+: device { vert.device }
+, layout { layo }
 {
 	VkPipelineVertexInputStateCreateInfo input_info = {};
 	input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -172,10 +173,10 @@ GraphicsPipeline::~GraphicsPipeline()
 
 
 GraphicsPipeline::GraphicsPipeline( GraphicsPipeline&& other )
-    : device { other.device }
-    , layout { other.layout }
-    , handle { other.handle }
-    , index { other.index }
+	: device { other.device }
+	, layout { other.layout }
+	, handle { other.handle }
+	, index { other.index }
 {
 	other.handle = VK_NULL_HANDLE;
 }

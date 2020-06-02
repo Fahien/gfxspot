@@ -177,7 +177,7 @@ class Fence
 class Graphics
 {
   public:
-	Graphics( VkExtent2D extent = { 320, 240 } );
+	Graphics( VkExtent2D extent = { 320, 240 }, bool offscreen = false );
 
 	bool render_begin();
 	void render_end();
@@ -188,6 +188,7 @@ class Graphics
 	void draw( const Model& model );
 	void draw_gui();
 
+	bool offscreen = false;
 	Glfw glfw;
 	Instance instance;
 	Window window;
@@ -196,6 +197,10 @@ class Graphics
 	RequiredExtensions device_required_extensions = { 1, &swapchain_extension_name };
 	Device device;
 	Swapchain swapchain;
+
+	Camera camera;
+	Viewport viewport;
+
 	Frames offscreen_frames;
 	Frames frames;
 
@@ -219,8 +224,6 @@ class Graphics
 	PipelineLayout presentation_layout;
 
 	Gui gui;
-	Camera camera;
-	Viewport viewport;
 	VkRect2D scissor = {};
 
 	Renderer renderer;

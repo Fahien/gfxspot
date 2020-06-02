@@ -36,7 +36,7 @@ void char_callback( GLFWwindow* window, unsigned int c )
 }
 
 
-Gui::Gui( Device& device, Window& w )
+Gui::Gui( Device& device, Window& w, VkExtent2D extent )
     : images { device }
     , window { w }
     , vert { device, "res/shader/imgui.vert.spv" }
@@ -48,8 +48,8 @@ Gui::Gui( Device& device, Window& w )
 
 	// Display and style
 	auto& io = ImGui::GetIO();
-	io.DisplaySize.x = float( window.frame.width );
-	io.DisplaySize.y = float( window.frame.height );
+	io.DisplaySize.x = float( extent.width );
+	io.DisplaySize.y = float( extent.height );
 	io.FontGlobalScale = 1.0f;
 	auto& style = ImGui::GetStyle();
 	style.ScaleAllSizes( 1.0f );

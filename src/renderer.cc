@@ -106,13 +106,15 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 {
 	std::vector<GraphicsPipeline> ret;
 
+	RenderPass& render_pass = gfx.offscreen ? gfx.offscreen_render_pass : gfx.render_pass;
+
 	auto mesh_pipeline = GraphicsPipeline(
 		get_bindings<Vertex>(),
 		get_attributes<Vertex>(),
 		gfx.mesh_layout,
 		gfx.mesh_vert,
 		gfx.mesh_frag,
-		gfx.offscreen_render_pass,
+		render_pass,
 		gfx.viewport.get_abstract(),
 		gfx.scissor,
 		get_color_blend( true ) );
@@ -125,7 +127,7 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.mesh_no_image_layout,
 		gfx.mesh_no_image_vert,
 		gfx.mesh_no_image_frag,
-		gfx.offscreen_render_pass,
+		render_pass,
 		gfx.viewport.get_abstract(),
 		gfx.scissor,
 		get_color_blend( true ) );
@@ -138,7 +140,7 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.line_layout,
 		gfx.line_vert,
 		gfx.line_frag,
-		gfx.offscreen_render_pass,
+		render_pass,
 		gfx.viewport.get_abstract(),
 		gfx.scissor,
 		get_color_blend( true ),
@@ -155,7 +157,7 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.gui.layout,
 		gfx.gui.vert,
 		gfx.gui.frag,
-		gfx.offscreen_render_pass,
+		render_pass,
 		gfx.viewport.get_abstract(),
 		gfx.scissor,
 		get_color_blend( true ),
