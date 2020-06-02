@@ -42,7 +42,7 @@ PipelineLayout::~PipelineLayout()
 }
 
 
-GraphicsPipeline::GraphicsPipeline( VkVertexInputBindingDescription                       bindings,
+GraphicsPipeline::GraphicsPipeline( const std::vector<VkVertexInputBindingDescription>& bindings,
                                     const std::vector<VkVertexInputAttributeDescription>& attributes,
 									PipelineLayout& layo,
                                     ShaderModule& vert,
@@ -60,8 +60,8 @@ GraphicsPipeline::GraphicsPipeline( VkVertexInputBindingDescription             
 {
 	VkPipelineVertexInputStateCreateInfo input_info = {};
 	input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	input_info.vertexBindingDescriptionCount = 1;
-	input_info.pVertexBindingDescriptions = &bindings;
+	input_info.vertexBindingDescriptionCount = bindings.size();
+	input_info.pVertexBindingDescriptions = bindings.data();
 	input_info.vertexAttributeDescriptionCount = attributes.size();
 	input_info.pVertexAttributeDescriptions = attributes.data();
 

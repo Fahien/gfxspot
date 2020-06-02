@@ -30,6 +30,8 @@ class CommandBuffer
 	void set_viewport( const VkViewport& vp );
 	void set_scissor( const VkRect2D& scissor );
 
+	void image_memory_barrier( const VkImageMemoryBarrier& barrier, const VkPipelineStageFlags src, const VkPipelineStageFlags dst );
+
 	void begin_render_pass( RenderPass& rp, Framebuffer& fb );
 
 	void push_constants( const PipelineLayout& layout, VkShaderStageFlags stages, uint32_t offset, uint32_t size, void* bytes );

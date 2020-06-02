@@ -6,14 +6,18 @@
 #include "spot/gfx/gui.h"
 #include "spot/gfx/pipelines.h"
 
+
 namespace spot::gfx
 {
-VkVertexInputBindingDescription get_gui_bindings()
+
+
+std::vector<VkVertexInputBindingDescription> get_gui_bindings()
 {
 	// Vertex input state
 	VkVertexInputBindingDescription bindings = {};
 	bindings.stride = sizeof( ImDrawVert );
-	return bindings;
+
+	return { bindings };
 }
 
 

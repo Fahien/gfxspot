@@ -9,7 +9,7 @@
 namespace spot::gfx
 {
 
-VkVertexInputBindingDescription get_gui_bindings();
+std::vector<VkVertexInputBindingDescription> get_gui_bindings();
 std::vector<VkVertexInputAttributeDescription> get_gui_attributes();
 
 class GraphicsPipeline;

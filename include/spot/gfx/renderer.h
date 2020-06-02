@@ -103,6 +103,25 @@ struct LightResources
 };
 
 
+class Frames;
+
+struct PresentationResources
+{
+	PresentationResources( const GraphicsPipeline& pipel, const Frames& frames, const uint32_t swapchain_count );
+
+	size_t pipeline;
+
+	/// A sampler for the color texture
+	Sampler sampler;
+
+	/// Descriptor pool for descriptor sets
+	DescriptorPool descriptor_pool;
+
+	// Descriptor sets for each swapchain image
+	std::vector<VkDescriptorSet> descriptor_sets;
+};
+
+
 /// @todo Resource cache should be improved in this way:
 /// 1. A resource cache for primitives
 /// 2. A resource cache for mvp-bos
@@ -146,6 +165,8 @@ class Renderer
 	std::unordered_map<size_t, DescriptorResources> descriptor_resources;
 
 	GuiResources gui_resources;
+
+	PresentationResources presentation_resources;
 
 	AmbientResources ambient_resources;
 

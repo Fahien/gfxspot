@@ -514,7 +514,7 @@ Frames::Frames( Swapchain& swapchain, const VkExtent2D ext )
 
 		auto color_view = ImageView( color );
 		color_images.emplace_back( std::move( color ) );
-		depth_views.emplace_back( std::move( color_view ) );
+		color_views.emplace_back( std::move( color_view ) );
 
 		auto depth = VulkanImage( swapchain.device, extent, VK_FORMAT_D32_SFLOAT );
 		depth.transition( VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
@@ -543,7 +543,7 @@ std::vector<Framebuffer> Frames::create_framebuffers( RenderPass& render_pass )
 
 	for ( size_t i = 0; i < color_views.size(); ++i )
 	{
-		auto color_view = color_views[i];
+		auto color_view = color_views[i].vkhandle;
 		auto depth_view = depth_views[i].vkhandle;
 		std::vector<VkImageView> views = { color_view, depth_view };
 		auto framebuffer = Framebuffer( views, extent, render_pass );
@@ -601,7 +601,9 @@ RenderPass::RenderPass( Swapchain& s, Frames& f )
 	color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkImageLayout final = f.color_images.size() ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	color_attachment.finalLayout = final;
 
 	attachments.emplace_back( color_attachment );
 
@@ -820,6 +822,19 @@ std::vector<VkDescriptorSetLayoutBinding> get_mesh_bindings()
 }
 
 
+// Just like gui bindings
+std::vector<VkDescriptorSetLayoutBinding> get_presentation_bindings()
+{
+	VkDescriptorSetLayoutBinding sampler = {};
+	sampler.binding = 0;
+	sampler.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	sampler.descriptorCount = 1;
+	sampler.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	return { sampler };
+}
+
+
 Graphics::Graphics( VkExtent2D extent )
 : instance { glfw.required_extensions, get_validation_layers() }
 , window { extent }
@@ -839,12 +854,16 @@ Graphics::Graphics( VkExtent2D extent )
 , mesh_no_image_frag { device, "res/shader/mesh-no-image.frag.spv" }
 , mesh_layout { device, get_mesh_bindings() }
 , mesh_no_image_layout { device, get_mesh_no_image_bindings() }
+, quad_vert { device, "res/shader/quad.vert.spv" }
+, quad_frag { device, "res/shader/quad.frag.spv" }
+, presentation_layout { device, get_presentation_bindings() }
 , gui { device, window }
 , viewport { window, camera }
 , scissor { create_scissor( window ) }
 , renderer { *this }
 , command_pool { device }
 , command_buffers { command_pool.allocate_command_buffers( swapchain.images.size() ) }
+, offscreen_framebuffers { offscreen_frames.create_framebuffers( offscreen_render_pass ) }
 , framebuffers { frames.create_framebuffers( render_pass ) }
 , graphics_queue { device.find_graphics_queue() }
 , present_queue { device.find_present_queue( surface.handle ) }
@@ -860,7 +879,7 @@ Graphics::Graphics( VkExtent2D extent )
 
 bool Graphics::render_begin()
 {
-	std::rotate(std::begin(images_available), ++std::begin(images_available), std::end(images_available));
+	std::rotate( std::begin( images_available ), ++std::begin( images_available ), std::end( images_available ) );
 	current_image_available = &images_available.back();
 
 	uint32_t image_index;
@@ -913,10 +932,10 @@ bool Graphics::render_begin()
 	current_frame_in_flight->reset();
 
 	current_command_buffer = &command_buffers[image_index];
-	current_framebuffer = &framebuffers[image_index];
+	current_framebuffer = &offscreen_framebuffers[image_index];
 
 	current_command_buffer->begin();
-	current_command_buffer->begin_render_pass( render_pass, *current_framebuffer );
+	current_command_buffer->begin_render_pass( offscreen_render_pass, *current_framebuffer );
 
 	return true;
 }
@@ -964,6 +983,24 @@ void Graphics::render_end()
 	draw_gui();
 
 	current_command_buffer->end_render_pass();
+
+//	VkImageMemoryBarrier barrier = {};
+//	barrier.oldLayout = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+//	VkPipelineStageFlags src;
+//	VkPipelineStageFlags dst;
+//	current_command_buffer->image_memory_barrier( barrier, src, dst );
+
+	auto& framebuffer = framebuffers[current_frame_index];
+	current_command_buffer->begin_render_pass( render_pass, framebuffer );
+
+	/// @todo Fix this 4
+	current_command_buffer->bind( renderer.pipelines[4] );
+	auto& descriptor_sets = renderer.presentation_resources.descriptor_sets[current_frame_index];
+	current_command_buffer->bind_descriptor_sets( presentation_layout, descriptor_sets );
+	current_command_buffer->draw( 3 );
+
+	current_command_buffer->end_render_pass();
+
 	current_command_buffer->end();
 
 	auto& image_drawn = images_drawn[current_frame_index];

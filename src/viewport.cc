@@ -26,8 +26,8 @@ VkViewport create_abstract( const math::Vec2& offset = { -1.0f, -1.0f }, const m
 	abstract.y = offset.x;
 	abstract.width = extent.x;
 	abstract.height = extent.y;
-	abstract.minDepth = 0.125f;
-	abstract.maxDepth = 16.0f;
+	abstract.minDepth = 0.0;
+	abstract.maxDepth = 1.0f;
 	return abstract;
 }
 

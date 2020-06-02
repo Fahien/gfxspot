@@ -16,12 +16,13 @@ namespace spot::gfx
 {
 
 template <typename T>
-VkVertexInputBindingDescription get_bindings()
+std::vector<VkVertexInputBindingDescription> get_bindings()
 {
 	VkVertexInputBindingDescription bindings = {};
 	bindings.binding = 0;
 	bindings.stride = sizeof( Vertex );
-	return bindings;
+
+	return { bindings };
 }
 
 
@@ -72,12 +73,12 @@ std::vector<VkVertexInputAttributeDescription> get_attributes<Vertex>()
 }
 
 
-VkPipelineColorBlendAttachmentState get_color_blend()
+VkPipelineColorBlendAttachmentState get_color_blend( bool enable )
 {
 	VkPipelineColorBlendAttachmentState color_blend_attachment = {};
 	color_blend_attachment.colorWriteMask =
 	    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	color_blend_attachment.blendEnable = VK_TRUE;
+	color_blend_attachment.blendEnable = enable ? VK_TRUE : VK_FALSE;
 	color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 	color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
@@ -111,10 +112,10 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.mesh_layout,
 		gfx.mesh_vert,
 		gfx.mesh_frag,
-		gfx.render_pass,
-		gfx.viewport.get_viewport(),
+		gfx.offscreen_render_pass,
+		gfx.viewport.get_abstract(),
 		gfx.scissor,
-		get_color_blend() );
+		get_color_blend( true ) );
 	mesh_pipeline.index = 0;
 	ret.emplace_back( std::move( mesh_pipeline ) );
 
@@ -124,10 +125,10 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.mesh_no_image_layout,
 		gfx.mesh_no_image_vert,
 		gfx.mesh_no_image_frag,
-		gfx.render_pass,
-		gfx.viewport.get_viewport(),
+		gfx.offscreen_render_pass,
+		gfx.viewport.get_abstract(),
 		gfx.scissor,
-		get_color_blend() );
+		get_color_blend( true ) );
 	mesh_no_image_pipeline.index = 1;
 	ret.emplace_back( std::move( mesh_no_image_pipeline ) );
 
@@ -137,10 +138,10 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.line_layout,
 		gfx.line_vert,
 		gfx.line_frag,
-		gfx.render_pass,
-		gfx.viewport.get_viewport(),
+		gfx.offscreen_render_pass,
+		gfx.viewport.get_abstract(),
 		gfx.scissor,
-		get_color_blend(),
+		get_color_blend( true ),
 		{ VK_DYNAMIC_STATE_LINE_WIDTH },
 		VK_CULL_MODE_NONE,
 		VK_FALSE,
@@ -154,15 +155,31 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.gui.layout,
 		gfx.gui.vert,
 		gfx.gui.frag,
-		gfx.render_pass,
-		gfx.viewport.get_viewport(),
+		gfx.offscreen_render_pass,
+		gfx.viewport.get_abstract(),
 		gfx.scissor,
-		get_color_blend(),
+		get_color_blend( true ),
 		{ VK_DYNAMIC_STATE_SCISSOR },
 		VK_CULL_MODE_NONE,
 		VK_FALSE );
 	gui_pipeline.index = 3;
 	ret.emplace_back( std::move( gui_pipeline ) );
+
+	auto presentation_pipeline = GraphicsPipeline(
+		{},
+		{},
+		gfx.presentation_layout,
+		gfx.quad_vert,
+		gfx.quad_frag,
+		gfx.render_pass,
+		gfx.viewport.get_viewport(),
+		gfx.scissor,
+		get_color_blend( false ),
+		{},
+		VK_CULL_MODE_FRONT_BIT
+	);
+	presentation_pipeline.index = 4;
+	ret.emplace_back( std::move( presentation_pipeline ) );
 
 	return ret;
 }
@@ -181,6 +198,7 @@ Renderer::Renderer( Graphics& g )
 , ambient_resources { gfx.swapchain }
 /// @todo Fix this 3
 , gui_resources { pipelines[3], g.gui, uint32_t( gfx.swapchain.images.size() ) }
+, presentation_resources{ pipelines[4], g.offscreen_frames, uint32_t( gfx.swapchain.images.size() ) }
 {
 }
 
@@ -321,6 +339,51 @@ MaterialResources::MaterialResources( const Swapchain& swapchain, const Handle<I
 , sampler { swapchain.device }
 , texture { view }
 {}
+
+
+std::vector<VkDescriptorPoolSize> get_presentation_pool_size( const uint32_t count )
+{
+	std::vector<VkDescriptorPoolSize> pool_sizes( 1 );
+
+	pool_sizes[0].descriptorCount = count;
+	pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+	return pool_sizes;
+}
+
+
+PresentationResources::PresentationResources(
+	const GraphicsPipeline& pipel,
+	const Frames& frames,
+	const uint32_t swapchain_count )
+: pipeline { pipel.index }
+, sampler { pipel.device }
+, descriptor_pool { pipel.device, get_presentation_pool_size( swapchain_count ), swapchain_count }
+, descriptor_sets { descriptor_pool.allocate( pipel.layout.descriptor_set_layout, swapchain_count ) }
+{
+	assert( swapchain_count > 0 && "Swapchain images should be more than 0" );
+
+	for ( size_t i = 0; i < swapchain_count; ++i )
+	{
+		VkDescriptorImageInfo image_info = {};
+
+		image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		image_info.imageView = frames.color_views[i].vkhandle;
+		image_info.sampler = sampler.handle;
+
+		VkWriteDescriptorSet write = {};
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.dstSet = descriptor_sets[i];
+		write.dstBinding = 0;
+		write.dstArrayElement = 0;
+		write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		write.descriptorCount = 1;
+		write.pImageInfo = &image_info;
+
+		std::vector<VkWriteDescriptorSet> writes = { write };
+		vkUpdateDescriptorSets( pipel.device.handle, writes.size(), writes.data(), 0, nullptr );
+	}
+}
 
 
 AmbientResources::AmbientResources( const Swapchain& swapchain )

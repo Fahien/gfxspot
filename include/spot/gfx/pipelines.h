@@ -35,7 +35,7 @@ class GraphicsPipeline
 {
   public:
 	GraphicsPipeline(
-		VkVertexInputBindingDescription bindings,
+		const std::vector<VkVertexInputBindingDescription>& bindings,
 		const std::vector<VkVertexInputAttributeDescription>& attributes,
 		PipelineLayout& layout,
 		ShaderModule& vert,

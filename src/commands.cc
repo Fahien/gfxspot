@@ -118,6 +118,12 @@ void CommandBuffer::copy( const Buffer& from_buffer, const VulkanImage& dest_ima
 }
 
 
+void CommandBuffer::image_memory_barrier( const VkImageMemoryBarrier& barrier, const VkPipelineStageFlags src, const VkPipelineStageFlags dst )
+{
+	vkCmdPipelineBarrier( handle, src, dst, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+}
+
+
 void CommandBuffer::begin_render_pass( RenderPass& render_pass, Framebuffer& framebuffer )
 {
 	VkRenderPassBeginInfo info = {};

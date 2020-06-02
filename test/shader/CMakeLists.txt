@@ -26,6 +26,8 @@ set( SHADERS
 	mesh-no-image.frag
 	imgui.vert
 	imgui.frag
+	quad.vert
+	quad.frag
 )
 
 # Compile each shader

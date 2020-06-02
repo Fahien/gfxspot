@@ -52,10 +52,6 @@ struct LightUbo
 
 
 template<typename T>
-VkVertexInputBindingDescription get_bindings();
-
-
-template<typename T>
 std::vector<VkVertexInputAttributeDescription> get_attributes();
 
 
@@ -139,7 +135,7 @@ class Frames
 	std::vector<VkImageView> swapchain_views;
 
 	std::vector<VulkanImage> color_images;
-	std::vector<VkImageView> color_views;
+	std::vector<ImageView> color_views;
 
 	std::vector<VulkanImage> depth_images;
 	std::vector<ImageView> depth_views;
@@ -217,6 +213,10 @@ class Graphics
 
 	PipelineLayout mesh_layout;
 	PipelineLayout mesh_no_image_layout;
+	
+	ShaderModule quad_vert;
+	ShaderModule quad_frag;
+	PipelineLayout presentation_layout;
 
 	Gui gui;
 	Camera camera;
@@ -229,6 +229,7 @@ class Graphics
 	std::vector<CommandBuffer> command_buffers;
 	CommandBuffer* current_command_buffer = nullptr;
 
+	std::vector<Framebuffer> offscreen_framebuffers;
 	std::vector<Framebuffer> framebuffers;
 	Framebuffer* current_framebuffer = nullptr;
 
