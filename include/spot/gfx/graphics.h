@@ -63,12 +63,13 @@ class Device;
 class CommandBuffer;
 class Fence;
 class Swapchain;
+class Frames;
 
 
 class RenderPass
 {
   public:
-	RenderPass( Swapchain& s );
+	RenderPass( Swapchain& s, Frames& f );
 	~RenderPass();
 
 	RenderPass& operator=( RenderPass&& o );
@@ -120,6 +121,11 @@ class Swapchain
 class Frames
 {
   public:
+	/// @brief Constructs frame for render off screen
+	Frames( Swapchain& s, VkExtent2D extent );
+
+	/// @brief Constructs frames for presentation
+	/// We use this to display our off screen renders
 	Frames( Swapchain& s );
 
 	Frames( Frames&& o ) = default;
@@ -127,7 +133,12 @@ class Frames
 
 	std::vector<Framebuffer> create_framebuffers( RenderPass& render_pass );
 
-	std::vector<VkImage> color_images;
+	VkExtent2D extent;
+
+	std::vector<VkImage> swapchain_images;
+	std::vector<VkImageView> swapchain_views;
+
+	std::vector<VulkanImage> color_images;
 	std::vector<VkImageView> color_views;
 
 	std::vector<VulkanImage> depth_images;
@@ -189,8 +200,10 @@ class Graphics
 	RequiredExtensions device_required_extensions = { 1, &swapchain_extension_name };
 	Device device;
 	Swapchain swapchain;
+	Frames offscreen_frames;
 	Frames frames;
 
+	RenderPass offscreen_render_pass;
 	RenderPass render_pass;
 
 	ShaderModule line_vert;

@@ -71,6 +71,15 @@ void CommandBuffer::transition( VulkanImage& image, const VkImageLayout layout )
 		dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	}
 	else if ( image.layout == VK_IMAGE_LAYOUT_UNDEFINED &&
+		layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL )
+	{
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+		src_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dst_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	}
+	else if ( image.layout == VK_IMAGE_LAYOUT_UNDEFINED &&
 		layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL )
 	{
 		barrier.srcAccessMask = 0;

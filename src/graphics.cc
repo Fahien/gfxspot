@@ -504,15 +504,21 @@ Swapchain::~Swapchain()
 }
 
 
-Frames::Frames( Swapchain& swapchain )
+Frames::Frames( Swapchain& swapchain, const VkExtent2D ext )
+: extent { ext }
 {
 	for ( size_t i = 0; i < swapchain.images.size(); ++i )
 	{
-		color_images.emplace_back( swapchain.images[i] );
-		color_views.emplace_back( swapchain.views[i] );
+		auto color = VulkanImage( swapchain.device, extent, swapchain.format );
+		color.transition( VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL );
 
-		auto depth = VulkanImage( swapchain.device, swapchain.extent, VK_FORMAT_D32_SFLOAT );
+		auto color_view = ImageView( color );
+		color_images.emplace_back( std::move( color ) );
+		depth_views.emplace_back( std::move( color_view ) );
+
+		auto depth = VulkanImage( swapchain.device, extent, VK_FORMAT_D32_SFLOAT );
 		depth.transition( VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
+
 		auto view = ImageView( depth );
 		depth_images.emplace_back( std::move( depth ) );
 		depth_views.emplace_back( std::move( view ) );
@@ -520,18 +526,37 @@ Frames::Frames( Swapchain& swapchain )
 }
 
 
+Frames::Frames( Swapchain& swapchain )
+: extent { swapchain.extent }
+{
+	for ( size_t i = 0; i < swapchain.images.size(); ++i )
+	{
+		swapchain_images.emplace_back( swapchain.images[i] );
+		swapchain_views.emplace_back( swapchain.views[i] );
+	}
+}
+
+
 std::vector<Framebuffer> Frames::create_framebuffers( RenderPass& render_pass )
 {
 	std::vector<Framebuffer> framebuffers;
+
 	for ( size_t i = 0; i < color_views.size(); ++i )
 	{
 		auto color_view = color_views[i];
 		auto depth_view = depth_views[i].vkhandle;
 		std::vector<VkImageView> views = { color_view, depth_view };
-		VkExtent2D extent = { depth_images[i].extent.width, depth_images[i].extent.height };
 		auto framebuffer = Framebuffer( views, extent, render_pass );
 		framebuffers.emplace_back( std::move( framebuffer ) );
 	}
+
+	for ( size_t i = 0; i < swapchain_images.size(); ++i )
+	{
+		std::vector<VkImageView> views = { swapchain_views[i] };
+		auto framebuffer = Framebuffer( views, extent, render_pass );
+		framebuffers.emplace_back( std::move( framebuffer ) );
+	}
+
 	return framebuffers;
 }
 
@@ -560,11 +585,16 @@ ShaderModule::ShaderModule( Device& d, const std::filesystem::path& path )
 }
 
 
-RenderPass::RenderPass( Swapchain& s )
+RenderPass::RenderPass( Swapchain& s, Frames& f )
 : device { s.device }
 {
+	std::vector<VkAttachmentDescription> attachments;
+
 	VkAttachmentDescription color_attachment = {};
-	color_attachment.format = s.format;
+	
+	VkFormat color_format = f.color_images.size() ? f.color_images[0].format : s.format;
+	color_attachment.format = color_format;
+
 	color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -573,15 +603,22 @@ RenderPass::RenderPass( Swapchain& s )
 	color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	VkAttachmentDescription depth_attachment = {};
-	depth_attachment.format = VK_FORMAT_D32_SFLOAT;
-	depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	attachments.emplace_back( color_attachment );
+
+	if ( f.depth_images.size() )
+	{
+		VkAttachmentDescription depth_attachment = {};
+		depth_attachment.format = VK_FORMAT_D32_SFLOAT;
+		depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		attachments.emplace_back( depth_attachment );
+	}
 
 	VkAttachmentReference color_ref = {};
 	color_ref.attachment = 0;
@@ -595,7 +632,7 @@ RenderPass::RenderPass( Swapchain& s )
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &color_ref;
-	subpass.pDepthStencilAttachment = &depth_ref;
+	subpass.pDepthStencilAttachment = f.depth_images.size() ? &depth_ref : nullptr;
 
 	VkSubpassDependency dependency = {};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -606,10 +643,6 @@ RenderPass::RenderPass( Swapchain& s )
 
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-	std::array<VkAttachmentDescription, 2> attachments = {
-		color_attachment, depth_attachment
-	};
 
 	VkRenderPassCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -793,8 +826,10 @@ Graphics::Graphics( VkExtent2D extent )
 , surface { instance, window }
 , device { instance.physical_devices.at( 0 ), surface.handle, device_required_extensions }
 , swapchain { device }
+, offscreen_frames { swapchain, extent }
 , frames { swapchain }
-, render_pass { swapchain }
+, offscreen_render_pass { swapchain, offscreen_frames }
+, render_pass { swapchain, frames }
 , line_vert { device, "res/shader/line.vert.spv" }
 , line_frag { device, "res/shader/line.frag.spv" }
 , line_layout { device, get_line_bindings() }
@@ -843,7 +878,8 @@ bool Graphics::render_begin()
 		images_available.back() = Semaphore( device );
 
 		swapchain.recreate();
-		render_pass = RenderPass( swapchain );
+		offscreen_render_pass = RenderPass( swapchain, offscreen_frames );
+		render_pass = RenderPass( swapchain, frames );
 
 		// Update viewport and scissor
 		viewport.update();
@@ -851,7 +887,11 @@ bool Graphics::render_begin()
 
 		renderer.recreate_pipelines();
 
-		frames = Frames( swapchain );
+		VkExtent2D extent = {
+			uint32_t( viewport.get_abstract().width ),
+			uint32_t( viewport.get_abstract().height )
+		};
+		frames = Frames( swapchain, extent );
 		framebuffers = frames.create_framebuffers( render_pass );
 
 

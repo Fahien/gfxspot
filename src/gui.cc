@@ -48,11 +48,11 @@ Gui::Gui( Device& device, Window& w )
 
 	// Display and style
 	auto& io = ImGui::GetIO();
-	io.DisplaySize.x = float( window.extent.width );
-	io.DisplaySize.y = float( window.extent.height );
-	io.FontGlobalScale = 2.0f;
+	io.DisplaySize.x = float( window.frame.width );
+	io.DisplaySize.y = float( window.frame.height );
+	io.FontGlobalScale = 1.0f;
 	auto& style = ImGui::GetStyle();
-	style.ScaleAllSizes( 2.0f );
+	style.ScaleAllSizes( 1.0f );
 
 	// Create font texture
 	unsigned char* font_data;

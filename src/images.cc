@@ -70,7 +70,10 @@ VulkanImage::VulkanImage( Device& d, const VkExtent2D ext, const VkFormat fmt )
 	info.tiling = tiling;
 	info.format = format;
 	info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+
+	/// @todo There is room for optimizations here
+	info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
 	if ( format == VK_FORMAT_D32_SFLOAT )
 	{
 		info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
