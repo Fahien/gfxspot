@@ -11,19 +11,17 @@ class Node;
 
 
 /// @brief Collisions system
-/// You first call update on the root of the scene
-/// Then call resolve, @todo or call it within update?
+/// You first add the nodes of the scene, and then call update
 class Collisions
 {
   public:
 	/// @brief This function visits recursively this node and its children
-	/// while updating their shape's transforms. These shapes are then
-	/// stored in the bounds vector member of this class
-	void update( Node& node );
+	/// to store them in the nodes vector member of this class
+	void add( Node& node );
 
 	/// @brief Main collisions logic
 	/// Checks for collisions, calling their relative callbacks
-	void resolve();
+	void update();
 
   private:
 	/// @brief List of active nodes with bounds to check

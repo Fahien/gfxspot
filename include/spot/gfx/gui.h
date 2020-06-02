@@ -6,6 +6,7 @@
 #include "spot/gfx/descriptors.h"
 
 #include "spot/math/math.h"
+#include "spot/math/mat4.h"
 
 namespace spot::gfx
 {

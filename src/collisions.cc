@@ -10,33 +10,32 @@ namespace spot::gfx
 {
 
 
-void Collisions::update( Node& node )
+void Collisions::add( Node& node )
 {
 	for ( auto& child : node.children )
 	{
-		update( *child );
+		add( *child );
 	}
 
 	// Save nodes containing bounds
-	if ( node.rect )
+	if ( node.bounds )
 	{
-		node.rect->set_node( node );
 		nodes.emplace_back( &node );
 	}
 }
 
 
-void Collisions::resolve()
+void Collisions::update()
 {
 	for ( size_t i = 0; i < nodes.size(); ++i )
 	{
-		auto first_node = nodes[i];
-		auto& first_shape = *first_node->rect;
+		Node& first_node = *nodes[i];
+		Bounds& first_shape = *first_node.bounds;
 
 		for ( size_t j = i + 1; j < nodes.size(); ++j )
 		{
-			auto second_node = nodes[j];
-			auto& second_shape = *second_node->rect;
+			Node& second_node = *nodes[j];
+			Bounds& second_shape = *second_node.bounds;
 
 			if ( !first_shape.dynamic && !second_shape.dynamic )
 			{
@@ -45,7 +44,7 @@ void Collisions::resolve()
 
 			auto is_colliding = first_shape.is_colliding_with( second_shape );
 
-			if ( first_shape.intersects( second_shape ) )
+			if ( Bounds::intersects( first_node, second_node ) )
 			{
 				if ( !is_colliding )
 				{
@@ -54,21 +53,21 @@ void Collisions::resolve()
 
 					if ( first_shape.start_colliding_with )
 					{
-						first_shape.start_colliding_with( first_shape, second_shape );
+						first_shape.start_colliding_with( first_node, second_node );
 					}
 					if ( second_shape.start_colliding_with )
 					{
-						second_shape.start_colliding_with( second_shape, first_shape );
+						second_shape.start_colliding_with( second_node, first_node );
 					}
 				}
 
 				if ( first_shape.colliding_with )
 				{
-					first_shape.colliding_with( first_shape, second_shape );
+					first_shape.colliding_with( first_node, second_node );
 				}
 				if ( second_shape.colliding_with )
 				{
-					second_shape.colliding_with( second_shape, first_shape );
+					second_shape.colliding_with( second_node, first_node );
 				}
 			}
 			else if ( is_colliding )
@@ -78,11 +77,11 @@ void Collisions::resolve()
 
 				if ( first_shape.end_colliding_with )
 				{
-					first_shape.end_colliding_with( first_shape, second_shape );
+					first_shape.end_colliding_with( first_node, second_node );
 				}
 				if ( second_shape.end_colliding_with )
 				{
-					second_shape.end_colliding_with( second_shape, first_shape );
+					second_shape.end_colliding_with( second_node, first_node );
 				}
 			}
 		}

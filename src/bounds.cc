@@ -88,43 +88,43 @@ bool Rect::contains( const math::Vec2& p, const math::Mat4& transform ) const
 }
 
 
-Shape& Bounds::get_shape() const
+bool Bounds::is_colliding_with( const Bounds& b ) const
 {
-	switch ( type )
-	{
-	case Type::Rect:   return *std::get<Handle<Rect>>( shape );
-	case Type::Box:    return *std::get<Handle<Box>>( shape );
-	case Type::Sphere: return *std::get<Handle<Sphere>>( shape );
-	default:
-		assert( false && "Bounds shape type not supported" );
-	}
+	auto it = std::find( std::begin( collisions ), std::end( collisions ), &b );
+	return it != std::end( collisions );
 }
 
 
-std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> Bounds::clone_shape() const
+bool Bounds::intersects( const Node& a, const Node& b )
 {
-	switch ( type )
-	{
-	case Type::Rect:   return std::get<Handle<Rect>>( shape ).clone();
-	case Type::Box:    return std::get<Handle<Box>>( shape ).clone();
-	case Type::Sphere: return std::get<Handle<Sphere>>( shape ).clone();
-	default:
-		assert( false && "Bounds shape type not supported" );
-	}
+	math::Rect as = a.get_transform() * a.bounds->shape;
+	math::Rect bs = b.get_transform() * b.bounds->shape;
+
+	return as.intersects( bs );
 }
 
 
-
-void Bounds::invalidate()
+math::Vec2 Bounds::distance( const Node& a, const Node& b )
 {
-	Handled<Bounds>::invalidate();
-	switch ( type )
+	math::Rect as = a.get_transform() * a.bounds->shape;
+	math::Rect bs = b.get_transform() * b.bounds->shape;
+
+	return as.distance( bs );
+}
+
+
+void Bounds::add_collision( const Bounds& b )
+{
+	collisions.push_back( &b );
+}
+
+
+void Bounds::remove_collision( const Bounds& b )
+{
+	auto it = std::find( std::begin( collisions ), std::end( collisions ), &b );
+	if ( it != std::end( collisions ) )
 	{
-	case Type::Rect:   return std::get<Handle<Rect>>( shape )->invalidate();
-	case Type::Box:    return std::get<Handle<Box>>( shape )->invalidate();
-	case Type::Sphere: return std::get<Handle<Sphere>>( shape )->invalidate();
-	default:
-		assert( false && "Bounds shape type not supported" );
+		collisions.erase( it );
 	}
 }
 

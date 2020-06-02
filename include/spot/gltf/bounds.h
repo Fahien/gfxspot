@@ -5,6 +5,7 @@
 
 #include <spot/handle.h>
 #include <spot/math/math.h>
+#include <spot/math/mat4.h>
 #include <spot/math/shape.h>
 
 
@@ -95,6 +96,10 @@ struct Sphere : public math::Sphere, public Handled<Sphere>, public Shape
 
 struct Bounds : public Handled<Bounds>
 {
+	static bool intersects( const Node& a, const Node& b );
+
+	static math::Vec2 distance( const Node& a, const Node& b );
+
 	enum class Type
 	{
 		Undefined,
@@ -104,18 +109,31 @@ struct Bounds : public Handled<Bounds>
 		Max,
 	};
 
-	void invalidate() override;
+	bool is_colliding_with( const Bounds& b ) const;
+	
+	void add_collision( const Bounds& b );
+	
+	void remove_collision( const Bounds& b );
 
-	Shape& get_shape() const;
+	bool intersects( const Bounds& b ) const;
 
-	std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> clone_shape() const;
-
-	/// @brief Whether the bounds are dynamic or not
+	/// Whether the bounds are dynamic or not
 	bool dynamic = false;
 
 	Type type = Type::Rect;
 
-	std::variant<Handle<Rect>, Handle<Box>, Handle<Sphere>> shape;
+	math::Rect shape;
+
+	/// List of bounds currently colliding with this
+	std::vector<const Bounds*> collisions;
+
+	/// Collisions callback
+	std::function<void( Node& self, Node& other )> start_colliding_with;
+	std::function<void( Node& self, Node& other )> colliding_with;
+	std::function<void( Node& self, Node& other )> end_colliding_with;
+
+	/// Callback which can be set to trigger some action
+	std::function<void()> trigger;
 };
 
 

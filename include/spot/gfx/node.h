@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <spot/math/math.h>
+#include <spot/math/mat4.h>
 
 #include "spot/handle.h"
 
@@ -92,6 +93,7 @@ class Node : public Handled<Node>
 	std::vector<Handle<Node>> children;
 
 	/// This node's rectangle bounds
+	Handle<Bounds> bounds;
 	Handle<Rect> rect;
 
   private:
