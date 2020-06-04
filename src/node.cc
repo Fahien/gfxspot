@@ -83,7 +83,7 @@ void Node::update_transforms( const math::Mat4& transform )
 void Node::recalculate( math::Mat4 transform )
 {
 	dirty = false;
-	matrix = transform.scale( scaling ).rotate( rotation ).translate( translation );
+	matrix = transform * math::Mat4::Identity.scale( scaling ).rotate( rotation ).translate( translation );
 	for ( auto& child : children )
 	{
 		child->recalculate( matrix );
