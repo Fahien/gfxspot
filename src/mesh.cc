@@ -269,4 +269,16 @@ Mesh Mesh::create_cube( const Handle<Material>& material )
 }
 
 
+void Mesh::set_color( const Color& color )
+{
+	for ( auto& prim : primitives )
+	{
+		for( auto& v : prim.vertices )
+		{
+			v.c = color;
+		}
+	}
+}
+
+
 } // namespace spot::gfx

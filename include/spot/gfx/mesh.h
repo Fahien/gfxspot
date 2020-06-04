@@ -123,6 +123,8 @@ struct Mesh : public Handled<Mesh>
 
 	Mesh( std::vector<Primitive>&& ps = {} ) : primitives { std::move( ps ) } {}
 
+	void set_color( const Color& color );
+
 	/// Array of primitives, each defining geometry to be rendered with a material (required)
 	std::vector<Primitive> primitives;
 
