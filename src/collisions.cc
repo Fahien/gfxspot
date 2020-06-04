@@ -42,14 +42,14 @@ void Collisions::update()
 				continue;
 			}
 
-			auto is_colliding = first_shape.is_colliding_with( second_shape );
+			auto is_colliding = first_shape.is_colliding_with( second_node );
 
 			if ( Bounds::intersects( first_node, second_node ) )
 			{
 				if ( !is_colliding )
 				{
-					first_shape.add_collision( second_shape );
-					second_shape.add_collision( first_shape );
+					first_shape.add_collision( second_node );
+					second_shape.add_collision( first_node );
 
 					if ( first_shape.begin_colliding_with )
 					{
@@ -72,8 +72,8 @@ void Collisions::update()
 			}
 			else if ( is_colliding )
 			{
-				first_shape.remove_collision( second_shape );
-				second_shape.remove_collision( first_shape );
+				first_shape.remove_collision( second_node );
+				second_shape.remove_collision( first_node );
 
 				if ( first_shape.end_colliding_with )
 				{

@@ -109,11 +109,11 @@ struct Bounds : public Handled<Bounds>
 		Max,
 	};
 
-	bool is_colliding_with( const Bounds& b ) const;
+	bool is_colliding_with( const Node& b ) const;
 	
-	void add_collision( const Bounds& b );
+	void add_collision( Node& b );
 	
-	void remove_collision( const Bounds& b );
+	void remove_collision( Node& b );
 
 	bool intersects( const Bounds& b ) const;
 
@@ -125,7 +125,7 @@ struct Bounds : public Handled<Bounds>
 	math::Rect shape;
 
 	/// List of bounds currently colliding with this
-	std::vector<const Bounds*> collisions;
+	std::vector<Node*> collisions;
 
 	/// Collisions callback
 	std::function<void( Node& self, Node& other )> begin_colliding_with;
@@ -133,7 +133,7 @@ struct Bounds : public Handled<Bounds>
 	std::function<void( Node& self, Node& other )> end_colliding_with;
 
 	/// Callback which can be set to trigger some action
-	std::function<void()> trigger;
+	std::function<void( Node& self, Node& other )> trigger;
 };
 
 

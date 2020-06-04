@@ -88,9 +88,9 @@ bool Rect::contains( const math::Vec2& p, const math::Mat4& transform ) const
 }
 
 
-bool Bounds::is_colliding_with( const Bounds& b ) const
+bool Bounds::is_colliding_with( const Node& n ) const
 {
-	auto it = std::find( std::begin( collisions ), std::end( collisions ), &b );
+	auto it = std::find( std::begin( collisions ), std::end( collisions ), &n );
 	return it != std::end( collisions );
 }
 
@@ -113,15 +113,15 @@ math::Vec2 Bounds::distance( const Node& a, const Node& b )
 }
 
 
-void Bounds::add_collision( const Bounds& b )
+void Bounds::add_collision( Node& n )
 {
-	collisions.push_back( &b );
+	collisions.push_back( &n );
 }
 
 
-void Bounds::remove_collision( const Bounds& b )
+void Bounds::remove_collision( Node& n )
 {
-	auto it = std::find( std::begin( collisions ), std::end( collisions ), &b );
+	auto it = std::find( std::begin( collisions ), std::end( collisions ), &n );
 	if ( it != std::end( collisions ) )
 	{
 		collisions.erase( it );
