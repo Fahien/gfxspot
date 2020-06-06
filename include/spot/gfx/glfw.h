@@ -41,6 +41,7 @@ class Window
 	~Window();
 
 	bool is_alive();
+	void should_close();
 	void update();
 
 	math::Vec2 get_cursor_position() const;

@@ -187,6 +187,12 @@ Window::~Window()
 }
 
 
+void Window::should_close()
+{
+	glfwSetWindowShouldClose( handle, GLFW_TRUE );
+}
+
+
 math::Vec2 Window::cursor_to( const VkViewport& viewport ) const
 {
 	math::Vec2 viewport_coords;

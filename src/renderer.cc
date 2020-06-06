@@ -144,7 +144,7 @@ std::vector<GraphicsPipeline> create_pipelines( Graphics& gfx )
 		gfx.viewport.get_abstract(),
 		gfx.scissor,
 		get_color_blend( true ),
-		{ VK_DYNAMIC_STATE_LINE_WIDTH },
+		{},
 		VK_CULL_MODE_NONE,
 		VK_FALSE,
 		VK_PRIMITIVE_TOPOLOGY_LINE_LIST );
@@ -664,7 +664,16 @@ Renderer::add_descriptors( const Node& node, const Handle<Material>& material )
 	// A node may have a mesh with multiple primitives with different materials
 	// And the same material may appear into multiple primitives of different nodes
 	// So we hash combine both node and material
-	auto key = std::hash_combine( node.handle, material->handle );
+	size_t key = 0;
+	if ( material )
+	{
+		key = std::hash_combine( node.handle, material );
+	}
+	else
+	{
+		key = std::hash_combine( node.handle );
+	}
+	
 	auto it = descriptor_resources.find( key );
 	if ( it != std::end( descriptor_resources ) )
 	{

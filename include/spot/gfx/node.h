@@ -77,6 +77,9 @@ class Node : public Handled<Node>
 	/// @brief Set this node free!
 	void remove_from_parent();
 
+	/// This can be used to set user flags of any kind
+	uint32_t flags = 0;
+
 	/// Handle of the mesh of the node
 	Handle<Mesh> mesh = {};
 

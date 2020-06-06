@@ -843,7 +843,7 @@ Graphics::Graphics( VkExtent2D extent, const bool offscr )
 , device { instance.physical_devices.at( 0 ), surface.handle, device_required_extensions }
 , swapchain { device }
 , viewport { window, camera }
-, offscreen_frames { swapchain, { viewport.get_abstract().width, viewport.get_abstract().height } }
+, offscreen_frames { swapchain, VkExtent2D { uint32_t( viewport.get_abstract().width ), uint32_t( viewport.get_abstract().height ) } }
 , frames { swapchain }
 , offscreen_render_pass { swapchain, offscreen_frames }
 , render_pass { swapchain, frames }
@@ -859,7 +859,7 @@ Graphics::Graphics( VkExtent2D extent, const bool offscr )
 , quad_vert { device, "res/shader/quad.vert.spv" }
 , quad_frag { device, "res/shader/quad.frag.spv" }
 , presentation_layout { device, get_presentation_bindings() }
-, gui { device, window, { viewport.get_abstract().width, viewport.get_abstract().height } }
+, gui { device, window, VkExtent2D{ uint32_t( viewport.get_abstract().width ), uint32_t( viewport.get_abstract().height ) } }
 , scissor { create_scissor( window ) }
 , renderer { *this }
 , command_pool { device }
