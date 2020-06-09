@@ -8,8 +8,8 @@
 #include "spot/gfx/viewport.h"
 
 #define CHECK_KEY( K, k ) if ( key == GLFW_KEY_##K ) { \
-	if ( action == GLFW_PRESS ) { window->input.key.k = true; } \
-	else if ( action == GLFW_RELEASE ) { window->input.key.k = false; } }
+	if ( action == GLFW_PRESS ) { window->input.key.down.k = true; window->input.key.value.k = true; } \
+	else if ( action == GLFW_RELEASE ) { window->input.key.value.k = false; window->input.key.up.k = true; } }
 
 
 namespace spot::gfx
@@ -154,6 +154,7 @@ void key_callback( GLFWwindow* handle, int key, int scancode, int action, int mo
 	CHECK_KEY( A, a );
 	CHECK_KEY( S, s );
 	CHECK_KEY( D, d );
+	CHECK_KEY( R, r );
 	CHECK_KEY( ENTER, enter );
 }
 
@@ -211,6 +212,9 @@ bool Window::is_alive()
 	input.scroll = {};
 	input.swipe = {};
 	input.click = Input::Click();
+
+	input.key.down = Input::Key();
+	input.key.up = Input::Key();
 
 	return !glfwWindowShouldClose( handle );
 }

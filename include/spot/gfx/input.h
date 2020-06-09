@@ -39,7 +39,22 @@ class Input
 		bool a = false;
 		bool s = false;
 		bool d = false;
+		bool r = false;
 		bool enter = false;
+
+		void reset();
+	};
+
+	struct KeyState
+	{
+		/// True when the key is just pressed
+		Key down;
+
+		/// True when the key is still pressed
+		Key value;
+
+		/// True when the key is just released
+		Key up;
 	} key;
 };
 
